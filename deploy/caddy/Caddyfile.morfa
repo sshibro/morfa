@@ -1,0 +1,22 @@
+# Production edge (ru-4): morfa.example (desktop downloads), app.morfa.example (app + api), collab-<node>.morfa.example (each collab node's
+# socket) and updates.morfa.example (the desktop updater) — deploy/caddy/morfa-sites.caddy. TLS by ACME (Let's Encrypt, ZeroSSL
+# as Caddy's fallback); every name needs its DNS record first, else Caddy keeps retrying.
+# Install: /etc/caddy/Caddyfile + morfa-routes.caddy, morfa-sites.caddy, morfa-metrics.caddy beside it; settings in
+# /etc/morfa/caddy.env.
+{
+	email {$MORFA_ACME_EMAIL}
+	admin localhost:2019
+	metrics
+	servers {
+		timeouts {
+			read_header 10s
+			idle 2m
+		}
+		# api sees the client's address (TRUST_PROXY=1 in api.env): only Caddy talks to it.
+		trusted_proxies static private_ranges
+	}
+}
+
+import /etc/caddy/morfa-routes.caddy
+import /etc/caddy/morfa-sites.caddy
+import /etc/caddy/morfa-metrics.caddy

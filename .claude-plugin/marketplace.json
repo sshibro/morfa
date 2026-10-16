@@ -1,0 +1,13 @@
+{
+  "name": "morfa",
+  "owner": {"name": "Morfa", "url": "https://morfa.example"},
+  "metadata": {"description": "Morfa, the design tool, for Claude Code."},
+  "plugins": [
+    {
+      "name": "morfa",
+      "source": "./integrations/claude-plugin",
+      "description": "Design in Morfa from Claude Code: build screens on the canvas, read frames as code, put your own pictures in.",
+      "category": "design"
+    }
+  ]
+}

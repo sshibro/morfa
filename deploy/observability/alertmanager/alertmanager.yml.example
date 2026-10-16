@@ -1,0 +1,32 @@
+# /etc/morfa/alertmanager/alertmanager.yml — the operator's alert delivery. Set
+# ALERTMANAGER_CONFIG_DIR=/etc/morfa/alertmanager in /etc/morfa/observability.env, then
+# `docker compose --env-file /etc/morfa/observability.env up -d alertmanager`. Secrets live in files beside this one (mode 600),
+# never in this file or the repository.
+route:
+  receiver: telegram
+  group_by: [alertname, node]
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+  routes:
+    # ServiceDown and the durability alerts also go by e-mail.
+    - matchers: ['alertname=~"ServiceDown|WalArchiveFailing|CheckpointFailures"']
+      receiver: telegram-and-mail
+receivers:
+  - name: telegram
+    telegram_configs:
+      # A bot of the operator's (@BotFather) and the on-call chat's id (a number; a group's is negative).
+      - bot_token_file: /etc/alertmanager/telegram-bot-token
+        chat_id: -1000000000000
+        parse_mode: HTML
+  - name: telegram-and-mail
+    telegram_configs:
+      - bot_token_file: /etc/alertmanager/telegram-bot-token
+        chat_id: -1000000000000
+        parse_mode: HTML
+    email_configs:
+      - to: ops@example.invalid
+        from: alerts@example.invalid
+        smarthost: smtp.example.invalid:587
+        auth_username: alerts@example.invalid
+        auth_password_file: /etc/alertmanager/smtp-password

@@ -1,0 +1,112 @@
+/* "Text" in the design panel (src/design/panels/design/text) and the hidden field the canvas text
+   editor types through. Rows are two equal columns, as every row of the panel; the alignment row
+   packs two segmented controls and the settings button. State changes are colour only. */
+
+.dz .dz-text-section .dz-section-body { gap: 8px; }
+
+.dz .dz-text-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+.dz .dz-text-row > * { min-width: 0; }
+.dz .dz-text-row.is-align { display: flex; justify-content: space-between; }
+.dz .dz-text-row.is-align .dz-segment.is-icon { min-width: 24px; }
+
+.dz .dz-text-family { width: 100%; }
+.dz .dz-text-family .dz-select-value { font-weight: var(--dz-weight-medium); }
+.dz .dz-text-family.is-missing .dz-select-value { color: var(--dz-danger-text); }
+
+/* The size field and its presets read as one control: the chevron sits inside the field's end. */
+.dz .dz-text-size { position: relative; display: flex; min-width: 0; }
+.dz .dz-text-size .dz-number { flex: 1; padding-right: 22px; }
+.dz .dz-text-size-presets {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  bottom: 2px;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  /* Concentric inside the 5 px field with its 2 px inset. */
+  border-radius: 3px;
+  color: var(--dz-text-2);
+  transition: background-color var(--dz-fast) var(--dz-ease-press), color var(--dz-fast) var(--dz-ease-press);
+}
+@media (hover: hover) {
+  .dz .dz-text-size-presets:hover { background: var(--dz-hover); color: var(--dz-text); }
+}
+.dz .dz-text-size-presets[aria-expanded='true'] { background: var(--dz-pressed); color: var(--dz-text); }
+
+.dz .dz-text-hint { color: var(--dz-text-2); text-wrap: pretty; }
+.dz .dz-text-error { color: var(--dz-danger-text); text-wrap: pretty; }
+
+/* A text style in use: a chip with its name and size, and "Detach". */
+.dz .dz-text-style-row { display: flex; align-items: center; gap: 4px; }
+.dz .dz-text-style-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+  height: var(--dz-control);
+  padding: 0 8px 0 6px;
+  border-radius: var(--dz-radius);
+  background: var(--dz-field);
+}
+.dz .dz-text-style-icon { display: grid; place-items: center; color: var(--dz-text-2); }
+.dz .dz-text-style-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: var(--dz-weight-medium); }
+.dz .dz-text-style-meta { color: var(--dz-text-2); font-variant-numeric: tabular-nums; }
+
+/* A font the computer cannot draw: what is missing, then "Replace font" under it. */
+.dz .dz-text-missing {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr);
+  align-items: center;
+  column-gap: 6px;
+  row-gap: 2px;
+  padding: 6px 8px 4px;
+  border-radius: var(--dz-radius-card);
+  background: color-mix(in srgb, var(--dz-warning) 14%, transparent);
+}
+.dz .dz-text-missing-icon { display: grid; place-items: center; color: var(--dz-warning); }
+.dz .dz-text-missing-text { min-width: 0; text-wrap: pretty; }
+.dz .dz-text-missing .dz-btn { grid-column: 2; justify-self: start; margin-left: -8px; color: var(--dz-accent-text); }
+
+.dz .dz-case-glyph { font-size: 10px; font-weight: var(--dz-weight-strong); letter-spacing: 0.02em; line-height: 1; }
+/* "Small caps": a capital and a smaller one, drawn as such (the UI face has no small-caps feature to ask for). */
+.dz .dz-case-glyph.is-small-caps small { font-size: 0.75em; }
+
+/* Popovers of the section: settings and a new style. */
+.dz .dz-text-popover .dz-popover-body { width: 248px; }
+.dz .dz-text-settings,
+.dz .dz-text-create { display: grid; gap: 8px; padding: 12px 12px 14px; }
+.dz .dz-text-popover-title { font-weight: var(--dz-weight-strong); font-size: 11px; line-height: 16px; }
+.dz .dz-text-setting { display: grid; grid-template-columns: 84px minmax(0, 1fr); align-items: center; gap: 8px; }
+.dz .dz-text-setting-label { color: var(--dz-text-2); }
+.dz .dz-text-create-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px; }
+.dz .dz-input.is-invalid,
+.dz .dz-input.is-invalid:focus-within { box-shadow: inset 0 0 0 1px var(--dz-danger); }
+.dz .dz-text-missing-text b { font-weight: var(--dz-weight-strong); }
+
+/* "Text on path": the start along the path and the side, then leaving the path. */
+.dz .dz-text-path-row { display: flex; align-items: center; gap: 8px; }
+.dz .dz-text-path-row .dz-number { flex: 1; min-width: 0; }
+/* "Start" is a word, not a letter: its scrub label takes its own width. */
+.dz .dz-text-path-row .dz-number-prefix.is-label { width: auto; padding: 0 6px 0 8px; }
+.dz .dz-text-path-detach { justify-self: start; }
+.dz .dz-text-variable-row { display: flex; min-width: 0; }
+
+/* Text links on the canvas (editor/TextLinkLayer.tsx): "Link" at the caret, and a link's card while the caret is in it. */
+.dz .dz-text-link-popover .dz-popover-body { width: 280px; }
+.dz .dz-text-link-field { display: grid; gap: 6px; padding: 8px; }
+.dz .dz-text-link-card {
+  position: fixed; z-index: 30; display: flex; align-items: center; gap: 2px; max-width: 320px; padding: 4px 4px 4px 8px;
+  border-radius: var(--dz-radius-menu); background: var(--dz-panel); color: var(--dz-text); box-shadow: var(--dz-shadow-menu);
+}
+.dz .dz-text-link-icon { flex: none; color: var(--dz-text-2); }
+.dz .dz-text-link-url {
+  min-width: 0; flex: 1 1 auto; margin: 0 4px; overflow: hidden; color: var(--dz-accent-text); text-decoration: none; text-overflow: ellipsis; white-space: nowrap;
+}
+.dz .dz-text-link-url:hover { text-decoration: underline; }

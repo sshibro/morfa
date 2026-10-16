@@ -1,0 +1,40 @@
+# Loki: the services' journald logs (shipped by Alloy), 14 days, single binary on 127.0.0.1:3100.
+auth_enabled: false
+server:
+  http_listen_address: 127.0.0.1
+  http_listen_port: 3100
+  grpc_listen_address: 127.0.0.1
+  grpc_listen_port: 9097
+common:
+  path_prefix: /loki
+  replication_factor: 1
+  # Host networking: Loki would advertise the first interface it finds (docker0), and its querier could not reach its own
+  # query frontend there. Everything talks over loopback.
+  instance_addr: 127.0.0.1
+  ring:
+    instance_addr: 127.0.0.1
+    kvstore:
+      store: inmemory
+  storage:
+    filesystem:
+      chunks_directory: /loki/chunks
+      rules_directory: /loki/rules
+frontend:
+  address: 127.0.0.1
+schema_config:
+  configs:
+    - from: 2026-01-01
+      store: tsdb
+      object_store: filesystem
+      schema: v13
+      index:
+        prefix: index_
+        period: 24h
+limits_config:
+  retention_period: 336h
+compactor:
+  working_directory: /loki/compactor
+  retention_enabled: true
+  delete_request_store: filesystem
+analytics:
+  reporting_enabled: false

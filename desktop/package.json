@@ -1,0 +1,13 @@
+{
+  "name": "morfa-desktop",
+  "private": true,
+  "type": "module",
+  "description": "Morfa desktop shell (Tauri 2): build tooling only; the app itself is the hosted web app.",
+  "license": "UNLICENSED",
+  "scripts": {
+    "tauri": "tauri"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "2.12.1"
+  }
+}

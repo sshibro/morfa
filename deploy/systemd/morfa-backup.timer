@@ -1,0 +1,11 @@
+[Unit]
+Description=Nightly Morfa PostgreSQL base backup
+
+[Timer]
+# 03:30 Moscow time; RandomizedDelaySec keeps several hosts from starting together.
+OnCalendar=*-*-* 03:30:00 Europe/Moscow
+RandomizedDelaySec=10m
+Persistent=true
+
+[Install]
+WantedBy=timers.target

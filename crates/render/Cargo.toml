@@ -1,0 +1,39 @@
+[package]
+name = "morfa-render"
+description = "The scene renderer (lane L4): one display list from the shadow document, drawn by vello (compute, WebGPU) or vello_cpu (server, tests), with Morfa's own blur pass."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[features]
+# The CPU path (vello_cpu): exports, thumbnails, the Node tests against the goldens.
+default = ["cpu"]
+cpu = ["dep:vello_cpu", "dep:vello_common"]
+# The GPU path (vello compute on wgpu: WebGPU in the browser, Vulkan/Metal natively for tests on lavapipe and the Mac).
+gpu = ["dep:vello", "dep:wgpu", "dep:bytemuck", "dep:futures-intrusive"]
+
+[dependencies]
+morfa-model.workspace = true
+kurbo = "0.13.1"
+peniko = "0.6.1"
+# No png decoder and no text (glyphs are lane L3's, painted by the host): the wasm stays small.
+vello_cpu = {version = "0.3.0", default-features = false, features = ["std", "u8_pipeline"], optional = true}
+vello_common = {version = "0.3.0", optional = true}
+vello = {version = "0.11.0", default-features = false, features = ["wgpu"], optional = true}
+bytemuck = {version = "1", features = ["derive"], optional = true}
+futures-intrusive = {version = "0.5", optional = true}
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wgpu = {version = "30.0.1", default-features = false, features = ["wgsl", "webgpu"], optional = true}
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+wgpu = {version = "30.0.1", default-features = false, features = ["wgsl", "vulkan", "metal"], optional = true}
+
+[dev-dependencies]
+png = "0.18.1"
+serde_json = "1"
+
+[lints]
+workspace = true

@@ -1,0 +1,315 @@
+/* Comments (docs/design-tool.md §Teams "Comments"): pins and the thread card over the canvas, the composer, the "Comments" tab and
+   the right panel in comment mode. Pins follow the canvas without animation (canvas interactions never animate); the card scales in from
+   its pin like a popover, 160 ms ease-out. Tokens from tokens.css; nothing from any other brand. */
+
+/* ── The layer over the canvas ───────────────────────────────────────────────────────────────── */
+.dz .dz-comments-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* A pin: a round bubble whose bottom-left corner is the point it marks; the author's avatar inside (24 px + 4 px = 16 px radius). */
+.dz .dz-comment-pin {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 16px 16px 16px 3px;
+  background: var(--dz-panel);
+  box-shadow: var(--dz-shadow-float);
+  pointer-events: auto;
+  cursor: pointer;
+  transition: box-shadow var(--dz-fast) var(--dz-ease-press), scale var(--dz-fast) var(--dz-ease-press);
+}
+@media (hover: hover) {
+  .dz .dz-comment-pin:hover { box-shadow: 0 0 0 1px var(--dz-border-strong), var(--dz-shadow-menu); }
+}
+.dz .dz-comment-pin:active { scale: 0.96; }
+.dz .dz-comment-pin:focus-visible { outline: 2px solid var(--dz-accent); outline-offset: 2px; }
+.dz .dz-comment-pin.is-open { box-shadow: 0 0 0 2px var(--dz-accent), var(--dz-shadow-float); }
+/* Unread: a blue dot on the bubble's shoulder, ringed in the panel colour so it reads on any canvas. */
+.dz .dz-comment-pin.is-unread::after {
+  content: '';
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--dz-accent);
+  box-shadow: 0 0 0 2px var(--dz-panel);
+}
+.dz .dz-comment-pin.is-resolved { opacity: 0.72; }
+.dz .dz-comment-pin.is-resolved.is-open { opacity: 1; }
+.dz .dz-comment-pin-check {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--dz-success);
+  color: #ffffff;
+}
+/* Several pins close together, zoomed out: the count on the menu's dark, so it never reads as a person. */
+.dz .dz-comment-pin.is-cluster { background: var(--dz-menu); color: var(--dz-menu-text); }
+.dz .dz-comment-pin-count { font-size: 11px; line-height: 1; font-weight: var(--dz-weight-strong); font-variant-numeric: tabular-nums; }
+/* The pin being placed: the viewer's own avatar on the accent. */
+.dz .dz-comment-pin.is-draft { background: var(--dz-accent); pointer-events: none; }
+
+/* ── Avatars ─────────────────────────────────────────────────────────────────────────────────── */
+.dz .dz-avatar {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  border-radius: 50%;
+  color: #ffffff;
+  font-weight: var(--dz-weight-strong);
+  letter-spacing: 0.01em;
+  user-select: none;
+}
+.dz .dz-avatar.is-24 { width: 24px; height: 24px; font-size: 10px; }
+.dz .dz-avatar.is-20 { width: 20px; height: 20px; font-size: 9px; }
+
+/* ── The thread's card ───────────────────────────────────────────────────────────────────────── */
+.dz .dz-comment-card {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100% - 72px);
+  border-radius: var(--dz-radius-menu);
+  background: var(--dz-panel);
+  color: var(--dz-text);
+  box-shadow: var(--dz-shadow-menu);
+  pointer-events: auto;
+  cursor: auto;
+  transition: opacity var(--dz-base) var(--dz-ease-out), scale var(--dz-base) var(--dz-ease-out);
+  @starting-style { opacity: 0; scale: 0.97; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dz .dz-comment-card { transition: opacity var(--dz-base) var(--dz-ease-out); @starting-style { opacity: 0; scale: 1; } }
+}
+/* Opened with Enter from the list, or the thread that replaces the draft once Enter sends it: no entrance. */
+.dz[data-input='keyboard'] .dz-comment-card { transition: none; }
+.dz .dz-comment-card.is-draft { padding: 8px; }
+.dz .dz-comment-card-head {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: none;
+  height: 40px;
+  padding: 0 8px 0 12px;
+  border-bottom: 1px solid var(--dz-border);
+}
+.dz .dz-comment-card-title { flex: 1; min-width: 0; font-weight: var(--dz-weight-strong); }
+.dz .dz-comment-resolve[aria-pressed='true'] { color: var(--dz-success); }
+.dz .dz-comment-messages {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: 340px;
+  padding: 4px 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+.dz .dz-comment {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) 24px;
+  gap: 8px;
+  padding: 8px 8px 8px 12px;
+}
+.dz .dz-comment + .dz-comment { padding-top: 4px; }
+.dz .dz-comment-main { min-width: 0; }
+.dz .dz-comment-meta { display: flex; align-items: baseline; gap: 6px; min-width: 0; height: 16px; color: var(--dz-text-2); }
+.dz .dz-comment-author { min-width: 0; overflow: hidden; color: var(--dz-text); font-weight: var(--dz-weight-medium); text-overflow: ellipsis; white-space: nowrap; }
+.dz .dz-comment-meta time { flex: none; white-space: nowrap; }
+.dz .dz-comment-edited { color: var(--dz-text-3); white-space: nowrap; }
+.dz .dz-comment-text {
+  margin: 2px 0 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  text-wrap: pretty;
+}
+.dz .dz-mention { color: var(--dz-accent-text); font-weight: var(--dz-weight-medium); }
+.dz .dz-mention.is-you { border-radius: 3px; background: var(--dz-selected-row); box-shadow: 0 0 0 1px var(--dz-selected-row); }
+/* A message's "…" shows on hover, while focused and while its menu is open. */
+.dz .dz-comment-menu { opacity: 0; transition: opacity var(--dz-fast) var(--dz-ease-press); }
+.dz .dz-comment:hover .dz-comment-menu,
+.dz .dz-comment-menu:focus-visible,
+.dz .dz-comment-menu[aria-expanded='true'] { opacity: 1; }
+@media (hover: none) {
+  .dz .dz-comment-menu { opacity: 1; }
+}
+.dz .dz-comment-reply { flex: none; padding: 8px; border-top: 1px solid var(--dz-border); }
+
+/* ── The composer ────────────────────────────────────────────────────────────────────────────── */
+/* A field with its buttons inside: 8 px corners around 24 px buttons inset 4 px (concentric with the button's 4 px). */
+.dz .dz-composer {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  min-height: 32px;
+  padding: 4px 4px 4px 8px;
+  border-radius: 8px;
+  background: var(--dz-field);
+  box-shadow: inset 0 0 0 1px transparent;
+  transition: box-shadow var(--dz-fast) var(--dz-ease-press);
+}
+.dz .dz-composer:focus-within { box-shadow: inset 0 0 0 1px var(--dz-accent); }
+.dz .dz-comment-main .dz-composer { margin-top: 4px; }
+/* Above the bare-field reset of base.css (0,3,1), which zeroes padding and height. */
+:root .dz .dz-composer textarea.dz-composer-field {
+  flex: 1;
+  width: auto;
+  min-width: 0;
+  height: 24px;
+  min-height: 24px;
+  padding: 4px 0;
+  line-height: 16px;
+  resize: none;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+.dz .dz-composer-actions { display: flex; align-items: center; gap: 2px; flex: none; }
+.dz .dz-composer .dz-icon-btn { color: var(--dz-text-2); }
+@media (hover: hover) {
+  .dz .dz-composer .dz-icon-btn:hover:not(:disabled) { color: var(--dz-text); }
+}
+.dz .dz-composer-send {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--dz-accent);
+  color: var(--dz-on-accent);
+  transition: background-color var(--dz-fast) var(--dz-ease-press), scale var(--dz-fast) var(--dz-ease-press);
+}
+@media (hover: hover) {
+  .dz .dz-composer-send:hover:not(:disabled) { background: var(--dz-accent-hover); }
+}
+.dz .dz-composer-send:active:not(:disabled) { scale: 0.96; }
+.dz .dz-composer-send:disabled { background: var(--dz-pressed); color: var(--dz-text-3); }
+.dz .dz-composer-send:focus-visible { outline: 2px solid var(--dz-accent); outline-offset: 2px; }
+.dz .dz-composer.is-busy .dz-composer-field { color: var(--dz-text-2); }
+/* Editing a comment: the words take the whole width, "Cancel" and "Save" go under them. */
+.dz .dz-composer.is-editing { flex-wrap: wrap; padding-right: 4px; }
+:root .dz .dz-composer.is-editing textarea.dz-composer-field { flex-basis: 100%; }
+.dz .dz-composer.is-editing .dz-composer-actions { flex: 1 0 100%; gap: 4px; padding-top: 4px; }
+.dz .dz-composer-spacer { flex: 1; }
+
+/* "@": the team's members in a dark list over the field (the menus' look: radius 12, 4 px inset, 8 px rows). */
+.dz .dz-mention-list {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(100% + 4px);
+  z-index: 1;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  border-radius: var(--dz-radius-menu);
+  background: var(--dz-menu);
+  color: var(--dz-menu-text);
+  box-shadow: var(--dz-shadow-menu);
+}
+.dz .dz-mention-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 28px;
+  padding: 0 8px 0 4px;
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.dz .dz-mention-option > span:last-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.dz .dz-mention-option.is-active { background: var(--dz-menu-hover); }
+.dz .dz-mention-empty { padding: 6px 8px; color: var(--dz-menu-text-2); }
+
+/* ── "Comments" in the left panel ─────────────────────────────────────────────────────────── */
+.dz .dz-left-comments { overflow: hidden; }
+.dz .dz-comments-panel { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+.dz .dz-comments-toolbar { display: flex; align-items: center; gap: 4px; flex: none; padding: 8px; }
+.dz .dz-comments-toolbar .dz-segmented { flex: 1; }
+.dz .dz-comments-toolbar .is-narrowed { color: var(--dz-accent-text); background: var(--dz-selected-row); }
+.dz .dz-comments-search { flex: none; padding: 0 8px 8px; }
+.dz .dz-comments-state { display: grid; place-items: center; padding: 24px; color: var(--dz-text-2); }
+.dz .dz-comments-list {
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  padding: 0 0 8px;
+  list-style: none;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+.dz .dz-comments-list > li { content-visibility: auto; contain-intrinsic-size: auto 64px; }
+.dz .dz-comments-group {
+  padding: 12px 12px 4px;
+  color: var(--dz-text-2);
+  font-weight: var(--dz-weight-strong);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dz .dz-comment-row {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  text-align: left;
+  color: var(--dz-text);
+  transition: background-color var(--dz-fast) var(--dz-ease-press);
+}
+@media (hover: hover) {
+  .dz .dz-comment-row:hover { background: var(--dz-hover); }
+}
+.dz .dz-comment-row.is-open { background: var(--dz-selected-row); }
+.dz .dz-comment-row:focus-visible { outline: 2px solid var(--dz-accent); outline-offset: -2px; }
+.dz .dz-comment-row-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.dz .dz-comment-row .dz-comment-meta { height: 16px; }
+.dz .dz-unread-dot { flex: none; width: 6px; height: 6px; margin-left: auto; border-radius: 50%; background: var(--dz-accent); align-self: center; }
+.dz .dz-comment-row-text {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow-wrap: anywhere;
+}
+.dz .dz-comment-row.is-unread .dz-comment-row-text { font-weight: var(--dz-weight-medium); }
+.dz .dz-comment-row-sub { display: flex; gap: 8px; min-width: 0; color: var(--dz-text-2); }
+.dz .dz-comment-row-sub > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dz .dz-comment-row-mention { color: var(--dz-accent-text); }
+.dz .dz-comment-row-page { min-width: 0; }
+.dz .dz-comments-offline { flex: none; margin: 0; padding: 8px 12px; border-top: 1px solid var(--dz-border); color: var(--dz-text-2); }
+
+/* ── The right panel in comment mode ─────────────────────────────────────────────────────────── */
+.dz .dz-comment-mode { display: flex; flex-direction: column; gap: 8px; padding: 16px; color: var(--dz-text-2); }
+.dz .dz-comment-mode p { margin: 0; text-wrap: pretty; }
+.dz .dz-comment-mode-icon {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--dz-selected-row);
+  color: var(--dz-accent-text);
+}
+.dz .dz-comment-mode-title { margin: 4px 0 0; color: var(--dz-text); font-size: 12px; line-height: 16px; font-weight: var(--dz-weight-strong); }
+.dz .dz-comment-mode-stats { color: var(--dz-text); }
+.dz .dz-comment-mode-keys .dz-kbd { margin-right: 4px; }
+.dz .dz-comment-mode-note { padding-top: 8px; border-top: 1px solid var(--dz-border); }

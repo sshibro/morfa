@@ -1,0 +1,35 @@
+[package]
+name = "morfa-render-wasm"
+description = "Lane L4's JavaScript boundary for the renderer: a wasm module of its own, loaded lazily by the editor when the render module runs on the GPU (scripts/wasm-render-build.sh)."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[features]
+# The web build ships the GPU path only (vello on WebGPU); the nodejs build ships the CPU path only (vello_cpu).
+default = ["cpu"]
+cpu = ["morfa-render/cpu"]
+gpu = ["morfa-render/gpu", "dep:web-sys", "dep:wasm-bindgen-futures", "dep:wgpu"]
+
+[dependencies]
+morfa-model.workspace = true
+morfa-render = {workspace = true, default-features = false}
+wasm-bindgen.workspace = true
+js-sys = "0.3"
+serde = {version = "1", features = ["derive"]}
+serde_json = "1"
+wasm-bindgen-futures = {version = "0.4", optional = true}
+web-sys = {version = "0.3", features = ["HtmlCanvasElement", "OffscreenCanvas", "console"], optional = true}
+wgpu = {version = "30.0.1", default-features = false, features = ["wgsl", "webgpu"], optional = true}
+console_error_panic_hook = "0.1"
+
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = ["-Os"]
+
+[lints]
+workspace = true

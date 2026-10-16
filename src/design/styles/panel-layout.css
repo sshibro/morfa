@@ -1,0 +1,565 @@
+/* The structural sections of the "Design" panel (src/design/panels/design/layout, SelectionHeader):
+   the panel grid — two 1fr columns and a 24 px icon column, 8 px apart, 24 px controls — captions,
+   the alignment row, the constraints square, the auto-layout nine-dot box, grid and export rows.
+   Motion restraint (better-ui, emil-design-eng): these controls are used hundreds of times a day,
+   so state changes are colour-only and ≤ 120 ms; nothing here moves. */
+
+/* ── Selection header ────────────────────────────────────────────────────────────────────────── */
+.dz .dz-pl-header {
+  display: grid;
+  /* A long layer name ("Type=Primary, State=Normal") ellipsizes; it never pushes the row past the panel. */
+  grid-template-columns: minmax(0, 1fr);
+  gap: 4px;
+  padding: 0 8px 12px 16px;
+}
+/* The first section's top border divides the header from the sections. */
+.dz .dz-pl-header-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+}
+.dz .dz-pl-header-icon { display: grid; place-items: center; flex: none; width: 16px; color: var(--dz-text-2); }
+.dz .dz-pl-header-icon.is-component { color: var(--dz-component); }
+.dz .dz-pl-header-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 11px;
+  line-height: 16px;
+  font-weight: var(--dz-weight-strong);
+  color: var(--dz-text);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* "Frame ▾": the title opens the frame's presets (UI3's Frame dropdown). */
+.dz .dz-pl-header-title.is-menu {
+  flex: 0 1 auto;
+  margin-right: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 24px;
+  margin-left: -4px;
+  padding: 0 4px;
+  border-radius: var(--dz-radius);
+  text-align: left;
+}
+.dz .dz-pl-header-title.is-menu > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.dz .dz-pl-header-title.is-menu > svg { flex: none; color: var(--dz-text-2); }
+@media (hover: hover) {
+  .dz .dz-pl-header-title.is-menu:hover { background: var(--dz-hover); }
+}
+.dz .dz-pl-header-title.is-menu[aria-expanded='true'] { background: var(--dz-pressed); }
+.dz .dz-pl-header-actions { display: flex; align-items: center; gap: 2px; margin-right: -2px; }
+
+/* Six aligns in two wells under the two field columns, then the distribute menu in the icon column. */
+.dz .dz-pl-align {
+  display: grid;
+  grid-template-columns: 1fr 1fr 24px;
+  gap: 8px;
+  align-items: center;
+}
+.dz .dz-pl-align-group {
+  display: flex;
+  height: var(--dz-control);
+  border-radius: var(--dz-radius);
+  background: var(--dz-field);
+}
+.dz .dz-pl-align-group .dz-icon-btn { flex: 1; width: auto; color: var(--dz-text); }
+.dz .dz-pl-align-group .dz-icon-btn:disabled { color: var(--dz-text-3); }
+@media (hover: hover) {
+  .dz .dz-pl-align-group .dz-icon-btn:hover:not(:disabled) { background: var(--dz-pressed); }
+}
+
+/* ── Rows, groups, captions ──────────────────────────────────────────────────────────────────── */
+.dz .dz-pl-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 24px;
+  gap: 8px;
+  align-items: center;
+  min-width: 0;
+}
+.dz .dz-pl-row.is-wide { grid-template-columns: 1fr 24px; }
+.dz .dz-pl-row.is-single { grid-template-columns: minmax(0, 1fr); }
+.dz .dz-pl-row.is-triple { grid-template-columns: minmax(0, 1fr) 96px; }
+.dz .dz-pl-row > * { min-width: 0; }
+.dz .dz-pl-row.is-single > :is(.dz-check, .dz-switch) { justify-self: start; }
+
+.dz .dz-pl-group { display: grid; gap: 8px; }
+.dz .dz-pl-caption {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--dz-text-2);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* A caption sits 4 px over its row (the body's 8 px gap less 4). */
+.dz .dz-pl-group > .dz-pl-caption,
+.dz .dz-pl-captions { margin-bottom: -4px; }
+.dz .dz-pl-captions { min-height: 16px; }
+.dz .dz-pl-captions + .dz-pl-captions { display: none; }
+
+.dz .dz-pl-row-label {
+  overflow: hidden;
+  color: var(--dz-text-2);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dz .dz-pl-note { margin: 0; color: var(--dz-text-2); line-height: 16px; text-wrap: pretty; }
+.dz .dz-pl-buttons { display: flex; align-items: center; gap: 2px; }
+
+/* ── Number fields with the panel's multi-selection scrub ────────────────────────────────────── */
+.dz .dz-pl-number { position: relative; min-width: 0; }
+.dz .dz-pl-number > .dz-number { width: 100%; }
+.dz .dz-pl-scrub {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 24px;
+  cursor: ew-resize;
+  touch-action: none;
+}
+/* The variable hexagon inside a field's right edge: shown on hover and focus, as in Figma. */
+.dz .dz-pl-adornment {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  display: flex;
+  opacity: 0;
+  transition: opacity var(--dz-fast) var(--dz-ease-press);
+}
+.dz .dz-pl-adornment .dz-icon-btn { width: 20px; height: 20px; border-radius: 3px; }
+.dz .dz-pl-number:is(:hover, :focus-within) .dz-pl-adornment,
+.dz .dz-pl-adornment:has([aria-expanded='true']) { opacity: 1; }
+@media (hover: none) {
+  .dz .dz-pl-adornment { opacity: 1; }
+}
+.dz .dz-pl-combo .dz-pl-adornment { right: 20px; }
+/* A bound field: the variable's chip fills the field's cell. */
+.dz .dz-pl-bound { display: flex; min-width: 0; }
+
+/* Icons in field prefixes read lighter than the value, as in Figma. */
+.dz .dz-pl-section .dz-number-prefix.is-icon,
+.dz .dz-pl-popover .dz-number-prefix.is-icon { color: var(--dz-text-2); }
+
+/* W and H with the sizing inside (SizeSection.tsx): a chip at the field's right edge, "Hug" / "Fill" and a chevron, as
+   UI3 writes “Hug” and “Fill” there. */
+.dz .dz-pl-sized { container: dz-sized / inline-size; }
+.dz .dz-pl-sized :is(.dz-number, .dz-input) { padding-right: 20px; }
+.dz .dz-pl-sized.has-chip :is(.dz-number, .dz-input) { padding-right: 42px; }
+.dz .dz-pl-sized.has-chip .dz-pl-adornment { right: 42px; }
+/* The value comes first: in a field too narrow for both (the 240 px panel's half), "Fill" left 1312 showing as "131". The chip
+   keeps its chevron there; its tooltip and menu still name the sizing. */
+@container dz-sized (width < 120px) {
+  .dz .dz-pl-sizing-chip > span { display: none; }
+  .dz .dz-pl-sized.has-chip :is(.dz-number, .dz-input) { padding-right: 20px; }
+  .dz .dz-pl-sized.has-chip .dz-pl-adornment { right: 20px; }
+}
+.dz .dz-pl-sizing-chip {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  height: 20px;
+  padding: 0 2px 0 4px;
+  border-radius: 3px;
+  color: var(--dz-text-2);
+  font-size: 10px;
+}
+@media (hover: hover) {
+  .dz .dz-pl-sizing-chip:hover { background: var(--dz-hover); color: var(--dz-text); }
+}
+.dz .dz-pl-sizing-chip[aria-expanded='true'] { background: var(--dz-pressed); color: var(--dz-text); }
+
+/* A field with a menu chevron inside its right edge (gap "Auto", export scale). */
+.dz .dz-pl-combo { position: relative; min-width: 0; }
+.dz .dz-pl-combo :is(.dz-number, .dz-input) { padding-right: 20px; }
+.dz .dz-pl-field-menu {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 20px;
+  border-radius: 3px;
+  color: var(--dz-text-2);
+  transition: background-color var(--dz-fast) var(--dz-ease-press), color var(--dz-fast) var(--dz-ease-press);
+}
+@media (hover: hover) {
+  .dz .dz-pl-field-menu:hover { color: var(--dz-text); background: var(--dz-pressed); }
+}
+.dz .dz-pl-field-menu[aria-expanded='true'] { color: var(--dz-text); background: var(--dz-pressed); }
+
+/* A field-shaped button that opens a popover (corner smoothing). */
+.dz .dz-pl-field-button {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  height: var(--dz-control);
+  padding: 0 8px 0 0;
+  border-radius: var(--dz-radius);
+  background: var(--dz-field);
+  box-shadow: inset 0 0 0 1px transparent;
+  color: var(--dz-text);
+  font-variant-numeric: tabular-nums;
+  text-align: left;
+  transition: box-shadow var(--dz-fast) var(--dz-ease-press);
+}
+.dz .dz-pl-field-button-icon { display: grid; place-items: center; flex: none; width: 24px; color: var(--dz-text-2); }
+.dz .dz-pl-field-button .is-placeholder { color: var(--dz-text-2); }
+@media (hover: hover) {
+  .dz .dz-pl-field-button:hover { box-shadow: inset 0 0 0 1px var(--dz-border); }
+}
+.dz .dz-pl-field-button.is-open { box-shadow: inset 0 0 0 1px var(--dz-accent); }
+
+/* ── Popovers of the sections (smoothing, auto-layout settings, grid settings) ───────────────── */
+.dz .dz-pl-popover .dz-popover-body { width: 240px; }
+.dz .dz-pl-popover-head {
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 8px 0 16px;
+  border-bottom: 1px solid var(--dz-border);
+  font-size: 11px;
+  font-weight: var(--dz-weight-strong);
+}
+.dz .dz-pl-popover-head .dz-select.is-quiet { margin-left: -8px; font-weight: var(--dz-weight-strong); }
+.dz .dz-pl-popover-body { display: grid; gap: 8px; padding: 12px 16px 16px; }
+.dz .dz-pl-popover-body > .dz-pl-caption { margin-bottom: -4px; }
+.dz .dz-pl-popover-body > .dz-pl-caption:not(:first-child) { margin-top: 4px; }
+
+.dz .dz-pl-smoothing { position: relative; padding-bottom: 14px; }
+.dz .dz-pl-ios-mark {
+  position: absolute;
+  bottom: 0;
+  /* Under the thumb's centre at 60 %: the thumb travels 6 px in from each end. */
+  left: calc(6px + var(--dz-at) * (100% - 12px));
+  translate: -50% 0;
+  padding: 0 2px;
+  border-radius: 3px;
+  color: var(--dz-text-2);
+  font-size: 10px;
+  line-height: 14px;
+}
+.dz .dz-pl-ios-mark::before {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: 50%;
+  width: 1px;
+  height: 4px;
+  background: currentColor;
+}
+@media (hover: hover) {
+  .dz .dz-pl-ios-mark:hover { color: var(--dz-text); }
+}
+.dz .dz-pl-smoothing-field { width: 72px; }
+/* "Corner radius": the slider beside its value, as Figma's Corner radius details. */
+.dz .dz-pl-smoothing-row { display: grid; grid-template-columns: minmax(0, 1fr) 64px; gap: 8px; align-items: start; }
+.dz .dz-pl-smoothing-row .dz-pl-smoothing-field { width: auto; }
+
+/* ── Constraints ─────────────────────────────────────────────────────────────────────────────── */
+.dz .dz-pl-constraints {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+}
+.dz .dz-pl-constraint-selects { display: grid; gap: 8px; min-width: 0; }
+.dz .dz-pl-constraint-widget {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--dz-radius);
+  background: var(--dz-field);
+}
+.dz .dz-pl-constraint-frame {
+  position: absolute;
+  inset: 16px;
+  border-radius: 2px;
+  box-shadow: inset 0 0 0 1px var(--dz-text-3);
+}
+.dz .dz-pl-constraint-bar {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  border-radius: 2px;
+}
+.dz .dz-pl-constraint-bar > span {
+  display: block;
+  border-radius: 1px;
+  background: var(--dz-text-3);
+  transition: background-color var(--dz-fast) var(--dz-ease-press);
+}
+/* Hit areas are larger than the 1.5 px marks they hold. */
+.dz .dz-pl-constraint-bar:is(.is-left, .is-right) { top: 20px; width: 16px; height: 16px; }
+.dz .dz-pl-constraint-bar.is-left { left: 0; }
+.dz .dz-pl-constraint-bar.is-right { right: 0; }
+.dz .dz-pl-constraint-bar:is(.is-left, .is-right) > span { width: 8px; height: 1.5px; }
+.dz .dz-pl-constraint-bar:is(.is-top, .is-bottom) { left: 20px; width: 16px; height: 16px; }
+.dz .dz-pl-constraint-bar.is-top { top: 0; }
+.dz .dz-pl-constraint-bar.is-bottom { bottom: 0; }
+.dz .dz-pl-constraint-bar:is(.is-top, .is-bottom) > span { width: 1.5px; height: 8px; }
+.dz .dz-pl-constraint-bar.is-center-h { left: 24px; top: 19px; width: 8px; height: 18px; }
+.dz .dz-pl-constraint-bar.is-center-h > span { width: 1.5px; height: 10px; }
+.dz .dz-pl-constraint-bar.is-center-v { left: 19px; top: 24px; width: 18px; height: 8px; }
+.dz .dz-pl-constraint-bar.is-center-v > span { width: 10px; height: 1.5px; }
+@media (hover: hover) {
+  .dz .dz-pl-constraint-bar:hover > span { background: var(--dz-text-2); }
+}
+.dz .dz-pl-constraint-bar.is-active > span { background: var(--dz-accent); }
+.dz .dz-pl-constraint-bar:focus-visible { outline-offset: 0; }
+
+/* ── Auto layout ─────────────────────────────────────────────────────────────────────────────── */
+.dz .dz-pl-al {
+  display: grid;
+  grid-template-columns: 1fr 1fr 24px;
+  grid-template-rows: var(--dz-control) var(--dz-control);
+  gap: 8px;
+}
+/* UI3's Layout: "Flow" across both field columns; the alignment box under it on the left, the gap on its right. */
+.dz .dz-pl-flow { grid-column: 1 / span 2; }
+.dz .dz-pl-al-gap { grid-column: 2; grid-row: 1; }
+.dz .dz-pl-al-grid {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  padding: 2px;
+  border-radius: var(--dz-radius);
+  background: var(--dz-field);
+}
+.dz .dz-pl-al-cell {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  border-radius: 3px;
+  color: var(--dz-text-3);
+}
+.dz .dz-pl-al-dot { width: 2px; height: 2px; border-radius: 50%; background: currentColor; }
+.dz .dz-pl-al-bars { position: absolute; inset: 0; margin: auto; fill: currentColor; opacity: 0; transition: opacity var(--dz-fast) var(--dz-ease-press); }
+@media (hover: hover) {
+  .dz .dz-pl-al-cell:hover .dz-pl-al-bars { opacity: 1; }
+  .dz .dz-pl-al-cell:hover .dz-pl-al-dot { opacity: 0; }
+}
+.dz .dz-pl-al-cell.is-active { color: var(--dz-accent); }
+.dz .dz-pl-al-cell.is-active .dz-pl-al-bars { opacity: 1; }
+.dz .dz-pl-al-cell.is-active .dz-pl-al-dot { opacity: 0; }
+.dz .dz-pl-al-cell:focus-visible { outline-offset: -1px; }
+
+/* ── List rows (layout grids) ────────────────────────────────────────────────────────────────── */
+.dz .dz-pl-item {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) 24px 24px;
+  align-items: center;
+  gap: 2px;
+  min-height: var(--dz-control);
+  margin-left: -4px;
+}
+.dz .dz-pl-item-icon { display: grid; place-items: center; width: 24px; color: var(--dz-text-2); }
+.dz .dz-pl-item-label { overflow: hidden; padding-left: 4px; text-overflow: ellipsis; white-space: nowrap; }
+.dz .dz-pl-item.is-hidden :is(.dz-pl-item-label, .dz-icon-btn:first-child) { color: var(--dz-text-3); }
+.dz .dz-pl-item .dz-pl-item-eye { opacity: 0; transition: opacity var(--dz-fast) var(--dz-ease-press); }
+.dz .dz-pl-item:is(:hover, :focus-within, .is-hidden) .dz-pl-item-eye { opacity: 1; }
+@media (hover: none) {
+  .dz .dz-pl-item .dz-pl-item-eye { opacity: 1; }
+}
+
+/* Grid settings: label column, field column. */
+.dz .dz-pl-form { gap: 8px; }
+.dz .dz-pl-form-row {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+}
+.dz .dz-pl-form-label { color: var(--dz-text-2); }
+/* Swatch, hex and opacity in one well, as a paint row. */
+.dz .dz-pl-color {
+  position: relative;
+  display: grid;
+  grid-template-columns: 14px minmax(0, 1fr) 48px;
+  align-items: center;
+  height: var(--dz-control);
+  padding-left: 5px;
+  border-radius: var(--dz-radius);
+  background: var(--dz-field);
+  box-shadow: inset 0 0 0 1px transparent;
+  transition: box-shadow var(--dz-fast) var(--dz-ease-press);
+}
+@media (hover: hover) {
+  .dz .dz-pl-color:hover { box-shadow: inset 0 0 0 1px var(--dz-border); }
+}
+.dz .dz-pl-color:focus-within { background: var(--dz-panel); box-shadow: inset 0 0 0 1px var(--dz-accent); }
+.dz .dz-pl-color :is(.dz-input, .dz-number),
+.dz .dz-pl-color :is(.dz-input, .dz-number):focus-within { background: transparent; box-shadow: none; }
+.dz .dz-pl-color .dz-input { padding: 0 4px 0 8px; }
+.dz .dz-pl-color .dz-number.dz-pl-alpha { padding: 0 6px 0 8px; box-shadow: inset 1px 0 0 var(--dz-panel); }
+.dz .dz-pl-grid-popover .dz-popover-body { width: 256px; }
+:root .dz .dz-pl-color input.dz-pl-color-native {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+.dz .dz-pl-hex .dz-input { font-variant-numeric: tabular-nums; }
+.dz .dz-pl-color .dz-swatch { border-radius: 3px; }
+
+/* ── Layer ───────────────────────────────────────────────────────────────────────────────────── */
+.dz .dz-pl-layer-row .dz-select { min-width: 0; }
+
+/* Sizing: "Fill" fits a column beside its chevron. */
+.dz .dz-pl-sizing .dz-select { gap: 2px; padding-right: 2px; }
+.dz .dz-select .is-placeholder { color: var(--dz-text-2); }
+
+/* ── Export ──────────────────────────────────────────────────────────────────────────────────── */
+.dz .dz-pl-export-row {
+  display: grid;
+  /* Tighter than the panel grid (Figma's export row is); the last column still ends where the
+     panel's icon column does, 8 px after the format. */
+  grid-template-columns: 54px minmax(0, 1fr) 60px 28px;
+  gap: 4px;
+  align-items: center;
+}
+.dz .dz-pl-export-row > .dz-icon-btn { justify-self: end; }
+.dz .dz-pl-export-row > * { min-width: 0; }
+.dz .dz-pl-export-row .dz-input { padding-left: 6px; }
+.dz .dz-pl-scale .dz-input { padding-right: 18px; }
+.dz .dz-pl-scale .dz-input:has(input:disabled) { color: var(--dz-text-3); }
+.dz .dz-pl-export-button { width: 100%; margin-right: 0; }
+/* A button across the panel gives less on press: 0.96 of 200 px is a lurch (wide strips: 0.985, src/styles/tokens.css --press-wide). */
+.dz .dz-btn.dz-pl-export-button:active:not(:disabled):not(.is-static) { scale: 0.985; }
+.dz .dz-pl-export-button .dz-btn-content { max-width: 100%; }
+.dz .dz-pl-disclosure {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  justify-self: start;
+  height: var(--dz-control);
+  margin-left: -4px;
+  padding: 0 6px 0 2px;
+  border-radius: var(--dz-radius);
+  color: var(--dz-text-2);
+  transition: color var(--dz-fast) var(--dz-ease-press);
+}
+@media (hover: hover) {
+  .dz .dz-pl-disclosure:hover { color: var(--dz-text); }
+}
+.dz .dz-pl-disclosure-chevron { display: grid; place-items: center; width: 16px; rotate: -90deg; transition: rotate var(--dz-fast) var(--dz-ease-press); }
+.dz .dz-pl-disclosure-chevron.is-open { rotate: 0deg; }
+.dz[data-input='keyboard'] .dz-pl-disclosure-chevron { transition: none; }
+.dz .dz-pl-preview {
+  display: grid;
+  place-items: center;
+  min-height: 64px;
+  max-height: 176px;
+  padding: 8px;
+  border-radius: var(--dz-radius-card);
+  background:
+    repeating-conic-gradient(var(--dz-checker-a) 0 25%, var(--dz-checker-b) 0 50%) 0 0 / 12px 12px;
+  box-shadow: inset 0 0 0 1px var(--dz-outline);
+  overflow: hidden;
+}
+.dz[data-theme='dark'] .dz-pl-preview { background: repeating-conic-gradient(#3a3a3a 0 25%, #333333 0 50%) 0 0 / 12px 12px; }
+.dz .dz-pl-preview img { display: block; max-width: 100%; max-height: 160px; object-fit: contain; outline: 1px solid var(--dz-outline); outline-offset: -1px; }
+
+/* ── Export dialog ───────────────────────────────────────────────────────────────────────────── */
+.dz .dz-xd-list { display: grid; gap: 2px; max-height: min(420px, 60dvh); margin: -4px -8px; padding: 4px 0; overflow-y: auto; }
+.dz .dz-xd-row {
+  display: grid;
+  grid-template-columns: 16px 40px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  min-height: 52px;
+  padding: 6px 8px;
+  border-radius: var(--dz-radius-card);
+  cursor: default;
+}
+@media (hover: hover) {
+  .dz .dz-xd-row:hover { background: var(--dz-hover); }
+}
+.dz .dz-xd-thumb {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  overflow: hidden;
+  border-radius: 6px;
+  background: repeating-conic-gradient(var(--dz-checker-a) 0 25%, var(--dz-checker-b) 0 50%) 0 0 / 8px 8px;
+  box-shadow: inset 0 0 0 1px var(--dz-outline);
+}
+.dz[data-theme='dark'] .dz-xd-thumb { background: repeating-conic-gradient(#3a3a3a 0 25%, #333333 0 50%) 0 0 / 8px 8px; }
+/* The picture carries its own hairline: the box's inset ring paints under it and vanishes where the picture fills the box. */
+.dz .dz-xd-thumb img { display: block; max-width: 100%; max-height: 100%; object-fit: contain; outline: 1px solid var(--dz-outline); outline-offset: -1px; }
+.dz .dz-xd-text { display: grid; min-width: 0; }
+.dz .dz-xd-name { overflow: hidden; font-weight: var(--dz-weight-medium); text-overflow: ellipsis; white-space: nowrap; }
+.dz .dz-xd-files { overflow: hidden; color: var(--dz-text-2); text-overflow: ellipsis; white-space: nowrap; }
+.dz .dz-xd-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.dz .dz-xd-count { color: var(--dz-text-2); }
+.dz .dz-xd-progress { flex: 1; min-width: 0; margin-right: auto; align-self: center; }
+.dz .dz-pl-bindable { display: contents; }
+.dz .dz-pl-bindable > * { min-width: 0; }
+/* The visibility's variable: out of sight (but placed, for its list to hang off) until one is bound; a right click on the eye opens it. */
+.dz .dz-pl-visibility-var { display: inline-flex; width: 0; overflow: hidden; visibility: hidden; }
+.dz .dz-pl-visibility-var.is-bound { width: auto; overflow: visible; visibility: visible; }
+/* A field a variable can drive outside the layout sections (text): one box the field fills; the hexagon is out of sight at its right edge. */
+.dz .dz-pl-varslot { position: relative; display: flex; min-width: 0; }
+.dz .dz-pl-varslot > :first-child { flex: 1; min-width: 0; }
+.dz .dz-pl-varslot-anchor { position: absolute; top: 0; right: 0; display: inline-flex; width: 0; height: 100%; overflow: hidden; visibility: hidden; }
+
+/* ── Grid auto layout (GridLayoutRows.tsx), as UI3: the "R × C" box on the left, the two gaps on its right, then the
+   placement toggle and the track sizes. ───────────────────────────────────────────────────────────────────────── */
+.dz .dz-pl-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 24px;
+  grid-template-rows: var(--dz-control) var(--dz-control);
+  gap: 8px;
+}
+.dz .dz-pl-grid-picker {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  position: relative;
+  display: grid;
+  place-items: center;
+  border-radius: var(--dz-radius);
+  background: var(--dz-field);
+  color: var(--dz-text);
+}
+/* The box draws a 2 × 2 cell outline behind the size, as Figma's does. */
+.dz .dz-pl-grid-picker-cells {
+  position: absolute;
+  inset: 4px;
+  border-radius: 3px;
+  background:
+    linear-gradient(var(--dz-border), var(--dz-border)) center / 1px 100% no-repeat,
+    linear-gradient(var(--dz-border), var(--dz-border)) center / 100% 1px no-repeat;
+  box-shadow: inset 0 0 0 1px var(--dz-border);
+}
+.dz .dz-pl-grid-picker-label { position: relative; padding: 0 4px; border-radius: 3px; background: var(--dz-field); font-feature-settings: 'tnum'; }
+@media (hover: hover) {
+  .dz .dz-pl-grid-picker:hover { box-shadow: inset 0 0 0 1px var(--dz-border-strong, var(--dz-border)); }
+}
+.dz .dz-pl-grid-picker[aria-expanded='true'] { box-shadow: inset 0 0 0 1px var(--dz-accent); }
+.dz .dz-pl-grid-gaps { grid-column: 2; grid-row: 1 / span 2; display: grid; gap: 8px; }
+.dz .dz-pl-grid-tools { grid-column: 3; grid-row: 1 / span 2; display: grid; align-content: start; gap: 8px; }
+.dz .dz-pl-grid-cells { display: grid; gap: 3px; justify-content: start; }
+.dz .dz-pl-grid-cells-row { display: flex; gap: 3px; }
+.dz .dz-pl-grid-cell { width: 20px; height: 20px; border-radius: 3px; background: var(--dz-field); box-shadow: inset 0 0 0 1px var(--dz-border); }
+.dz .dz-pl-grid-cell.is-lit { background: color-mix(in srgb, var(--dz-accent) 22%, transparent); box-shadow: inset 0 0 0 1px var(--dz-accent); }
+.dz .dz-pl-grid-cell:focus-visible { outline-offset: 1px; }
+.dz .dz-pl-tracks { max-height: 360px; overflow-y: auto; }
+.dz .dz-pl-track { display: grid; grid-template-columns: 72px 1fr 72px; align-items: center; gap: 6px; }
+.dz .dz-pl-track-name { overflow: hidden; color: var(--dz-text-2); text-overflow: ellipsis; white-space: nowrap; }

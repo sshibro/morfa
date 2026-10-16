@@ -1,0 +1,55 @@
+/* "Saving stopped" (src/design/editor/SaveStoppedBanner.tsx): a card over the top of the canvas that stays
+   until the file is reloaded. It appears once per stop (a short rise and fade, the toasts' motion) and never moves
+   again; with reduced motion it only fades. */
+
+.dz .dz-save-stopped {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  z-index: 7;
+  display: flex;
+  gap: 10px;
+  width: 420px;
+  max-width: calc(100% - 24px);
+  padding: 12px 14px 12px 12px;
+  border-radius: var(--dz-radius-menu);
+  background: var(--dz-panel);
+  box-shadow: var(--dz-shadow-float);
+  color: var(--dz-text);
+  translate: -50% 0;
+  transition: opacity var(--dz-base) var(--dz-ease-out), translate var(--dz-base) var(--dz-ease-out);
+  @starting-style { opacity: 0; translate: -50% -6px; }
+}
+/* Below the top ruler when the rulers are on. */
+.dz .dz-canvas-area:has(.dz-canvas-aids[data-rulers='true']) .dz-save-stopped { top: 32px; }
+
+.dz .dz-save-stopped-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 16px;
+  height: 20px;
+  color: var(--dz-danger-text);
+}
+.dz .dz-save-stopped-body { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.dz .dz-save-stopped-title {
+  margin: 0;
+  font-size: 12px;
+  line-height: 20px;
+  font-weight: var(--dz-weight-strong);
+}
+.dz .dz-save-stopped-text {
+  margin: 0;
+  color: var(--dz-text-2);
+  line-height: 16px;
+  text-wrap: pretty;
+  overflow-wrap: anywhere;
+}
+.dz .dz-save-stopped-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .dz .dz-save-stopped {
+    transition: opacity var(--dz-base) var(--dz-ease-out);
+    @starting-style { opacity: 0; translate: -50% 0; }
+  }
+}

@@ -1,0 +1,297 @@
+/* "Morfa": the "Prototype" tab, the connections over the canvas and the player.
+   Tokens from tokens.css only; motion follows docs/design-tool.md (no animation on canvas
+   interactions, 120–160 ms for panels and popovers, transform/opacity only). */
+
+/* ── Panel ───────────────────────────────────────────────────────────────────────────────────── */
+/* The tab's root only anchors the canvas connections; its sections lay out as the panel's own. */
+.dz .dz-proto-panel { display: contents; }
+.dz .dz-proto-row { display: flex; align-items: center; gap: 8px; min-width: 0; }
+/* "Prototype settings": a label column beside each control, as Figma's Prototype settings. */
+.dz .dz-proto-setting { display: grid; grid-template-columns: 72px minmax(0, 1fr); align-items: center; gap: 8px; }
+.dz .dz-proto-setting-label { color: var(--dz-text-2); }
+.dz .dz-proto-grow { flex: 1; min-width: 0; }
+
+.dz .dz-proto-flows,
+.dz .dz-proto-interactions { display: grid; margin: -4px -8px 0 -16px; padding: 0; list-style: none; }
+
+.dz .dz-proto-flow {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 32px;
+  padding: 0 8px 0 12px;
+}
+@media (hover: hover) {
+  .dz .dz-proto-flow:hover { background: var(--dz-hover); }
+}
+.dz .dz-proto-flow__icon { display: grid; place-items: center; width: 24px; color: var(--dz-accent); }
+.dz .dz-proto-flow__name {
+  flex: 1;
+  min-width: 0;
+  height: 24px;
+  padding: 0 4px;
+  overflow: hidden;
+  border-radius: var(--dz-radius);
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dz .dz-proto-flow__play { color: var(--dz-text-2); }
+.dz .dz-proto-flow__remove { opacity: 0; transition: opacity var(--dz-fast) var(--dz-ease-out); }
+.dz .dz-proto-flow:is(:hover, :focus-within) .dz-proto-flow__remove { opacity: 1; }
+
+.dz .dz-proto-interaction {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-height: 40px;
+  padding: 0 8px 0 12px;
+}
+@media (hover: hover) {
+  .dz .dz-proto-interaction:hover { background: var(--dz-hover); }
+}
+.dz .dz-proto-interaction.is-open { background: var(--dz-selected-row); }
+.dz .dz-proto-interaction__main {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  padding: 4px 0;
+  text-align: left;
+}
+.dz .dz-proto-interaction__icon { display: grid; flex: none; place-items: center; width: 24px; height: 24px; color: var(--dz-text-2); }
+.dz .dz-proto-interaction.is-open .dz-proto-interaction__icon { color: var(--dz-accent-text); }
+.dz .dz-proto-interaction__text { display: grid; min-width: 0; }
+.dz .dz-proto-interaction__trigger,
+.dz .dz-proto-interaction__action { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dz .dz-proto-interaction__trigger { font-weight: var(--dz-weight-medium); }
+.dz .dz-proto-interaction__action { color: var(--dz-text-2); }
+.dz .dz-proto-interaction__remove { opacity: 0; transition: opacity var(--dz-fast) var(--dz-ease-out); }
+.dz .dz-proto-interaction:is(:hover, :focus-within, .is-open) .dz-proto-interaction__remove { opacity: 1; }
+.dz .dz-proto-interaction__main:focus-visible { outline-offset: -2px; border-radius: var(--dz-radius); }
+
+/* ── The interaction popover ─────────────────────────────────────────────────────────────────── */
+.dz .dz-float.dz-proto-popover > .dz-popover-body { position: relative; display: block; width: 256px; max-height: inherit; padding-bottom: 0; overflow-y: auto; overscroll-behavior: contain; }
+.dz .dz-proto-popover__close { position: absolute; top: 8px; right: 8px; }
+.dz .dz-proto-popover__header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 40px;
+  padding: 0 40px 0 4px;
+  border-bottom: 1px solid var(--dz-border);
+}
+/* The trigger heads the details, as Figma's: a quiet select in the header's own weight. */
+.dz .dz-proto-trigger { flex: 0 1 auto; min-width: 0; margin-right: auto; font-weight: var(--dz-weight-strong); }
+.dz .dz-proto-popover__body { display: grid; gap: 12px; padding: 8px 12px 12px; }
+.dz .dz-proto-group { display: grid; gap: 4px; }
+/* Quiet selects line up with the text of the rows: the action's glyph hangs left, the rest indent under its kind. */
+.dz .dz-proto-action > .dz-select.is-quiet:first-of-type { margin-left: -8px; }
+.dz .dz-proto-strong { font-weight: var(--dz-weight-medium); }
+.dz .dz-proto-indent { margin-left: 16px; }
+.dz .dz-proto-transition { display: grid; gap: 8px; }
+/* A quiet select's text starts 8px in: pulled back so its text lines up with the indented rows. */
+.dz .dz-select.is-quiet.dz-proto-indent { margin-left: 8px; }
+.dz .dz-proto-indent > .dz-select.is-quiet { margin-left: -8px; }
+.dz .dz-proto-transition > .dz-select.is-quiet,
+.dz .dz-proto-action > .dz-select.is-quiet { justify-self: start; max-width: 100%; }
+.dz .dz-proto-state { display: grid; gap: 6px; padding-top: 8px; }
+.dz .dz-proto-caption { color: var(--dz-text-2); font-weight: var(--dz-weight-medium); }
+.dz .dz-proto-group__title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 24px;
+  margin-bottom: -4px;
+  color: var(--dz-text-2);
+  font-weight: var(--dz-weight-medium);
+}
+.dz .dz-proto-group__title .dz-icon-btn { margin-right: -4px; }
+.dz .dz-proto-group + .dz-proto-group { padding-top: 12px; border-top: 1px solid var(--dz-border); }
+.dz .dz-proto-duration { width: 76px; flex: none; }
+.dz .dz-proto-note { margin: 0; color: var(--dz-text-2); text-wrap: pretty; }
+.dz .dz-proto-error { margin: -4px 0 0; color: var(--dz-danger-text); text-wrap: pretty; }
+.dz .dz-input.is-invalid { box-shadow: inset 0 0 0 1px var(--dz-danger); }
+.dz .dz-proto-issues { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; color: var(--dz-danger-text); }
+.dz .dz-proto-issues li { display: flex; gap: 6px; align-items: flex-start; text-wrap: pretty; }
+.dz .dz-proto-issues svg { flex: none; margin-top: 0; }
+.dz .dz-proto-overlay-settings { display: grid; gap: 8px; }
+
+.dz .dz-proto-key {
+  display: flex;
+  align-items: center;
+  height: var(--dz-control);
+  padding: 0 8px;
+  border-radius: var(--dz-radius);
+  background: var(--dz-field);
+  color: var(--dz-text);
+  text-align: left;
+}
+.dz .dz-proto-key.is-listening { background: var(--dz-panel); box-shadow: inset 0 0 0 1px var(--dz-accent); color: var(--dz-text-2); }
+
+/* The easing curve: time runs right, progress up; dashed lines are the start and the end. */
+.dz .dz-proto-curve { display: block; width: 232px; height: 48px; border-radius: var(--dz-radius); background: var(--dz-field); }
+.dz .dz-proto-curve__guide { stroke: var(--dz-border-strong); stroke-width: 1; stroke-dasharray: 2 3; }
+.dz .dz-proto-curve__line { fill: none; stroke: var(--dz-accent); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.dz .dz-proto-curve__dot { fill: var(--dz-accent); opacity: 0; transition: opacity var(--dz-fast) var(--dz-ease-out); }
+
+.dz .dz-proto-color { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.dz .dz-proto-color .dz-swatch { flex: none; }
+.dz .dz-proto-color__hex { flex: 1; min-width: 0; font-feature-settings: 'tnum'; text-transform: uppercase; }
+.dz .dz-proto-color__alpha { width: 64px; flex: none; }
+.dz .dz-proto-color__native { position: absolute; width: 1px; height: 1px; padding: 0; border: 0; opacity: 0; pointer-events: none; }
+
+/* ── Connections over the canvas ─────────────────────────────────────────────────────────────── */
+.dz .dz-proto-overlay { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.dz .dz-proto-overlay__canvas { position: absolute; left: 0; top: 0; display: block; pointer-events: none; touch-action: none; }
+.dz .dz-proto-handle {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  margin: -8px 0 0 -8px;
+  border-radius: 50%;
+  background: var(--dz-accent);
+  color: #ffffff;
+  box-shadow: 0 0 0 1.5px #ffffff, 0 1px 3px rgb(0 0 0 / 0.3);
+  pointer-events: auto;
+  touch-action: none;
+  cursor: crosshair;
+  transition: scale var(--dz-fast) var(--dz-ease-press);
+}
+.dz .dz-proto-handle[hidden] { display: none; }
+/* The only hover that moves: gated to a real pointer (emil-design-eng), a tap never leaves it grown. */
+@media (hover: hover) and (pointer: fine) {
+  .dz .dz-proto-handle:hover { scale: 1.15; }
+}
+.dz .dz-proto-handle:active,
+.dz .dz-proto-overlay.is-dragging .dz-proto-handle { scale: 0.96; cursor: grabbing; }
+.dz .dz-proto-handle svg { stroke-width: 2; }
+
+/* ── Player ──────────────────────────────────────────────────────────────────────────────────── */
+.dz .dz-player {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-rows: 48px minmax(0, 1fr);
+  background: var(--dz-player-backdrop, #1e1e1e);
+  color: var(--dz-text);
+}
+.dz .dz-player-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 0 8px 0 16px;
+  background: var(--dz-panel);
+  box-shadow: 0 1px 0 rgb(0 0 0 / 0.4);
+  z-index: 1;
+}
+.dz .dz-player-title { display: flex; flex: 1; align-items: center; gap: 6px; min-width: 0; white-space: nowrap; }
+.dz .dz-player-flow { display: inline-flex; align-items: center; gap: 6px; min-width: 0; overflow: hidden; color: var(--dz-text-2); text-overflow: ellipsis; }
+.dz .dz-player-flow svg { flex: none; color: var(--dz-accent); }
+/* With several flows the flow's name opens their list: a quiet text button, colour-only hover, the kit's 0.96 press. */
+.dz .dz-player-flow.is-menu {
+  height: 24px;
+  margin-left: -6px;
+  padding: 0 4px 0 6px;
+  gap: 4px;
+  border-radius: var(--dz-radius);
+  transition-property: background-color, color, scale;
+  transition-duration: var(--dz-fast);
+  transition-timing-function: var(--dz-ease-press);
+}
+.dz .dz-player-flow.is-menu > svg:last-child { color: var(--dz-text-3); }
+.dz .dz-player-flow-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+@media (hover: hover) and (pointer: fine) {
+  .dz .dz-player-flow.is-menu:hover { background: var(--dz-hover); color: var(--dz-text); }
+}
+.dz .dz-player-flow.is-menu[aria-expanded='true'] { background: var(--dz-hover); color: var(--dz-text); }
+.dz .dz-player-flow.is-menu:active { scale: 0.96; }
+@media (prefers-reduced-motion: reduce) {
+  .dz .dz-player-flow.is-menu:active { scale: 1; }
+}
+.dz .dz-player-slash { color: var(--dz-text-3); }
+.dz .dz-player-frame { min-width: 0; overflow: hidden; font-weight: var(--dz-weight-strong); text-overflow: ellipsis; }
+.dz .dz-player-count { color: var(--dz-text-2); font-feature-settings: 'tnum'; }
+.dz .dz-player-tools { display: flex; flex: none; align-items: center; gap: 2px; }
+.dz .dz-player-divider { width: 1px; height: 16px; margin: 0 6px; background: var(--dz-border); }
+/* "Link copied": a fade beside the link button (opacity only; leaves faster than it comes). */
+.dz .dz-player-copied {
+  margin-right: 4px;
+  color: var(--dz-text-2);
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity var(--dz-fast) var(--dz-ease-out);
+}
+.dz .dz-player-copied.is-shown { opacity: 1; transition-duration: var(--dz-base); }
+
+.dz .dz-player-stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 0;
+  overflow: hidden;
+  touch-action: none;
+}
+.dz .dz-player-stage.is-actual { place-items: safe center; overflow: auto; padding: 32px; touch-action: pan-x pan-y; }
+.dz .dz-player-state { display: grid; place-items: center; height: 100%; padding: 24px; }
+.dz .dz-player-loading { position: absolute; inset: 0; display: grid; place-items: center; color: var(--dz-text-2); pointer-events: none; }
+
+.dz .dz-player-device {
+  position: relative;
+  box-sizing: content-box;
+  flex: none;
+  transition: opacity 200ms var(--dz-ease-out);
+}
+.dz .dz-player-device.is-hidden { opacity: 0; pointer-events: none; }
+.dz .dz-player-device.is-none .dz-player-screen { box-shadow: 0 0 0 1px rgb(255 255 255 / 0.06), 0 16px 48px rgb(0 0 0 / 0.4); }
+/* Bezels: a near-black body with a hairline highlight on its edge, lifted by a long soft shadow. */
+.dz .dz-player-device:not(.is-none) {
+  background: #0d0d0e;
+  box-shadow: inset 0 0 0 1.5px rgb(255 255 255 / 0.1), 0 0 0 1px rgb(0 0 0 / 0.7), 0 24px 72px rgb(0 0 0 / 0.55);
+}
+.dz .dz-player-device.is-laptop { border-radius: 14px 14px 0 0 !important; }
+.dz .dz-player-device.is-desktop { border-radius: 10px !important; }
+.dz .dz-player-screen { position: relative; overflow: hidden; background: #000000; }
+.dz .dz-player-canvas { display: block; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
+.dz .dz-player-island,
+.dz .dz-player-punch { position: absolute; background: #000000; pointer-events: none; }
+.dz .dz-player-punch { border-radius: 50%; box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.06); }
+.dz .dz-player-base {
+  position: absolute;
+  border-radius: 0 0 10px 10px / 0 0 100% 100%;
+  background: linear-gradient(#58585c, #36363a 55%, #252527);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.28), 0 18px 40px rgb(0 0 0 / 0.5);
+}
+.dz .dz-player-base::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 14%;
+  height: 32%;
+  translate: -50% 0;
+  border-radius: 0 0 6px 6px;
+  background: rgb(0 0 0 / 0.35);
+}
+.dz .dz-player-stand {
+  position: absolute;
+  left: 50%;
+  translate: -50% 0;
+  background: linear-gradient(90deg, #232325, #3a3a3c 50%, #232325);
+  clip-path: polygon(30% 0, 70% 0, 74% 86%, 100% 88%, 100% 100%, 0 100%, 0 88%, 26% 86%);
+}
+
+@media (max-width: 640px) {
+  .dz .dz-player-flow,
+  .dz .dz-player-slash,
+  .dz .dz-player-count { display: none; }
+  .dz .dz-player-bar { padding: 0 4px 0 12px; gap: 4px; }
+  .dz .dz-player-divider { margin: 0 2px; }
+}
+.dz .dz-proto-clipboard { display: contents; }

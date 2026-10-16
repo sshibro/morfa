@@ -1,0 +1,33 @@
+[package]
+name = "morfa-layout"
+description = "Auto layout, constraints, group fit, instances and variables stages (lanes L2b, L2c)."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+morfa-model.workspace = true
+# Lane L3's twin of text-layout.ts: the stages measure text with it (the fixed-width fake until L3's shaper).
+# Layout only (`compute_layout`, `Measurer`): without the `fonts` feature, so the main morfa-wasm module never
+# links harfrust/skrifa (they live in L3's lazily loaded wasm-fonts module).
+morfa-text = {workspace = true, default-features = false}
+indexmap = "2"
+# The stages' own maps and sets (ids are short strings: SipHash was a tenth of the instance sync).
+foldhash = "0.2"
+# Fast hashing for the layout memo tables (keys are node ids, never attacker-chosen hash floods worth SipHash).
+rustc-hash = "2"
+# entry_ref: a table keyed by node ids that copies an id only when it adds it.
+hashbrown = {version = "0.17", default-features = false, features = ["inline-more"]}
+# the instance and variable stage tests (the exact-write workaround until `Draft::put`) and the stage-diff harness
+# binary (src/bin), which reads and writes JSON lines.
+serde_json = {version = "1", features = ["float_roundtrip"]}
+
+# In wasm the stages take sine and cosine from the host's Math, so they equal the TypeScript on every
+# host (src/math.rs).
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen.workspace = true
+
+[lints]
+workspace = true

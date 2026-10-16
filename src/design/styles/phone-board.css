@@ -1,0 +1,109 @@
+/* The board ("Board") on a phone: FigJam's floating chrome kept, sized to a thumb and to the
+   screen. The pills share the top row, the big toolbar spans the bottom and scrolls sideways when its tools do not fit, the
+   trays and the “+” sheet open above it, the context toolbar stays on screen. Pinching zooms, so the zoom pill gives its
+   corner back to the canvas (zoom and help stay in "Main menu"). Phone only, and every rule wins by its selector. */
+
+@media (max-width: 767px) {
+  .dz.dz-root .dz-board {
+    --bd-phone-gap: 8px;
+    --bd-phone-safe-top: env(safe-area-inset-top, 0px);
+    --bd-phone-safe-bottom: env(safe-area-inset-bottom, 0px);
+    --bd-phone-safe-left: env(safe-area-inset-left, 0px);
+    --bd-phone-safe-right: env(safe-area-inset-right, 0px);
+    --bd-phone-dock: 64px;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .dz.dz-root .dz-board :is(input, textarea, [contenteditable='true']) { -webkit-user-select: text; user-select: text; }
+  .dz.dz-root .dz-board :is(input, textarea, select) { font-size: max(16px, 1em); }
+
+  /* ── Pills: the file on the left, the people and "Share" (an icon) on the right ───────────── */
+  .dz.dz-root .dz-board .bd-top-left {
+    top: calc(var(--bd-phone-gap) + var(--bd-phone-safe-top));
+    left: calc(var(--bd-phone-gap) + var(--bd-phone-safe-left));
+    /* Leaves the right pill its four 40 px buttons (people, the meeting's timer and reactions, comments, share). */
+    max-width: calc(100% - 3 * var(--bd-phone-gap) - 128px);
+  }
+  /* A running timer widens the right pill (its digits): the name gives way. */
+  .dz.dz-root .dz-board:has(.bd-top-right .dz-meet-timer) .bd-top-left { max-width: calc(100% - 3 * var(--bd-phone-gap) - 216px); }
+  .dz.dz-root .dz-board .bd-top-left .dz-file-title { flex: 1 1 auto; width: auto; min-width: 0; max-width: none; }
+  .dz.dz-root .dz-board .bd-top-left .dz-file-name { font-size: 13px; }
+  /* The menu keeps the product's mark (its chevron goes) and the rule its line: the name gets their room. */
+  .dz.dz-root .dz-board .bd-top-left .dz-app-menu > svg:not(.dz-app-menu-mark) { display: none; }
+  .dz.dz-root .dz-board .bd-top-left .bd-pill-rule { margin: 6px 2px; }
+  /* The idle timer's button gives its room to the board's name: "Reactions and meeting" starts a timer too. A running timer shows. */
+  .dz.dz-root .dz-board .bd-top-right .dz-meet-timer-idle { display: none; }
+  .dz.dz-root .dz-board .bd-top-right {
+    top: calc(var(--bd-phone-gap) + var(--bd-phone-safe-top));
+    right: calc(var(--bd-phone-gap) + var(--bd-phone-safe-right));
+    gap: 2px;
+    padding: 0 4px;
+  }
+  .dz.dz-root .dz-board .bd-share { width: 40px; padding: 0; justify-content: center; }
+  .dz.dz-root .dz-board .bd-share > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .dz.dz-root .dz-board .bd-pill-btn { width: 40px; height: 40px; }
+  .dz.dz-root .dz-board .bd-bottom-right { display: none; }
+
+  /* ── The toolbar and its trays ────────────────────────────────────────────────────────────── */
+  .dz.dz-root .dz-board .bd-dock {
+    left: calc(var(--bd-phone-gap) + var(--bd-phone-safe-left));
+    right: calc(var(--bd-phone-gap) + var(--bd-phone-safe-right));
+    bottom: calc(var(--bd-phone-gap) + var(--bd-phone-safe-bottom));
+    translate: none;
+  }
+  .dz.dz-root .dz-board .bd-toolbar {
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    touch-action: pan-x;
+  }
+  .dz.dz-root .dz-board .bd-toolbar::-webkit-scrollbar { display: none; }
+  .dz.dz-root .dz-board .bd-toolbar > * { flex: none; }
+  .dz.dz-root .dz-board .bd-tool { width: 44px; height: 44px; }
+  .dz.dz-root .dz-board .bd-plus { width: 44px; height: 44px; border-radius: 22px; }
+  .dz.dz-root .dz-board .bd-tray {
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+    touch-action: pan-x;
+  }
+  .dz.dz-root .dz-board .bd-tray::-webkit-scrollbar { display: none; }
+
+  /* ── The "+" sheet: above the toolbar, the width of the screen ────────────────────────────── */
+  .dz.dz-root .dz-board .bd-sheet {
+    left: calc(var(--bd-phone-gap) + var(--bd-phone-safe-left));
+    right: calc(var(--bd-phone-gap) + var(--bd-phone-safe-right));
+    bottom: calc(var(--bd-phone-dock) + var(--bd-phone-gap) * 2 + var(--bd-phone-safe-bottom));
+    width: auto;
+    max-height: calc(100% - var(--bd-phone-dock) - 48px - var(--bd-phone-gap) * 5 - var(--bd-phone-safe-top) - var(--bd-phone-safe-bottom));
+    translate: none;
+    @starting-style { translate: 0 8px; }
+  }
+
+  /* ── The context toolbar over the selection ───────────────────────────────────────────────── */
+  .dz.dz-root .dz-board .bd-context {
+    max-width: calc(100% - 2 * var(--bd-phone-gap));
+    overflow-x: auto;
+    scrollbar-width: none;
+    touch-action: pan-x;
+  }
+  .dz.dz-root .dz-board .bd-context-btn { min-width: 40px; min-height: 40px; }
+  /* "Label background" in a connector's colour sheet (FJ): a row a thumb can hit. */
+  .dz.dz-root .bd-palette-popover .bd-palette-switch { min-height: 44px; }
+
+  /* The comments sidebar becomes a bottom sheet (comments.css keeps its desktop place). */
+  .dz.dz-root .dz-board .bd-sidebar {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: auto;
+    height: 60%;
+    border-radius: 13px 13px 0 0;
+    padding-bottom: var(--bd-phone-safe-bottom);
+  }
+}

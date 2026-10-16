@@ -1,0 +1,91 @@
+/* The assembled editor (src/design/editor/DesignEditor.tsx and its parts): the canvas host, the
+   hover size badge, quick actions, the shortcuts and preferences dialogs, the minimal page and layer
+   lists, the "Design" stack. Quick actions and the canvas extras never animate (keyboard-driven,
+   used constantly); the dialogs use the shared dialog motion. */
+
+/* ── Canvas ──────────────────────────────────────────────────────────────────────────────────── */
+.dz .dz-canvas-host { position: absolute; inset: 0; }
+.dz .dz-hover-size {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 2;
+  padding: 0 4px;
+  border-radius: 3px;
+  background: var(--dz-accent);
+  color: var(--dz-on-accent);
+  font-size: 11px;
+  line-height: 16px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.dz .dz-hover-size[hidden] { display: none; }
+
+.dz .dz-save-status.is-unsaved { color: var(--dz-danger-text); }
+
+/* ── "Keyboard shortcuts" ──────────────────────────────────────────────────────────────────────── */
+.dz .dz-shortcuts .dz-dialog-body { display: flex; flex-direction: column; gap: 16px; min-height: 0; }
+/* The scroller holds a fixed height; the columns inside grow downwards (columns under a height cap would
+   spill sideways out of view instead). */
+.dz .dz-shortcuts-scroll {
+  height: min(520px, calc(100dvh - 200px));
+  margin: 0 -16px -16px;
+  padding: 0 16px 8px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.dz .dz-shortcuts-groups { columns: 2 280px; column-gap: 32px; }
+.dz .dz-shortcuts-group { break-inside: avoid; padding-bottom: 16px; }
+.dz .dz-shortcuts-title { margin-bottom: 4px; color: var(--dz-text-2); font-weight: var(--dz-weight-strong); }
+.dz .dz-shortcuts-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 24px; }
+.dz .dz-shortcuts-row dt { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dz .dz-shortcuts-row dd { flex: none; }
+.dz .dz-shortcuts-empty { padding: 24px 0; text-align: center; }
+
+/* ── "Settings" ─────────────────────────────────────────────────────────────────────────────── */
+.dz .dz-pref-rows { display: grid; gap: 12px; }
+.dz .dz-pref-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 24px; }
+.dz .dz-pref-number { width: 88px; flex: none; }
+.dz .dz-pref-rows .dz-switch { justify-content: space-between; width: 100%; }
+
+.dz .dz-conflict-error { margin-top: 8px; color: var(--dz-danger-text); }
+/* The choice is required: no close button that would do nothing. */
+.dz .dz-conflict .dz-dialog-header .dz-icon-btn { display: none; }
+.dz .dz-conflict .dz-dialog-header { padding-right: 16px; }
+
+/* ── Pages and layers (minimal, until the left panel's own module) ───────────────────────────── */
+.dz .dz-page-list,
+.dz .dz-layer-rows { display: grid; margin: -4px -8px 0 -16px; }
+.dz :is(.dz-page-row, .dz-layer-row) {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 16px;
+  color: var(--dz-text);
+  text-align: left;
+  white-space: nowrap;
+}
+.dz :is(.dz-page-row, .dz-layer-row) > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+@media (hover: hover) {
+  .dz :is(button.dz-page-row, .dz-layer-row):hover { background: var(--dz-hover); }
+}
+/* The current page carries a check in a 16 px column, as desktop design tools mark it. */
+.dz .dz-page-row { padding-left: 8px; }
+.dz .dz-page-check { display: grid; place-items: center; flex: none; width: 16px; height: 16px; color: var(--dz-text); }
+.dz .dz-page-row.is-current { font-weight: var(--dz-weight-medium); }
+/* The field's text sits where the name was: 8 + 16 + 8 px, less the field's own 8 px inset. */
+.dz .dz-page-row.is-renaming { padding: 0 8px 0 24px; }
+.dz .dz-page-row.is-renaming .dz-input { flex: 1; }
+.dz .dz-layer-row svg { flex: none; color: var(--dz-text-2); }
+.dz .dz-layer-row.is-selected,
+.dz .dz-layer-row.is-selected:hover { background: var(--dz-selected-row); }
+.dz .dz-layer-row.is-selected svg { color: var(--dz-text); }
+.dz .dz-layer-row.is-hidden > span { color: var(--dz-text-3); }
+
+/* ── "Design" and empty tabs ─────────────────────────────────────────────────────────────────── */
+.dz .dz-design-panel { display: flex; flex-direction: column; }
+.dz .dz-slot-note { padding: 16px; }
+.dz .dz-hex-field { flex: 1; font-variant-numeric: tabular-nums; }
+.dz .dz-hex-field .dz-input-icon { margin-left: -2px; }

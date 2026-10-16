@@ -1,0 +1,94 @@
+/* "Find and replace" (src/design/editor/FindReplace.tsx): a floating bar at the canvas's top right.
+   Concentric: 24 px controls with the 5 px radius inside a 6 px inset make the 11 px outer radius.
+   No entrance motion: the bar opens from the keyboard (⌘F) many times a day. */
+
+.dz .dz-find {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 408px;
+  max-width: calc(100% - 24px);
+  padding: 6px;
+  border-radius: 11px;
+  background: var(--dz-panel);
+  box-shadow: var(--dz-shadow-float);
+  color: var(--dz-text);
+}
+/* Below the top ruler when the rulers are on. */
+.dz .dz-canvas-area:has(.dz-canvas-aids[data-rulers='true']) .dz-find { top: 32px; }
+.dz .dz-editor.is-ui-hidden .dz-find { display: none; }
+
+.dz .dz-find-row { display: flex; align-items: center; gap: 2px; min-width: 0; }
+/* A disclosure, not a toggle: its chevron says open or closed, no pressed fill. */
+.dz .dz-find-toggle[aria-expanded='true']:not(:hover) { background: transparent; }
+.dz .dz-find-field { flex: 1; margin: 0 4px 0 2px; }
+.dz .dz-find-field input { min-width: 0; }
+.dz .dz-find-gutter { flex: none; width: 24px; }
+.dz .dz-find-count {
+  flex: none;
+  padding-right: 2px;
+  color: var(--dz-text-2);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.dz .dz-find-count.is-none { color: var(--dz-danger-text); }
+.dz .dz-find-divider { flex: none; width: 1px; height: 16px; margin: 0 4px; background: var(--dz-border); }
+.dz .dz-find-action { flex: none; }
+.dz .dz-find-action + .dz-find-action { margin-left: 2px; }
+
+/* The status line: where it looks, and the current match. */
+.dz .dz-find-row.is-status { gap: 4px; height: 20px; padding-left: 26px; }
+.dz .dz-find-scope {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  flex: none;
+  height: 20px;
+  margin-left: -6px;
+  padding: 0 2px 0 6px;
+  border-radius: 4px;
+  color: var(--dz-text-2);
+  white-space: nowrap;
+  transition: background-color var(--dz-fast) var(--dz-ease-press), color var(--dz-fast) var(--dz-ease-press);
+}
+.dz .dz-find-scope svg { width: 12px; height: 12px; }
+@media (hover: hover) {
+  .dz .dz-find-scope:hover { background: var(--dz-hover); color: var(--dz-text); }
+  .dz .dz-find-preview:hover { background: var(--dz-hover); color: var(--dz-text); }
+}
+.dz .dz-find-scope[aria-expanded='true'] { background: var(--dz-pressed); color: var(--dz-text); }
+
+.dz .dz-find-preview {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 4px;
+  color: var(--dz-text-2);
+  transition: background-color var(--dz-fast) var(--dz-ease-press), color var(--dz-fast) var(--dz-ease-press);
+}
+.dz .dz-find-preview svg { flex: none; width: 12px; height: 12px; }
+.dz .dz-find-snippet {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dz .dz-find-snippet mark {
+  border-radius: 2px;
+  background: color-mix(in oklab, var(--dz-accent) 20%, transparent);
+  color: var(--dz-text);
+}
+.dz[data-theme='dark'] .dz-find-snippet mark { background: color-mix(in oklab, var(--dz-accent) 36%, transparent); }
+.dz .dz-find-kind { flex: none; color: var(--dz-text-3); }
+/* Big files: pages the store does not hold are searched once they are loaded. */
+.dz .dz-find-note { font-size: var(--dz-font-size-small, 11px); color: var(--dz-text); opacity: 0.6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

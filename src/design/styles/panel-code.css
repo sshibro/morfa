@@ -1,0 +1,483 @@
+/* "Code" (dev mode) and "Export to React…" (docs/design-tool.md §Design to code). Read-only
+   surfaces: code blocks in the field colour, values that copy on click, a syntax palette per theme. */
+
+.dz .dz-code-panel { display: flex; flex-direction: column; min-height: 100%; }
+
+/* Syntax colours: quiet in light, readable on the dark field. */
+.dz {
+  --dz-code-comment: #6e7781;
+  --dz-code-keyword: #cf222e;
+  --dz-code-string: #0a3069;
+  --dz-code-number: #0550ae;
+  --dz-code-tag: #116329;
+  --dz-code-type: #953800;
+  --dz-code-attr: #0550ae;
+  --dz-code-func: #8250df;
+  --dz-code-selector: #6639ba;
+}
+.dz[data-theme='dark'] {
+  --dz-code-comment: #8b949e;
+  --dz-code-keyword: #ff7b72;
+  --dz-code-string: #a5d6ff;
+  --dz-code-number: #79c0ff;
+  --dz-code-tag: #7ee787;
+  --dz-code-type: #ffa657;
+  --dz-code-attr: #79c0ff;
+  --dz-code-func: #d2a8ff;
+  --dz-code-selector: #d2a8ff;
+}
+
+/* ── The layer ───────────────────────────────────────────────────────────────────────────────── */
+.dz .dz-code-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px 16px 4px;
+}
+.dz .dz-code-header-icon { display: grid; place-items: center; flex: none; height: 16px; margin-top: 2px; color: var(--dz-text-2); }
+.dz .dz-code-header.is-component .dz-code-header-icon { color: var(--dz-component); }
+.dz .dz-code-header-text { display: flex; flex-direction: column; min-width: 0; }
+.dz .dz-code-header-name {
+  overflow: hidden;
+  font-size: 12px;
+  line-height: 20px;
+  font-weight: var(--dz-weight-strong);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dz .dz-code-header.is-component .dz-code-header-name { color: var(--dz-component); }
+.dz .dz-code-header-meta { color: var(--dz-text-2); font-variant-numeric: tabular-nums; }
+
+.dz .dz-code-mode { padding: 12px 16px 0; }
+.dz .dz-code-mode.is-inline { padding: 0; margin-right: 2px; }
+.dz .dz-code-mode .dz-select { width: 100%; }
+.dz .dz-code-mode.is-inline .dz-select { width: auto; max-width: 168px; }
+.dz .dz-code-empty { flex: 1; padding: 32px 16px; }
+
+/* ── Code blocks ─────────────────────────────────────────────────────────────────────────────── */
+.dz .dz-code-block {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  /* Concentric with the 24 px copy button 4 px in: 5 px + 4 px ≈ 8 px. */
+  border-radius: var(--dz-radius-card);
+  background: var(--dz-field);
+}
+.dz .dz-code-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 32px;
+  padding: 0 4px 0 10px;
+  border-bottom: 1px solid color-mix(in srgb, var(--dz-text) 7%, transparent);
+}
+.dz .dz-code-bar-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--dz-text-2);
+  font-family: var(--dz-mono);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dz .dz-code-scroll {
+  position: relative;
+  overflow: auto;
+  scrollbar-width: thin;
+  user-select: text;
+  -webkit-user-select: text;
+  overscroll-behavior: contain;
+}
+.dz .dz-code-scroll:focus-visible { outline: 2px solid var(--dz-accent); outline-offset: -2px; }
+.dz .dz-code-lines { position: relative; padding: 8px 0; }
+.dz .dz-code-pre {
+  margin: 0;
+  padding: 0 12px 0 10px;
+  font-family: var(--dz-mono);
+  font-size: 11px;
+  line-height: 18px;
+  font-variant-ligatures: none;
+  tab-size: 2;
+  color: var(--dz-text);
+  will-change: transform;
+}
+.dz .dz-code-line { height: 18px; white-space: pre; }
+.dz .dz-tok-comment { color: var(--dz-code-comment); }
+.dz .dz-tok-keyword { color: var(--dz-code-keyword); }
+.dz .dz-tok-string,
+.dz .dz-tok-value { color: var(--dz-code-string); }
+.dz .dz-tok-number { color: var(--dz-code-number); }
+.dz .dz-tok-tag { color: var(--dz-code-tag); }
+.dz .dz-tok-type { color: var(--dz-code-type); }
+.dz .dz-tok-attr,
+.dz .dz-tok-prop { color: var(--dz-code-attr); }
+.dz .dz-tok-func { color: var(--dz-code-func); }
+.dz .dz-tok-selector { color: var(--dz-code-selector); }
+.dz .dz-tok-heading { color: var(--dz-code-number); font-weight: var(--dz-weight-strong); }
+.dz .dz-tok-punct { color: var(--dz-text-2); }
+
+/* Files of the generated component: a strip of tabs that scrolls sideways. */
+.dz .dz-code-files {
+  display: flex;
+  gap: 2px;
+  margin: 0 -8px 0 -4px;
+  padding: 0 8px 0 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.dz .dz-code-files::-webkit-scrollbar { display: none; }
+.dz .dz-code-file {
+  flex: none;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: var(--dz-radius);
+  color: var(--dz-text-2);
+  font-family: var(--dz-mono);
+  font-size: 11px;
+  white-space: nowrap;
+  transition: background-color var(--dz-fast) var(--dz-ease-press), color var(--dz-fast) var(--dz-ease-press);
+}
+@media (hover: hover) {
+  .dz .dz-code-file:hover { background: var(--dz-hover); color: var(--dz-text); }
+}
+.dz .dz-code-file[aria-selected='true'] { background: var(--dz-field); color: var(--dz-text); font-weight: var(--dz-weight-medium); }
+.dz .dz-code-file:focus-visible { outline-offset: -2px; }
+
+.dz .dz-code-actions { display: flex; flex-wrap: wrap; gap: 4px; }
+.dz .dz-code-pending { display: flex; align-items: center; gap: 6px; color: var(--dz-text-2); }
+.dz .dz-code-output { display: grid; gap: 8px; min-width: 0; transition: opacity var(--dz-fast) var(--dz-ease-press); }
+.dz .dz-code-output.is-stale { opacity: 0.5; pointer-events: none; }
+.dz .dz-code-actions .dz-btn.is-ghost { margin-left: -6px; }
+.dz .dz-code-warnings { display: grid; gap: 4px; color: var(--dz-text-2); text-wrap: pretty; }
+.dz .dz-code-warnings li { padding-left: 12px; text-indent: -12px; }
+.dz .dz-code-warnings li::before { content: '• '; }
+
+/* Copy: the tick takes the copy icon's place and gives it back (contextual icon cross-fade, better-ui's exact
+   values: scale 0.25 → 1, opacity, blur 4 px → 0, 300 ms on cubic-bezier(0.2, 0, 0, 1), which is --dz-ease-press). */
+.dz .dz-copy-icons { display: grid; place-items: center; }
+.dz .dz-copy-icon {
+  grid-area: 1 / 1;
+  display: grid;
+  transition: opacity 300ms var(--dz-ease-press), scale 300ms var(--dz-ease-press), filter 300ms var(--dz-ease-press);
+}
+.dz .dz-copy-icon.is-done { opacity: 0; scale: 0.25; filter: blur(4px); color: var(--dz-success); }
+.dz .dz-copy-btn[data-copied] .dz-copy-icon.is-copy { opacity: 0; scale: 0.25; filter: blur(4px); }
+.dz .dz-copy-btn[data-copied] .dz-copy-icon.is-done { opacity: 1; scale: 1; filter: blur(0); }
+@media (prefers-reduced-motion: reduce) {
+  .dz .dz-copy-icon { transition: opacity 120ms linear; scale: 1 !important; filter: none !important; }
+}
+
+/* ── Values that copy ────────────────────────────────────────────────────────────────────────── */
+.dz .dz-code-measures { display: grid; margin: -4px -4px 0 -8px; }
+.dz .dz-code-measure,
+.dz .dz-code-color {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: var(--dz-radius);
+  color: var(--dz-text);
+  text-align: left;
+  transition: background-color var(--dz-fast) var(--dz-ease-press);
+}
+@media (hover: hover) {
+  .dz .dz-code-measure:hover,
+  .dz .dz-code-color:hover { background: var(--dz-hover); }
+}
+.dz .dz-code-measure:active,
+.dz .dz-code-color:active { background: var(--dz-pressed); }
+.dz .dz-code-measure:focus-visible,
+.dz .dz-code-color:focus-visible { outline-offset: -2px; }
+.dz .dz-code-measure-label { flex: none; width: 96px; color: var(--dz-text-2); }
+.dz .dz-code-measure-value {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* How a size is set ("Hug contents"): after the value, the first to give way. */
+.dz .dz-code-measure-note {
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--dz-text-2);
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dz .dz-code-style-name { color: var(--dz-text-2); }
+
+.dz .dz-code-colors { display: grid; margin: -4px -4px 0 -8px; }
+.dz .dz-code-color-value { flex: none; font-variant-numeric: tabular-nums; }
+.dz .dz-code-color-token {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--dz-text-2);
+  font-family: var(--dz-mono);
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Props of a component: name and designer's name, the default on the right, the type below. */
+.dz .dz-code-props { display: grid; gap: 2px; margin: -4px 0 0; }
+.dz .dz-code-prop { display: grid; gap: 2px; padding: 4px 0; }
+.dz .dz-code-prop + .dz-code-prop { border-top: 1px solid var(--dz-border); padding-top: 6px; }
+.dz .dz-code-prop-head { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
+.dz .dz-code-props code { font-family: var(--dz-mono); font-size: 11px; user-select: text; -webkit-user-select: text; }
+.dz .dz-code-prop-name { flex: none; }
+.dz .dz-code-prop-original { flex: 1; min-width: 0; overflow: hidden; color: var(--dz-text-2); text-overflow: ellipsis; white-space: nowrap; }
+.dz .dz-code-prop-default { flex: none; max-width: 50%; overflow: hidden; color: var(--dz-text-2); text-overflow: ellipsis; white-space: nowrap; }
+.dz .dz-code-prop-type { color: var(--dz-code-type); overflow-wrap: anywhere; }
+
+/* Export settings with a download each. */
+.dz .dz-code-assets { display: grid; gap: 2px; margin-right: -4px; }
+.dz .dz-code-asset { display: flex; align-items: center; gap: 8px; min-height: 32px; }
+.dz .dz-code-asset-text { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.dz .dz-code-asset-name,
+.dz .dz-code-asset-meta { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dz .dz-code-asset-meta { color: var(--dz-text-2); }
+
+/* ── Dev Mode inspect (Figma's order: layer, component, code, layout, type, styles, assets) ───── */
+.dz .dz-code-header { align-items: center; padding-right: 8px; }
+.dz .dz-code-header-text { flex: 1; }
+.dz .dz-code-header.is-empty { padding-bottom: 12px; }
+.dz .dz-code-header .dz-copy-btn { flex: none; }
+.dz .dz-code-subtitle {
+  margin: 4px 0 0;
+  color: var(--dz-text-2);
+  font-size: 11px;
+  font-weight: var(--dz-weight-medium);
+}
+.dz .dz-code-language { max-width: 150px; }
+.dz .dz-code-section .dz-section-actions { gap: 0; }
+.dz .dz-code-notes { display: grid; gap: 4px; }
+.dz .dz-code-empty-tokens { display: flex; justify-content: center; padding: 0 16px 16px; }
+
+/* A component: its tag, the element whose props it takes, its props and the states that became CSS. */
+.dz .dz-code-component-head { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.dz .dz-code-component-icon { display: grid; flex: none; color: var(--dz-component); }
+.dz .dz-code-component-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--dz-component);
+  font-family: var(--dz-mono);
+  font-size: 11px;
+  font-weight: var(--dz-weight-medium);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  user-select: text;
+  -webkit-user-select: text;
+}
+.dz .dz-code-component-element {
+  flex: none;
+  padding: 0 5px;
+  border-radius: 4px;
+  background: var(--dz-field);
+  color: var(--dz-text-2);
+  font-family: var(--dz-mono);
+  font-size: 10px;
+  line-height: 18px;
+}
+.dz .dz-code-component-head .dz-btn { margin-right: -4px; }
+.dz .dz-code-states { display: grid; gap: 2px; color: var(--dz-text-2); }
+.dz .dz-code-states-title { font-weight: var(--dz-weight-medium); }
+.dz .dz-code-states ul { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; }
+.dz .dz-code-states code { color: var(--dz-code-selector); font-family: var(--dz-mono); font-size: 11px; }
+.dz .dz-code-playground { margin: 0 -8px 0 -16px; }
+.dz .dz-code-playground .dz-section-header { padding-left: 16px; }
+.dz .dz-code-playground .dz-section-body { padding-bottom: 4px; }
+.dz .dz-code-playground-fields { display: grid; gap: 6px; }
+.dz .dz-code-playground-field { display: grid; grid-template-columns: 88px minmax(0, 1fr); align-items: center; gap: 8px; }
+.dz .dz-code-playground-field.is-toggle { grid-template-columns: minmax(0, 1fr); }
+.dz .dz-code-playground-field.is-toggle .dz-switch { justify-content: space-between; width: 100%; }
+.dz .dz-code-playground-field code { font-family: var(--dz-mono); font-size: 11px; }
+.dz .dz-code-playground-label {
+  overflow: hidden;
+  color: var(--dz-text-2);
+  font-family: var(--dz-mono);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dz .dz-code-playground-field .dz-select,
+.dz .dz-code-playground-field .dz-input { width: 100%; }
+
+/* The box model: stroke, then padding, then the size, each side's value where the side is. */
+.dz .dz-box { display: grid; padding: 2px 0 4px; font-variant-numeric: tabular-nums; }
+.dz .dz-box-ring {
+  position: relative;
+  padding: 18px 26px;
+  border: 1px dashed color-mix(in srgb, var(--dz-text) 22%, transparent);
+  border-radius: 4px;
+}
+.dz .dz-box-ring.is-padding { border-style: solid; border-color: transparent; background: color-mix(in srgb, #f24822 9%, transparent); }
+.dz .dz-box-ring.is-border { background: color-mix(in srgb, var(--dz-warning) 10%, transparent); }
+.dz .dz-box-label {
+  position: absolute;
+  top: 2px;
+  left: 4px;
+  padding: 0 2px;
+  border-radius: 3px;
+  color: var(--dz-text-2);
+  font-size: 10px;
+  line-height: 14px;
+}
+@media (hover: hover) {
+  .dz .dz-box-label:hover,
+  .dz .dz-box-content:hover { background: var(--dz-hover); color: var(--dz-text); }
+}
+.dz .dz-box-side { position: absolute; color: var(--dz-text); font-size: 10px; line-height: 14px; }
+.dz .dz-box-side.is-top { top: 2px; left: 50%; translate: -50% 0; }
+.dz .dz-box-side.is-bottom { bottom: 2px; left: 50%; translate: -50% 0; }
+.dz .dz-box-side.is-left { top: 50%; left: 6px; translate: 0 -50%; }
+.dz .dz-box-side.is-right { top: 50%; right: 6px; translate: 0 -50%; }
+.dz .dz-box-content {
+  display: block;
+  width: 100%;
+  min-height: 32px;
+  padding: 8px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--dz-accent) 14%, transparent);
+  color: var(--dz-text);
+  text-align: center;
+  white-space: nowrap;
+}
+.dz .dz-box-label:focus-visible,
+.dz .dz-box-content:focus-visible { outline-offset: -2px; }
+
+/* Typography: a sample in the face beside the style's name and token. */
+.dz .dz-code-type { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.dz .dz-code-type-sample {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--dz-radius-card);
+  background: var(--dz-field);
+  font-size: 20px;
+  line-height: 1;
+}
+.dz .dz-code-type-text { display: grid; flex: 1; min-width: 0; }
+.dz .dz-code-type-name { overflow: hidden; font-weight: var(--dz-weight-medium); text-overflow: ellipsis; white-space: nowrap; }
+.dz .dz-code-type-note { color: var(--dz-text-2); }
+.dz .dz-code-token {
+  justify-self: start;
+  max-width: 100%;
+  overflow: hidden;
+  margin-left: -4px;
+  padding: 0 4px;
+  border-radius: 4px;
+  color: var(--dz-accent-text);
+  font-family: var(--dz-mono);
+  font-size: 11px;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+@media (hover: hover) {
+  .dz .dz-code-token:hover { background: var(--dz-hover); }
+}
+
+/* Styles and variables: a row per colour, gradient or shadow; a token name first, a suggested one marked. */
+.dz .dz-code-styles { display: grid; margin-right: -4px; }
+.dz .dz-code-styles .dz-code-subtitle { margin-bottom: 2px; }
+.dz .dz-code-style {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  height: 24px;
+  margin-left: -8px;
+  padding: 0 8px;
+  border-radius: var(--dz-radius);
+  color: var(--dz-text);
+  text-align: left;
+  transition: background-color var(--dz-fast) var(--dz-ease-press);
+}
+@media (hover: hover) {
+  .dz .dz-code-style:hover { background: var(--dz-hover); }
+}
+.dz .dz-code-style:active { background: var(--dz-pressed); }
+.dz .dz-code-style:focus-visible { outline-offset: -2px; }
+.dz .dz-code-style-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dz .dz-code-style-value { flex: none; max-width: 45%; overflow: hidden; color: var(--dz-text-2); text-overflow: ellipsis; white-space: nowrap; font-variant-numeric: tabular-nums; }
+/* A shadow's value is long: its name keeps its width, the value takes the rest and ellipsizes. */
+.dz .dz-code-style:has(.is-long) .dz-code-style-label { flex: 0 1 auto; }
+.dz .dz-code-style-value.is-long { flex: 1 1 0; max-width: none; color: var(--dz-text-2); font-family: var(--dz-mono); font-size: 11px; text-align: right; }
+.dz .dz-code-gradient { flex: none; width: 14px; height: 14px; border-radius: 3px; box-shadow: inset 0 0 0 1px var(--dz-outline); }
+/* A shadow's preview: a white tile casting the shadow (inline `box-shadow`). */
+.dz .dz-code-shadow { flex: none; width: 12px; height: 12px; margin: 0 1px; border: 1px solid var(--dz-outline); border-radius: 3px; background: #fff; }
+.dz .dz-code-badge {
+  flex: none;
+  padding: 0 4px;
+  border-radius: 4px;
+  background: var(--dz-selected-row);
+  color: var(--dz-accent-text);
+  font-size: 10px;
+  line-height: 16px;
+}
+
+/* Assets: a preview, the file name and its kind, downloads. */
+.dz .dz-code-asset-preview {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  overflow: hidden;
+  border-radius: var(--dz-radius);
+  background: repeating-conic-gradient(var(--dz-checker-a) 0 25%, var(--dz-checker-b) 0 50%) 0 0 / 8px 8px;
+  box-shadow: inset 0 0 0 1px var(--dz-outline);
+}
+.dz .dz-code-asset-preview img { max-width: 24px; max-height: 24px; object-fit: contain; }
+/* A one-colour icon: drawn in the text colour on the field, as the code draws it in `currentColor`. */
+.dz .dz-code-asset-preview:has(.dz-code-asset-mask) { background: var(--dz-field); }
+.dz .dz-code-asset-mask { width: 20px; height: 20px; background: var(--dz-text); }
+.dz .dz-code-asset-format { font-size: 9px; font-weight: var(--dz-weight-strong); letter-spacing: 0.02em; }
+.dz .dz-code-list { display: grid; gap: 4px; }
+.dz .dz-code-list .dz-code-measure-label { width: 112px; font-family: var(--dz-mono); font-size: 11px; }
+.dz .dz-code-list .dz-code-measure-value { font-family: var(--dz-mono); font-size: 11px; }
+
+/* ── "Export to React…" ──────────────────────────────────────────────────────────────────────── */
+.dz .dz-react-export { display: grid; gap: 16px; }
+.dz .dz-react-field { display: grid; gap: 6px; }
+.dz .dz-react-label { color: var(--dz-text-2); }
+.dz .dz-react-layers {
+  display: grid;
+  max-height: 232px;
+  padding: 2px 0;
+  overflow-y: auto;
+  border-radius: var(--dz-radius-card);
+  background: var(--dz-field);
+}
+.dz .dz-react-layer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 28px;
+  padding: 0 10px;
+}
+.dz .dz-react-layer .dz-check { flex: 1; min-width: 0; }
+.dz .dz-react-layer .dz-check-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dz .dz-react-layer-kind { flex: none; color: var(--dz-text-2); }
+.dz .dz-react-layer.is-component .dz-react-layer-kind { color: var(--dz-component); }
+.dz .dz-react-page { padding: 8px 10px 2px; color: var(--dz-text-2); font-weight: var(--dz-weight-medium); }
+.dz .dz-react-tools { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.dz .dz-react-summary { color: var(--dz-text-2); font-variant-numeric: tabular-nums; text-wrap: pretty; }
+.dz .dz-react-error { color: var(--dz-danger-text); text-wrap: pretty; }

@@ -1,0 +1,8 @@
+# No [build] target-dir here: each lane sets CARGO_TARGET_DIR=~/.cache/morfa-target/<lane> itself, on the Mac
+# and in the cloud (scripts/cloud-setup.sh prints it), so the default ./target, which no .gitignore covers yet,
+# stays unused (docs/dev.md §Rust). The jobs count comes from CARGO_BUILD_JOBS.
+
+[alias]
+# The two cargo steps of scripts/gate-rust.sh, for running them by hand.
+lint = "clippy --workspace --all-targets -- -D warnings"
+t = "test --workspace"

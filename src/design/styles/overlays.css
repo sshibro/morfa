@@ -1,0 +1,232 @@
+/* Floating layers: menus, tooltips, popovers, dialogs, toasts. Menus and tooltips are dark in
+   both themes. Enter motion is opacity plus a 0.97 scale from the anchor (emil-design-eng:
+   origin-aware, ease-out, 120–160 ms; dialogs 200 ms, centred); exits are instant, except a toast's,
+   which fades back the way it came in 120 ms. Submenus, keyboard-warm tooltips and anything opened
+   from the keyboard (the root's data-input, src/design/ui/layer.tsx) do not animate at all.
+   Positions are set with left/top once per open, so scale composes cleanly. */
+
+.dz .dz-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+}
+.dz .dz-layer > * { pointer-events: auto; }
+
+/* ── Menus ───────────────────────────────────────────────────────────────────────────────────── */
+.dz .dz-menu {
+  position: fixed;
+  left: 0;
+  top: 0;
+  min-width: 180px;
+  max-width: 340px;
+  padding: 4px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border-radius: var(--dz-radius-menu);
+  background: var(--dz-menu);
+  color: var(--dz-menu-text);
+  box-shadow: 0 0 0 0.5px rgb(255 255 255 / 0.16), 0 2px 5px rgb(0 0 0 / 0.2), 0 10px 24px rgb(0 0 0 / 0.28);
+  color-scheme: dark;
+  scrollbar-color: rgb(255 255 255 / 0.3) transparent;
+  outline: none;
+  transform-origin: var(--dz-origin, top left);
+}
+.dz .dz-menu.is-root {
+  transition: opacity var(--dz-fast) var(--dz-ease-out), scale var(--dz-fast) var(--dz-ease-out);
+  @starting-style { opacity: 0; scale: 0.97; }
+}
+/* Opened with Enter, Space, an arrow or the context-menu key: there at once, and its trigger takes
+   its open look at once too. */
+.dz[data-input='keyboard'] .dz-menu.is-root,
+.dz[data-input='keyboard'] [aria-expanded] { transition: none; }
+.dz .dz-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 24px;
+  padding: 0 8px;
+  /* Concentric with the menu: 12 px less its 4 px inset. */
+  border-radius: 8px;
+  white-space: nowrap;
+  cursor: default;
+}
+.dz .dz-menu-item.is-active { background: var(--dz-menu-hover); }
+.dz .dz-menu-item.is-danger.is-active { background: var(--dz-danger); }
+.dz .dz-menu-item[aria-disabled='true'] { color: var(--dz-menu-text-3); }
+.dz .dz-menu-check,
+.dz .dz-menu-icon { display: grid; place-items: center; flex: none; width: 16px; height: 16px; margin-left: -2px; }
+.dz .dz-menu-icon + .dz-menu-text,
+.dz .dz-menu-check + .dz-menu-text { margin-left: -2px; }
+.dz .dz-menu-text { display: flex; flex-direction: column; flex: 1; min-width: 0; padding: 4px 0; }
+.dz .dz-menu-label { overflow: hidden; text-overflow: ellipsis; }
+.dz .dz-menu-description { color: var(--dz-menu-text-2); white-space: normal; }
+.dz .dz-menu-item.is-active .dz-menu-description { color: rgb(255 255 255 / 0.85); }
+.dz .dz-menu-shortcut {
+  flex: none;
+  margin-left: 24px;
+  color: var(--dz-menu-text-2);
+  font-feature-settings: 'tnum';
+  letter-spacing: 0.04em;
+}
+.dz .dz-menu-item.is-active .dz-menu-shortcut { color: var(--dz-menu-text); }
+.dz .dz-menu-item[aria-disabled='true'] .dz-menu-shortcut { color: var(--dz-menu-text-3); }
+.dz .dz-menu-chevron { display: grid; place-items: center; flex: none; width: 16px; margin-left: 16px; margin-right: -4px; }
+.dz .dz-menu-separator { height: 1px; margin: 4px -4px; background: var(--dz-menu-separator); }
+.dz .dz-menu-heading { padding: 6px 8px 2px; color: var(--dz-menu-text-2); font-weight: var(--dz-weight-medium); }
+
+/* ── Tooltips ────────────────────────────────────────────────────────────────────────────────── */
+.dz .dz-tooltip {
+  position: fixed;
+  left: 0;
+  top: 0;
+  pointer-events: none;
+}
+.dz .dz-layer > .dz-tooltip { pointer-events: none; }
+.dz .dz-tooltip-body {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  max-width: 280px;
+  padding: 4px 8px;
+  border-radius: var(--dz-radius);
+  background: var(--dz-menu);
+  color: var(--dz-menu-text);
+  box-shadow: 0 0 0 0.5px rgb(255 255 255 / 0.1), 0 2px 6px rgb(0 0 0 / 0.24);
+  white-space: nowrap;
+  transform-origin: var(--dz-origin, center);
+  transition: opacity 125ms var(--dz-ease-out), scale 125ms var(--dz-ease-out);
+  @starting-style { opacity: 0; scale: 0.97; }
+}
+.dz .dz-tooltip[data-instant] .dz-tooltip-body { transition-duration: 0ms; }
+.dz .dz-tooltip-shortcut { color: var(--dz-menu-text-2); letter-spacing: 0.04em; }
+
+/* ── Popovers ────────────────────────────────────────────────────────────────────────────────── */
+.dz .dz-popover {
+  position: fixed;
+  left: 0;
+  top: 0;
+  outline: none;
+}
+.dz .dz-popover-body {
+  min-width: 200px;
+  border-radius: var(--dz-radius-menu);
+  background: var(--dz-panel);
+  color: var(--dz-text);
+  box-shadow: var(--dz-shadow-menu);
+  transform-origin: var(--dz-origin, top center);
+  transition: opacity var(--dz-base) var(--dz-ease-out), scale var(--dz-base) var(--dz-ease-out);
+  @starting-style { opacity: 0; scale: 0.97; }
+}
+.dz[data-input='keyboard'] .dz-popover-body { transition: none; }
+
+/* ── Dialogs (native <dialog>, in the top layer) ─────────────────────────────────────────────── */
+.dz .dz-dialog {
+  margin: auto;
+  padding: 0;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100dvh - 32px);
+  overflow: visible;
+  border: 0;
+  background: transparent;
+  color: var(--dz-text);
+  font: inherit;
+  transform-origin: center;
+  transition: opacity var(--dz-modal) var(--dz-ease-out), scale var(--dz-modal) var(--dz-ease-out);
+  @starting-style { opacity: 0; scale: 0.96; }
+}
+.dz .dz-dialog::backdrop {
+  background: rgb(0 0 0 / 0.36);
+  transition: opacity var(--dz-modal) var(--dz-ease-out);
+  @starting-style { opacity: 0; }
+}
+/* A dialog opened from a shortcut or with Enter on a menu row: no entrance. */
+.dz[data-input='keyboard'] .dz-dialog,
+.dz[data-input='keyboard'] .dz-dialog::backdrop { transition: none; }
+.dz[data-theme='dark'] .dz-dialog::backdrop { background: rgb(0 0 0 / 0.55); }
+.dz .dz-dialog-surface {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100dvh - 32px);
+  overflow: hidden;
+  border-radius: var(--dz-radius-dialog);
+  background: var(--dz-panel);
+  box-shadow: var(--dz-shadow-dialog);
+}
+.dz .dz-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 12px 0 16px;
+  border-bottom: 1px solid var(--dz-border);
+}
+.dz .dz-dialog-title { flex: 1; min-width: 0; font-size: 12px; line-height: 16px; font-weight: var(--dz-weight-strong); }
+.dz .dz-dialog-actions { display: flex; align-items: center; gap: 4px; }
+.dz .dz-dialog-body { padding: 16px; overflow-y: auto; color: var(--dz-text); }
+.dz .dz-dialog-body p + p { margin-top: 8px; }
+.dz .dz-dialog-footer { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 8px; padding: 0 16px 16px; }
+
+/* ── Toasts ──────────────────────────────────────────────────────────────────────────────────── */
+.dz .dz-toasts {
+  position: fixed;
+  left: 50%;
+  bottom: var(--dz-toast-bottom, 24px);
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  translate: -50% 0;
+  pointer-events: none;
+}
+.dz .dz-toast {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 40px;
+  max-width: min(520px, calc(100vw - 32px));
+  padding: 4px 4px 4px 12px;
+  border-radius: 10px;
+  background: var(--dz-menu);
+  color: var(--dz-menu-text);
+  box-shadow: 0 0 0 0.5px rgb(255 255 255 / 0.12), 0 4px 16px rgb(0 0 0 / 0.24);
+  pointer-events: auto;
+  transition: opacity var(--dz-base) var(--dz-ease-out), translate var(--dz-base) var(--dz-ease-out);
+  @starting-style { opacity: 0; translate: 0 8px; }
+}
+/* Leaving: back the way it came, softer and faster than it arrived (ToastHost removes it after --dz-fast). */
+.dz .dz-toast.is-leaving {
+  opacity: 0;
+  translate: 0 4px;
+  pointer-events: none;
+  transition-duration: var(--dz-fast);
+}
+@media (prefers-reduced-motion: reduce) {
+  .dz .dz-toast.is-leaving { translate: 0 0; }
+}
+.dz .dz-toast-message { padding: 4px 4px 4px 0; text-wrap: pretty; }
+.dz .dz-toast.is-success .dz-toast-message::before,
+.dz .dz-toast.is-error .dz-toast-message::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin: 0 8px 1px 0;
+  border-radius: 50%;
+  background: var(--dz-success);
+}
+.dz .dz-toast.is-error .dz-toast-message::before { background: var(--dz-danger); }
+.dz .dz-toast-action {
+  flex: none;
+  height: 28px;
+  padding: 0 8px;
+  border-radius: 6px;
+  color: #7cc4f8;
+  font-weight: var(--dz-weight-strong);
+  transition: background-color var(--dz-fast);
+}
+.dz .dz-toast :is(.dz-toast-action, .dz-toast-close):hover { background: rgb(255 255 255 / 0.1); }
+.dz .dz-toast .dz-toast-close { width: 28px; height: 28px; border-radius: 6px; color: var(--dz-menu-text-2); }
+.dz .dz-toast .dz-toast-close:hover { color: var(--dz-menu-text); }

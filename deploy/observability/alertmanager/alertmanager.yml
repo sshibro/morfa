@@ -1,0 +1,6 @@
+# Until the operator chooses a receiver, alerts are dropped here; Prometheus (127.0.0.1:9090/alerts)
+# and Grafana still show them. The operator's config: alertmanager.yml.example.
+route:
+  receiver: none
+receivers:
+  - name: none

@@ -1,0 +1,39 @@
+# The render/export service (lane B4, crates/render-service, binary morfa-render; docs/BACKEND.md §4): the vector PDF, SVG and
+# rasters for api's exports (DESIGN_PDF_ENGINE=service). Listens on 127.0.0.1:3440 (MORFA_RENDER_ADDR; never public — Caddy
+# answers 404 for /internal/*): `POST /internal/render` with the shared secret, `/metrics`, `/healthz`. One worker thread per
+# core unless MORFA_RENDER_WORKERS. Settings: /etc/morfa/render.env (deploy/env/render.env.example).
+#
+# Stateless: a restart loses only the jobs in flight, which api sends to Chromium instead (server/design/pdf/service.ts).
+# It stops gracefully on SIGINT (tokio ctrl_c), so that is the stop signal.
+[Unit]
+Description=Morfa render service
+After=network-online.target
+Wants=network-online.target
+PartOf=morfa.target
+
+[Service]
+Type=simple
+Slice=morfa.slice
+User=morfa
+Group=morfa
+WorkingDirectory=/srv/morfa/data
+EnvironmentFile=/etc/morfa/render.env
+ExecStart=/srv/morfa/current/bin/morfa-render
+KillSignal=SIGINT
+Restart=on-failure
+RestartSec=2
+TimeoutStopSec=30
+LimitNOFILE=65536
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/srv/morfa/data
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+
+[Install]
+WantedBy=morfa.target

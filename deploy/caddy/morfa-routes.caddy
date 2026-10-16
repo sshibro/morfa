@@ -1,0 +1,76 @@
+# Morfa's routes behind Caddy (lane B5; docs/BACKEND.md §10–§11), imported by Caddyfile.morfa (production) and Caddyfile.bench.
+# Upstreams come from /etc/morfa/caddy.env (deploy/env/caddy.env.example) through {$VAR:default} placeholders.
+#
+#   /internal/*, /metrics, /healthz, /__bench, /__e2e   never routed (404): the services' private endpoints
+#   /BUILD_COMMIT, /build-graph.json                    never served (404): the build's own files
+#   /n/<node>/collab/<file>                             that collab node's socket (DESIGN_COLLAB_NODES public base
+#                                                       = <origin>/n/<node>); WebSocket, no buffering
+#   /api/*, /uploads/*, /fonts/*                        the api processes, least connections, retried on a restarting one
+#   /mcp, /mcp/*, /oauth/*, /.well-known/oauth-*        the same: the MCP server and its sign-in (docs/mcp-server.md); with
+#                                                       ENABLE_MCP_SERVER off the api answers them as any unknown path
+#   /assets/*                                           the built app, immutable
+#   everything else                                     the app's index.html (single-page app)
+(morfa_routes) {
+	route {
+		# Inside `route` directives run in the order written, so this 404 comes first. The build's own files are never served.
+		@private path /internal /internal/* /metrics /metrics/* /healthz /__bench /__bench/* /__e2e /__e2e/* /BUILD_COMMIT /build-graph.json
+		respond @private 404
+
+		handle_path /n/a/* {
+			@socket path /collab/*
+			handle @socket {
+				reverse_proxy {$MORFA_COLLAB_A:127.0.0.1:3421} {
+					# Frames go out as they come; open sockets survive a config reload for up to an hour (the node's own
+					# silence timeout closes dead ones). Only the socket path is routed: the node's /internal/*, /metrics and
+					# /healthz stay private.
+					flush_interval -1
+					stream_close_delay 1h
+				}
+			}
+			handle {
+				respond 404
+			}
+		}
+		handle_path /n/b/* {
+			@socket path /collab/*
+			handle @socket {
+				reverse_proxy {$MORFA_COLLAB_B:127.0.0.1:3422} {
+					flush_interval -1
+					stream_close_delay 1h
+				}
+			}
+			handle {
+				respond 404
+			}
+		}
+
+		@api path /api/* /uploads/* /fonts/* /mcp /mcp/* /oauth/* /.well-known/oauth-*
+		handle @api {
+			reverse_proxy {$MORFA_API_UPSTREAMS:127.0.0.1:3401 127.0.0.1:3402} {
+				lb_policy least_conn
+				# A request that meets a restarting process is retried on the other one (rolling restarts lose nothing).
+				lb_try_duration 5s
+				lb_try_interval 100ms
+				fail_duration 10s
+				health_uri /api/health
+				health_interval 2s
+				health_timeout 1s
+				# Live co-editing streams (SSE, legacy path) flush at once and survive a reload.
+				flush_interval -1
+				stream_close_delay 1h
+			}
+		}
+
+		handle /assets/* {
+			root * {$MORFA_APP_DIR:/srv/morfa/current/dist/app}
+			header Cache-Control "public, max-age=31536000, immutable"
+			file_server
+		}
+		handle {
+			root * {$MORFA_APP_DIR:/srv/morfa/current/dist/app}
+			header Cache-Control "no-store"
+			try_files {path} /index.html
+			file_server
+		}
+	}
+}

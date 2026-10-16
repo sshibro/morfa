@@ -1,0 +1,26 @@
+// Alloy: the Morfa units' journald logs → Loki, labelled by unit (morfa-api@1, morfa-collab@a, postgresql@18-main, caddy, …).
+loki.relabel "journal" {
+  forward_to = []
+  rule {
+    source_labels = ["__journal__systemd_unit"]
+    target_label  = "unit"
+  }
+  rule {
+    source_labels = ["__journal_priority_keyword"]
+    target_label  = "level"
+  }
+}
+
+loki.source.journal "morfa" {
+  forward_to    = [loki.write.local.receiver]
+  relabel_rules = loki.relabel.journal.rules
+  matches       = "_SYSTEMD_SLICE=morfa.slice"
+  labels        = {job = "morfa"}
+  max_age       = "12h"
+}
+
+loki.write "local" {
+  endpoint {
+    url = "http://127.0.0.1:3100/loki/api/v1/push"
+  }
+}

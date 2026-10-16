@@ -1,0 +1,176 @@
+/* "Morfa" shared libraries (src/design/libraries, docs/design-tool.md §Teams): the assets panel's book and library
+   sections, "Libraries", "Publish library" and "Library updates". Tokens from tokens.css only; motion stays on
+   press feedback and colour (the dialogs open with the kit's own transition). */
+
+/* ── The assets panel ───────────────────────────────────────────────────────────────────────── */
+.dz .dz-icon-btn.dz-assets-libraries { position: relative; color: var(--dz-text-2); }
+@media (hover: hover) {
+  .dz .dz-icon-btn.dz-assets-libraries:hover { color: var(--dz-text); }
+}
+.dz .dz-assets-libraries-dot {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--dz-accent);
+  box-shadow: 0 0 0 1.5px var(--dz-panel);
+}
+.dz .dz-library-section .dz-section-title > span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dz .dz-library-update-chip {
+  height: 20px;
+  padding: 0 8px;
+  border-radius: 10px;
+  background: var(--dz-selected-row);
+  color: var(--dz-accent-text);
+  font-weight: var(--dz-weight-medium);
+  white-space: nowrap;
+  transition-property: background-color, scale;
+  transition-duration: var(--dz-fast);
+  transition-timing-function: var(--dz-ease-press);
+}
+@media (hover: hover) {
+  .dz .dz-library-update-chip:hover { background: var(--dz-selected-row-2); }
+}
+.dz .dz-library-update-chip:active { scale: 0.96; }
+.dz .dz-assets-note.is-error { color: var(--dz-danger-text); }
+.dz .dz-asset-item .dz-asset-thumb { position: relative; }
+.dz .dz-library-busy { position: absolute; inset: 0; margin: auto; color: var(--dz-text-2); }
+.dz :is(.dz-asset-item, .dz-style-row).is-busy { cursor: progress; }
+.dz :is(.dz-asset-item, .dz-style-row).is-busy .dz-asset-thumb canvas { opacity: 0.4; }
+.dz :is(.dz-asset-item, .dz-style-row)[aria-disabled='true'] { cursor: default; }
+.dz .dz-library-collection { padding-right: 4px; }
+.dz .dz-library-in-file { flex: none; color: var(--dz-text-2); }
+
+/* ── "Libraries" ───────────────────────────────────────────────────────────────────────────── */
+.dz .dz-libraries .dz-dialog-body { display: grid; gap: 16px; }
+.dz .dz-libraries-own {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: var(--dz-radius-card);
+  background: var(--dz-field);
+}
+.dz .dz-libraries-mark {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--dz-panel);
+  box-shadow: inset 0 0 0 1px var(--dz-outline);
+  color: var(--dz-text-2);
+}
+.dz .dz-libraries-own-text { display: grid; flex: 1; min-width: 0; }
+.dz .dz-libraries-title { font-weight: var(--dz-weight-strong); }
+.dz :is(.dz-libraries-meta, .dz-library-meta) { overflow: hidden; color: var(--dz-text-2); text-overflow: ellipsis; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.dz .dz-libraries-own-actions { display: flex; flex: none; gap: 4px; }
+.dz .dz-libraries-updates {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 4px 4px 4px 12px;
+  border-radius: var(--dz-radius-card);
+  background: var(--dz-selected-row);
+  color: var(--dz-accent-text);
+}
+.dz .dz-libraries-updates-dot { flex: none; width: 6px; height: 6px; border-radius: 50%; background: var(--dz-accent); }
+.dz .dz-libraries-updates-text { flex: 1; min-width: 0; font-weight: var(--dz-weight-medium); }
+.dz .dz-libraries-place { display: grid; gap: 4px; }
+.dz .dz-libraries-heading { padding-bottom: 4px; font-size: 11px; font-weight: var(--dz-weight-strong); }
+.dz .dz-libraries-loading { display: grid; place-items: center; min-height: 72px; color: var(--dz-text-2); }
+.dz .dz-libraries-note { color: var(--dz-text-2); text-wrap: pretty; }
+.dz .dz-libraries-note.is-error { color: var(--dz-danger-text); }
+.dz .dz-libraries-list { display: grid; gap: 2px; margin: 0 -8px; }
+.dz .dz-library-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 4px 8px;
+  border-radius: var(--dz-radius-card);
+}
+@media (hover: hover) {
+  .dz .dz-library-row:hover { background: var(--dz-hover); }
+}
+.dz .dz-library-text { display: grid; flex: 1; min-width: 0; }
+.dz .dz-library-name { overflow: hidden; font-weight: var(--dz-weight-medium); text-overflow: ellipsis; white-space: nowrap; }
+.dz .dz-library-row.is-unavailable .dz-library-name { color: var(--dz-text-2); }
+.dz .dz-library-pending { flex: none; color: var(--dz-text-2); }
+
+/* ── "Publish library" ──────────────────────────────────────────────────────────────── */
+.dz .dz-publish .dz-dialog-body { display: grid; gap: 16px; max-height: min(640px, calc(100dvh - 160px)); }
+.dz .dz-publish-lead { color: var(--dz-text-2); text-wrap: pretty; }
+.dz .dz-publish-field { display: grid; gap: 6px; }
+/* The shared TextArea measures itself when it mounts, before the dialog has a layout; two lines at rest keep it visible and
+   inviting, and it grows from there as it is typed in. */
+.dz .dz-publish-field .dz-textarea-field textarea { min-height: 32px; }
+.dz .dz-publish-label { color: var(--dz-text-2); }
+.dz .dz-publish-groups { display: grid; gap: 12px; }
+.dz .dz-publish-group { display: grid; gap: 2px; }
+.dz .dz-check.dz-publish-group-head { font-weight: var(--dz-weight-strong); }
+.dz .dz-publish-count { margin-left: 4px; color: var(--dz-text-2); font-weight: var(--dz-weight); font-variant-numeric: tabular-nums; }
+.dz .dz-publish-list { display: grid; margin: 0 -8px; }
+.dz .dz-publish-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  padding: 0 8px 0 30px;
+  border-radius: var(--dz-radius);
+}
+@media (hover: hover) {
+  .dz .dz-publish-row:hover { background: var(--dz-hover); }
+}
+.dz .dz-check.dz-publish-check { flex: 1; min-width: 0; }
+.dz .dz-publish-check .dz-check-label { flex: 1; min-width: 0; }
+.dz .dz-publish-label-row { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.dz .dz-publish-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dz .dz-publish-meta { flex: none; color: var(--dz-text-2); }
+.dz .dz-publish-mark {
+  flex: none;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 9px;
+  font-size: 10px;
+  line-height: 18px;
+  font-weight: var(--dz-weight-medium);
+}
+.dz .dz-publish-mark.is-new { background: color-mix(in oklch, var(--dz-success) 14%, transparent); color: var(--dz-success-text); }
+.dz .dz-publish-mark.is-changed { background: var(--dz-selected-row); color: var(--dz-accent-text); }
+.dz .dz-publish-error { flex-basis: 100%; color: var(--dz-danger-text); text-wrap: pretty; }
+
+/* ── "Library updates" ─────────────────────────────────────────────────────────────────── */
+.dz .dz-updates .dz-dialog-body { display: grid; gap: 16px; max-height: min(600px, calc(100dvh - 160px)); }
+.dz .dz-updates-groups { display: grid; gap: 16px; }
+.dz .dz-updates-group { display: grid; gap: 6px; }
+.dz .dz-updates-head { display: flex; align-items: baseline; gap: 8px; }
+.dz .dz-updates-name { flex: 1; min-width: 0; overflow: hidden; font-weight: var(--dz-weight-strong); text-overflow: ellipsis; white-space: nowrap; }
+.dz .dz-updates-versions { flex: none; color: var(--dz-text-2); font-variant-numeric: tabular-nums; }
+.dz .dz-updates-description { padding: 8px 10px; border-radius: var(--dz-radius); background: var(--dz-field); color: var(--dz-text-2); text-wrap: pretty; }
+.dz .dz-updates-list { display: grid; gap: 2px; margin: 0 -8px; }
+.dz .dz-update-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 4px 8px;
+  border-radius: var(--dz-radius-card);
+}
+@media (hover: hover) {
+  .dz .dz-update-row:hover { background: var(--dz-hover); }
+}
+.dz .dz-update-preview { display: flex; align-items: center; gap: 6px; flex: none; color: var(--dz-text-3); }
+.dz .dz-update-preview.is-style { width: 104px; justify-content: center; }
+.dz .dz-update-preview.is-icon { display: grid; place-items: center; width: 104px; height: 40px; color: var(--dz-text-2); }
+.dz .dz-update-text { display: grid; flex: 1; min-width: 0; }
+.dz .dz-update-name { overflow: hidden; font-weight: var(--dz-weight-medium); text-overflow: ellipsis; white-space: nowrap; }
+.dz .dz-update-kind { color: var(--dz-text-2); }
+
+/* A shared library's style opened in a style editor: read-only (its fields sit in a disabled fieldset). */
+.dz .dz-style-remote-note { padding: 8px 16px 0; color: var(--dz-text-2); text-wrap: pretty; }
+.dz .dz-variables-remote-note { padding: 12px 16px 0; color: var(--dz-text-2); text-wrap: pretty; }

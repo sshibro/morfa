@@ -1,0 +1,62 @@
+# Morfa's Rust engine (crates/README.md for the crate map).
+[workspace]
+resolver = "3"
+members = ["crates/*"]
+# The desktop shell is its own workspace (desktop/src-tauri): the gate never builds Tauri or needs webkit2gtk.
+exclude = ["desktop"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.99"
+license = "MIT"
+publish = false
+
+[workspace.dependencies]
+# default-features = false: a member that needs the JSON.parse-faithful reader asks for `features = ["js-json-fallback"]`.
+morfa-model = {path = "crates/model", default-features = false}
+morfa-geometry = {path = "crates/geometry"}
+morfa-text = {path = "crates/text"}
+morfa-layout = {path = "crates/layout"}
+morfa-ops = {path = "crates/ops"}
+morfa-render = {path = "crates/render"}
+morfa-export = {path = "crates/export"}
+wasm-bindgen = "0.2"
+
+# Lane L4's renderer module ships vello without glyph support (its text comes from the host as sprites) and without
+# the CPU fallbacks of the compute stages: the two crates are vendored with those behind features (vendor/README.md,
+# `glyphs` and `cpu_shaders`, both on by default so other users see upstream behaviour).
+[patch.crates-io]
+vello = {path = "vendor/vello"}
+vello_encoding = {path = "vendor/vello_encoding"}
+vello_shaders = {path = "vendor/vello_shaders"}
+
+[workspace.lints.rust]
+unsafe_code = "deny"
+
+[workspace.lints.clippy]
+dbg_macro = "warn"
+todo = "warn"
+
+# Dependencies keep line tables only: backtraces still name files and lines, debug info stays small
+# (≈9.7 GB free on the Mac, docs/dev.md §Rust).
+[profile.dev.package."*"]
+debug = "line-tables-only"
+
+# Size first: the editor ships this to the browser (700 KiB budget discussion).
+[profile.release]
+opt-level = "s"
+lto = "fat"
+codegen-units = 1
+
+# i_overlay (the live-drawing boolean, only in the lazy geometry module) built for size: 150.0 → 133.3 KiB
+# gzip of the module's 150 KiB budget, for 10–15 % of the live union's time.
+[profile.release.package.i_overlay]
+opt-level = "z"
+
+# The native services (lane B4's morfa-render): speed first, `cargo build --profile service`.
+[profile.service]
+inherits = "release"
+opt-level = 3
+lto = "thin"
+codegen-units = 16

@@ -1,0 +1,465 @@
+/* Controls of the UI kit (src/design/ui). Two classes deep (.dz .dz-x) so they win over the
+   resets in base.css by order and over the app's element rules by weight.
+   Motion restraint (better-ui): hover and state changes are colour-only and ≤120 ms; the only
+   movement is the 0.96 press scale on text buttons, which panels switch off with is-static.
+   Icon buttons change at once: they are hit hundreds of times a day, and their state follows the
+   keyboard (a tool's key lights its toolbar button) and the selection (align buttons wake up), so a
+   fade there would replay on every shortcut and canvas click (emil-design-eng: 100+/day, no animation).
+   Tabs and segments switch at once for the same reason (better-ui: every tab switch in a work tool is
+   high-frequency). Checkboxes and switches move only under the pointer that flips them: the same box
+   flipped by Space or by selecting another layer changes at once. */
+
+/* ── Buttons ─────────────────────────────────────────────────────────────────────────────────── */
+.dz .dz-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  height: var(--dz-control);
+  padding: 0 8px;
+  border-radius: var(--dz-radius);
+  font-weight: var(--dz-weight-medium);
+  white-space: nowrap;
+  color: var(--dz-text);
+  transition-property: background-color, color, box-shadow, scale;
+  transition-duration: var(--dz-fast);
+  transition-timing-function: var(--dz-ease-press);
+}
+.dz .dz-btn.is-32 { height: var(--dz-control-lg); padding: 0 12px; border-radius: 6px; }
+/* An icon before the label sits optically centred with a little less padding on its side. */
+.dz .dz-btn.has-icon { padding-left: 6px; }
+.dz .dz-btn.is-32.has-icon { padding-left: 10px; }
+.dz .dz-btn-content { display: inline-flex; align-items: center; gap: 4px; min-width: 0; }
+.dz .dz-btn.is-32 .dz-btn-content { gap: 6px; }
+.dz .dz-btn-label { overflow: hidden; text-overflow: ellipsis; }
+
+.dz .dz-btn.is-primary { background: var(--dz-accent); color: var(--dz-on-accent); }
+.dz .dz-btn.is-secondary { background: transparent; box-shadow: inset 0 0 0 1px var(--dz-border); }
+.dz .dz-btn.is-ghost { background: transparent; }
+.dz .dz-btn.is-danger { background: var(--dz-danger); color: #ffffff; }
+
+@media (hover: hover) {
+  .dz .dz-btn.is-primary:hover:not(:disabled) { background: var(--dz-accent-hover); }
+  .dz .dz-btn.is-secondary:hover:not(:disabled),
+  .dz .dz-btn.is-ghost:hover:not(:disabled) { background: var(--dz-hover); }
+  .dz .dz-btn.is-danger:hover:not(:disabled) { background: var(--dz-danger-hover); }
+}
+.dz .dz-btn:active:not(:disabled):not(.is-static) { scale: 0.96; }
+.dz .dz-btn:focus-visible { outline-offset: -2px; }
+.dz .dz-btn:is(.is-primary, .is-danger):focus-visible { outline-offset: 1px; }
+
+.dz .dz-btn:disabled { color: var(--dz-text-3); }
+.dz .dz-btn:is(.is-primary, .is-danger):disabled { background: var(--dz-field); }
+.dz .dz-btn.is-busy:disabled { color: transparent; }
+.dz .dz-btn.is-busy.is-primary:disabled { background: var(--dz-accent); }
+.dz .dz-btn.is-busy .dz-btn-content { visibility: hidden; }
+.dz .dz-btn-spinner { position: absolute; inset: 0; margin: auto; color: var(--dz-text-2); }
+.dz .dz-btn.is-primary .dz-btn-spinner { color: var(--dz-on-accent); }
+
+/* ── Icon buttons ────────────────────────────────────────────────────────────────────────────── */
+.dz .dz-icon-btn {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: var(--dz-control);
+  height: var(--dz-control);
+  border-radius: var(--dz-radius);
+  color: var(--dz-text);
+}
+.dz .dz-icon-btn.is-32 { width: var(--dz-control-lg); height: var(--dz-control-lg); border-radius: 8px; }
+@media (hover: hover) {
+  .dz .dz-icon-btn:hover:not(:disabled) { background: var(--dz-hover); }
+}
+.dz .dz-icon-btn[aria-pressed='true'],
+.dz .dz-icon-btn[aria-expanded='true'] { background: var(--dz-pressed); }
+.dz .dz-icon-btn.is-toolbar[aria-pressed='true'] { background: var(--dz-accent); color: var(--dz-on-accent); }
+.dz .dz-icon-btn:disabled { color: var(--dz-text-3); }
+
+/* ── Text fields (the wrapper is the field; the input inside is bare) ───────────────────────── */
+.dz :is(.dz-input, .dz-number) {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  height: var(--dz-control);
+  padding: 0 8px;
+  border-radius: var(--dz-radius);
+  background: var(--dz-field);
+  box-shadow: inset 0 0 0 1px transparent;
+  color: var(--dz-text);
+  cursor: text;
+  transition-property: box-shadow, background-color;
+  transition-duration: var(--dz-fast);
+  transition-timing-function: var(--dz-ease-press);
+}
+.dz .dz-input.is-32 { height: var(--dz-control-lg); padding: 0 10px; border-radius: 6px; gap: 6px; }
+.dz .dz-input.is-quiet { background: transparent; }
+@media (hover: hover) {
+  .dz :is(.dz-input, .dz-number):hover:not(.is-disabled) { box-shadow: inset 0 0 0 1px var(--dz-border); }
+}
+.dz :is(.dz-input, .dz-number):focus-within { background: var(--dz-panel); box-shadow: inset 0 0 0 1px var(--dz-accent); }
+/* TextArea: one line at rest (the height of a field), growing with its text; the script sets the height. */
+.dz .dz-input.dz-textarea-field { align-items: flex-start; height: auto; min-height: var(--dz-control); padding: 4px 8px; }
+.dz .dz-textarea-field textarea { display: block; resize: none; overflow-wrap: anywhere; scrollbar-width: thin; }
+.dz .dz-input-icon { display: grid; place-items: center; margin-left: -3px; color: var(--dz-text-2); }
+.dz .dz-input-end { display: flex; align-items: center; margin-right: -4px; color: var(--dz-text-2); }
+
+/* Number fields: a scrubbable label, tabular figures. */
+.dz .dz-number { font-variant-numeric: tabular-nums; }
+.dz .dz-number.has-prefix { padding-left: 0; gap: 0; }
+.dz .dz-number-prefix {
+  display: grid;
+  place-items: center;
+  flex: none;
+  align-self: stretch;
+  width: 24px;
+  color: var(--dz-text-2);
+  cursor: ew-resize;
+  touch-action: none;
+}
+.dz .dz-number-prefix.is-label { font-size: 11px; }
+.dz .dz-number.is-mixed input::placeholder { color: var(--dz-text-2); }
+.dz .dz-number.is-disabled { color: var(--dz-text-3); cursor: default; }
+.dz .dz-number.is-disabled .dz-number-prefix { cursor: default; }
+
+/* ── Select ──────────────────────────────────────────────────────────────────────────────────── */
+.dz .dz-select {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  height: var(--dz-control);
+  padding: 0 4px 0 8px;
+  border-radius: var(--dz-radius);
+  background: var(--dz-field);
+  box-shadow: inset 0 0 0 1px transparent;
+  color: var(--dz-text);
+  text-align: left;
+  transition-property: box-shadow, background-color;
+  transition-duration: var(--dz-fast);
+  transition-timing-function: var(--dz-ease-press);
+}
+.dz .dz-select.is-32 { height: var(--dz-control-lg); padding: 0 8px 0 10px; border-radius: 6px; }
+.dz .dz-select.is-quiet { background: transparent; }
+.dz .dz-select.has-icon { padding-left: 4px; }
+@media (hover: hover) {
+  .dz .dz-select:hover:not(:disabled) { box-shadow: inset 0 0 0 1px var(--dz-border); }
+}
+.dz .dz-select[aria-expanded='true'] { box-shadow: inset 0 0 0 1px var(--dz-accent); }
+.dz .dz-select:disabled { color: var(--dz-text-3); }
+.dz .dz-select-icon { display: grid; place-items: center; width: 24px; margin-left: -4px; color: var(--dz-text-2); }
+.dz .dz-select-value { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dz .dz-select-value.is-placeholder { color: var(--dz-text-2); }
+.dz .dz-select-chevron { display: grid; place-items: center; width: 16px; color: var(--dz-text-2); }
+
+/* ── Tabs and segmented controls ─────────────────────────────────────────────────────────────── */
+.dz .dz-tabs { display: flex; align-items: center; gap: 2px; }
+.dz .dz-tab {
+  height: var(--dz-control);
+  padding: 0 8px;
+  border-radius: var(--dz-radius);
+  color: var(--dz-text-2);
+  font-weight: var(--dz-weight-medium);
+  white-space: nowrap;
+}
+@media (hover: hover) {
+  .dz .dz-tab:hover:not(:disabled) { color: var(--dz-text); }
+}
+.dz .dz-tab[aria-selected='true'] { color: var(--dz-text); background: var(--dz-hover); }
+.dz .dz-tab:disabled { color: var(--dz-text-3); }
+/* A count after a tab's name (unread comments). */
+.dz .dz-tab-badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 16px;
+  height: 16px;
+  margin-left: 4px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: var(--dz-accent);
+  color: var(--dz-on-accent);
+  font-size: 10px;
+  line-height: 1;
+  font-weight: var(--dz-weight-strong);
+  font-variant-numeric: tabular-nums;
+  vertical-align: 1px;
+}
+
+.dz .dz-segmented {
+  display: inline-flex;
+  align-items: stretch;
+  /* In a panel's grid the control keeps its own width unless it is told to fill. */
+  justify-self: start;
+  height: var(--dz-control);
+  padding: 1px;
+  border-radius: var(--dz-radius);
+  background: var(--dz-field);
+}
+.dz .dz-segmented.is-32 { height: var(--dz-control-lg); border-radius: 6px; }
+.dz .dz-segmented.is-fill { display: flex; justify-self: stretch; }
+.dz .dz-segmented.is-fill .dz-segment { flex: 1; }
+.dz .dz-segment {
+  display: grid;
+  place-items: center;
+  min-width: 22px;
+  padding: 0 8px;
+  /* Concentric: the control's 5 px less its 1 px inset. */
+  border-radius: 4px;
+  color: var(--dz-text-2);
+  font-weight: var(--dz-weight-medium);
+  white-space: nowrap;
+}
+.dz .dz-segmented.is-32 .dz-segment { border-radius: 5px; min-width: 30px; }
+.dz .dz-segment.is-icon { padding: 0; }
+@media (hover: hover) {
+  .dz .dz-segment:hover:not(:disabled) { color: var(--dz-text); }
+}
+.dz .dz-segment[aria-checked='true'] { background: var(--dz-raised); color: var(--dz-text); box-shadow: 0 0 0 0.5px rgb(0 0 0 / 0.12), 0 1px 2px rgb(0 0 0 / 0.06); }
+.dz[data-theme='dark'] .dz-segment[aria-checked='true'] { box-shadow: none; }
+.dz .dz-segment:disabled { color: var(--dz-text-3); }
+.dz .dz-segment:focus-visible { outline-offset: -1px; }
+
+/* ── Checkbox and switch ─────────────────────────────────────────────────────────────────────── */
+.dz :is(.dz-check, .dz-switch) {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--dz-control);
+  border-radius: var(--dz-radius);
+  color: var(--dz-text);
+  text-align: left;
+}
+.dz .dz-check-box {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  box-shadow: inset 0 0 0 1px var(--dz-text-2);
+  color: var(--dz-on-accent);
+}
+.dz .dz-check:is([aria-checked='true'], [aria-checked='mixed']) .dz-check-box { background: var(--dz-accent); box-shadow: none; }
+.dz .dz-check:disabled { color: var(--dz-text-3); }
+.dz .dz-check:disabled .dz-check-box { box-shadow: inset 0 0 0 1px var(--dz-text-3); background: transparent; }
+.dz .dz-check:focus-visible { outline-offset: 2px; }
+
+.dz .dz-switch-track {
+  position: relative;
+  flex: none;
+  width: 24px;
+  height: 14px;
+  border-radius: 7px;
+  background: var(--dz-pressed);
+}
+.dz .dz-switch-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.2);
+}
+/* Flipped by this pointer: the fill fades and the thumb slides (on-screen movement, the press curve, 120 ms). */
+@media (hover: hover) and (pointer: fine) {
+  .dz .dz-check:hover:not(:disabled) .dz-check-box { transition: background-color var(--dz-fast) var(--dz-ease-press), box-shadow var(--dz-fast) var(--dz-ease-press); }
+  .dz .dz-switch:hover:not(:disabled) .dz-switch-track { transition: background-color var(--dz-fast) var(--dz-ease-press); }
+  .dz .dz-switch:hover:not(:disabled) .dz-switch-thumb { transition: translate var(--dz-fast) var(--dz-ease-press); }
+}
+.dz .dz-switch[aria-checked='true'] .dz-switch-track { background: var(--dz-accent); }
+.dz .dz-switch[aria-checked='true'] .dz-switch-thumb { translate: 10px 0; }
+.dz .dz-switch:disabled { color: var(--dz-text-3); }
+.dz .dz-switch:focus-visible { outline-offset: 2px; }
+
+/* ── Slider ──────────────────────────────────────────────────────────────────────────────────── */
+.dz .dz-slider { display: flex; align-items: center; height: var(--dz-control); }
+.dz .dz-slider-track { position: relative; flex: 1; height: 16px; touch-action: none; }
+.dz .dz-slider-track::before {
+  content: '';
+  position: absolute;
+  inset: 6px 0;
+  border-radius: 2px;
+  background: var(--dz-pressed);
+}
+.dz .dz-slider-fill {
+  position: absolute;
+  top: 6px;
+  left: 0;
+  height: 4px;
+  width: calc(6px + var(--dz-ratio) * (100% - 12px));
+  border-radius: 2px;
+  background: var(--dz-accent);
+}
+.dz .dz-slider-thumb {
+  position: absolute;
+  top: 2px;
+  left: calc(var(--dz-ratio) * (100% - 12px));
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: var(--dz-shadow-thumb);
+}
+.dz .dz-slider-thumb:focus-visible { outline: 2px solid var(--dz-accent); outline-offset: 1px; border-radius: 50%; }
+.dz .dz-slider.is-painted .dz-slider-track::before { inset: 2px 0; border-radius: 6px; background: var(--dz-track); box-shadow: inset 0 0 0 1px var(--dz-outline); }
+.dz .dz-slider.is-painted .dz-slider-track.has-checker::before {
+  background: var(--dz-track), repeating-conic-gradient(var(--dz-checker-a) 0 25%, var(--dz-checker-b) 0 50%) 0 0 / 8px 8px;
+}
+.dz .dz-slider.is-painted .dz-slider-fill { display: none; }
+.dz .dz-slider.is-painted .dz-slider-thumb { background: transparent; box-shadow: inset 0 0 0 2px #ffffff, 0 0 0 0.5px rgb(0 0 0 / 0.3), 0 1px 3px rgb(0 0 0 / 0.3); }
+.dz .dz-slider.is-disabled { opacity: 0.4; }
+
+/* ── Colour swatch ───────────────────────────────────────────────────────────────────────────── */
+.dz .dz-swatch {
+  display: inline-block;
+  flex: none;
+  border-radius: 2px;
+  background:
+    linear-gradient(var(--dz-swatch), var(--dz-swatch)),
+    repeating-conic-gradient(var(--dz-checker-a) 0 25%, var(--dz-checker-b) 0 50%) 0 0 / 6px 6px;
+  box-shadow: inset 0 0 0 1px var(--dz-outline);
+}
+.dz .dz-swatch.is-split {
+  background:
+    linear-gradient(90deg, var(--dz-swatch-solid) 50%, var(--dz-swatch) 50%),
+    repeating-conic-gradient(var(--dz-checker-a) 0 25%, var(--dz-checker-b) 0 50%) 0 0 / 6px 6px;
+}
+.dz .dz-swatch.is-interactive:focus-visible { outline-offset: 1px; border-radius: 2px; }
+
+/* ── Meter, spinner, key caps ────────────────────────────────────────────────────────────────── */
+.dz .dz-meter { display: grid; gap: 6px; }
+.dz .dz-meter-label { color: var(--dz-text); font-variant-numeric: tabular-nums; }
+.dz .dz-meter-track { position: relative; height: 4px; border-radius: 2px; background: var(--dz-pressed); overflow: hidden; }
+.dz .dz-meter-fill {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--dz-text-2);
+  transform-origin: left center;
+  scale: var(--dz-ratio) 1;
+}
+.dz .dz-meter.is-high .dz-meter-fill { background: var(--dz-warning); }
+.dz .dz-meter.is-full .dz-meter-fill { background: var(--dz-danger); }
+
+.dz .dz-spinner { animation: dz-spin 0.7s linear infinite; }
+
+.dz .dz-kbd {
+  display: inline-flex;
+  align-items: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 3px;
+  background: var(--dz-field);
+  box-shadow: none;
+  color: var(--dz-text-2);
+  font: inherit;
+  font-feature-settings: 'tnum';
+}
+
+/* ── Empty, error and limit states ───────────────────────────────────────────────────────────── */
+.dz .dz-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 320px;
+  margin: 0 auto;
+  padding: 24px 16px;
+  text-align: center;
+}
+.dz .dz-empty-icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin-bottom: 12px;
+  border-radius: 50%;
+  background: var(--dz-field);
+  color: var(--dz-text-2);
+}
+.dz .dz-empty.is-error .dz-empty-icon { color: var(--dz-danger); }
+.dz .dz-empty-title { font-size: 13px; line-height: 20px; font-weight: var(--dz-weight-strong); color: var(--dz-text); }
+.dz .dz-empty-text { margin-top: 4px; color: var(--dz-text-2); text-wrap: pretty; }
+.dz .dz-empty-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 16px; }
+
+/* ── Panel sections ──────────────────────────────────────────────────────────────────────────── */
+.dz .dz-section { border-top: 1px solid var(--dz-border); }
+.dz .dz-section.is-first { border-top: 0; }
+.dz .dz-section-header {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-height: 40px;
+  padding: 0 8px 0 16px;
+}
+.dz .dz-section-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 11px;
+  line-height: 16px;
+  font-weight: var(--dz-weight-strong);
+  color: var(--dz-text);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dz .dz-section.is-empty .dz-section-title { color: var(--dz-text-2); }
+.dz .dz-section-title.is-toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 24px;
+  margin-left: -4px;
+  padding-left: 4px;
+  border-radius: var(--dz-radius);
+}
+.dz .dz-section-chevron { display: grid; place-items: center; color: var(--dz-text-2); opacity: 0; transition: opacity var(--dz-fast), rotate var(--dz-fast) var(--dz-ease-press); rotate: -90deg; }
+.dz .dz-section-chevron.is-open { rotate: 0deg; }
+.dz[data-input='keyboard'] .dz-section-chevron { transition: none; }
+.dz .dz-section-header:hover .dz-section-chevron,
+.dz .dz-section-title.is-toggle:focus-visible .dz-section-chevron,
+.dz .dz-section-chevron:not(.is-open) { opacity: 1; }
+.dz .dz-section-actions { display: flex; align-items: center; gap: 2px; margin-right: -2px; }
+/* One column that may shrink below its content: a long name or value ellipsizes instead of widening the panel. */
+.dz .dz-section-body { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; padding: 0 8px 12px 16px; }
+
+/* ── Side panels ─────────────────────────────────────────────────────────────────────────────── */
+.dz .dz-side-panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: none;
+  width: var(--dz-panel-w, var(--dz-panel-width));
+  min-height: 0;
+  background: var(--dz-panel);
+}
+.dz .dz-side-panel.is-left { border-right: 1px solid var(--dz-border); }
+.dz .dz-side-panel.is-right { border-left: 1px solid var(--dz-border); }
+.dz .dz-resize-handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 3;
+  width: 8px;
+  cursor: col-resize;
+  touch-action: none;
+}
+.dz .dz-side-panel.is-left > .dz-resize-handle { right: -5px; }
+.dz .dz-side-panel.is-right > .dz-resize-handle { left: -5px; }
+.dz .dz-resize-handle::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 3px;
+  width: 2px;
+  background: var(--dz-accent);
+  opacity: 0;
+  transition: opacity var(--dz-fast);
+}
+.dz .dz-resize-handle:focus-visible { outline: none; }
+.dz .dz-resize-handle:focus-visible::after,
+.dz.dz-dragging-col .dz-resize-handle:active::after { opacity: 1; }

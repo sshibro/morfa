@@ -1,0 +1,637 @@
+/* "Marketplaces": the "Card" section and its tabs (docs/marketplaces.md). Each module adds its rules below its own heading. */
+
+/* Four tabs share the 216 px of the panel's body: they split it, with the padding the labels leave (ellipsis only where a scrollbar
+   takes the room). */
+.dz .dz-mp-tabs {
+  gap: 0;
+  margin: 0 0 8px;
+}
+.dz .dz-mp-tabs .dz-tab {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0 3px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dz-mp-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Card Canvas */
+
+/* A check's state: a 14 px round mark, white glyph on the status colour; a ring while it waits. */
+.dz .dz-mp-mark {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  color: #ffffff;
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 700;
+}
+.dz .dz-mp-mark.is-pass { background: var(--dz-success); }
+.dz .dz-mp-mark.is-fail { background: var(--dz-danger); }
+.dz .dz-mp-mark.is-warn { background: var(--dz-warning); color: #1e1e1e; }
+.dz .dz-mp-mark.is-pending { box-shadow: inset 0 0 0 1.5px var(--dz-text-3); background: none; color: var(--dz-text-2); }
+.dz svg.dz-mp-mark.is-pending { box-shadow: none; }
+
+.dz .dz-mp-lint { display: grid; gap: 8px; min-width: 0; }
+
+.dz .dz-mp-verdict {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px;
+  border-radius: var(--dz-radius);
+  background: var(--dz-field);
+}
+.dz .dz-mp-verdict .dz-mp-mark { margin-top: 1px; }
+.dz .dz-mp-verdict-text { display: grid; gap: 1px; min-width: 0; }
+.dz .dz-mp-verdict-title { font-weight: var(--dz-weight-strong); color: var(--dz-text); }
+.dz .dz-mp-verdict-detail { color: var(--dz-text-2); text-wrap: pretty; overflow-wrap: anywhere; }
+
+.dz .dz-mp-switch .dz-mp-switch-item { display: inline-flex; align-items: center; justify-content: center; gap: 4px; }
+.dz .dz-mp-switch-status { display: inline-flex; align-items: center; gap: 1px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.dz .dz-mp-switch-status.is-pass { color: var(--dz-success-text); }
+.dz .dz-mp-switch-status.is-fail { color: var(--dz-danger-text); }
+.dz .dz-mp-switch-status.is-warn { color: #b06a00; }
+.dz[data-theme='dark'] .dz-mp-switch-status.is-warn { color: var(--dz-warning); }
+.dz .dz-mp-switch-status.is-pending { color: var(--dz-text-3); }
+.dz .dz-mp-switch-count { font-size: 10px; }
+
+.dz .dz-mp-checks { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; }
+.dz .dz-mp-check { display: grid; gap: 2px; min-width: 0; }
+.dz .dz-mp-check-head { display: flex; align-items: center; gap: 8px; min-height: 24px; }
+.dz .dz-mp-check-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--dz-text); }
+.dz .dz-mp-check-state { flex: none; color: var(--dz-text-2); }
+.dz .dz-mp-check.is-fail .dz-mp-check-state { color: var(--dz-danger-text); }
+
+.dz .dz-mp-findings { display: grid; gap: 2px; margin: 0 0 4px; padding: 0 0 0 22px; list-style: none; }
+.dz .dz-mp-findings.is-layer { padding: 0; }
+.dz .dz-mp-finding {
+  display: block;
+  width: 100%;
+  padding: 4px 6px;
+  margin-left: -6px;
+  border-radius: var(--dz-radius);
+  color: var(--dz-text-2);
+  text-align: left;
+  text-wrap: pretty;
+  overflow-wrap: anywhere;
+}
+.dz .dz-mp-findings.is-layer .dz-mp-finding { margin-left: 0; background: var(--dz-field); }
+.dz button.dz-mp-finding { cursor: pointer; transition: background-color var(--dz-fast), color var(--dz-fast); }
+@media (hover: hover) {
+  .dz button.dz-mp-finding:hover { background: var(--dz-hover); color: var(--dz-text); }
+  .dz .dz-mp-findings.is-layer button.dz-mp-finding:hover { background: var(--dz-pressed); }
+}
+.dz button.dz-mp-finding:focus-visible { outline: 2px solid var(--dz-accent); outline-offset: -2px; }
+
+.dz .dz-mp-passed {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 24px;
+  margin: 0 -6px;
+  padding: 0 6px;
+  border-radius: var(--dz-radius);
+  color: var(--dz-text);
+  text-align: left;
+}
+@media (hover: hover) {
+  .dz .dz-mp-passed:hover { background: var(--dz-hover); }
+}
+.dz .dz-mp-passed > span:nth-child(2) { flex: 1; }
+.dz .dz-mp-passed-action { color: var(--dz-text-2); }
+.dz .dz-mp-checks.is-passed .dz-mp-check-label { color: var(--dz-text-2); }
+
+.dz .dz-mp-rules { margin: 0; color: var(--dz-text-3); }
+
+/* "Layer on the card" and "Marketplace card" in the panel. */
+.dz .dz-mp-layer, .dz .dz-mp-make { display: grid; gap: 8px; min-width: 0; }
+.dz .dz-mp-field { display: grid; gap: 4px; min-width: 0; }
+.dz .dz-mp-caption { color: var(--dz-text-2); }
+.dz .dz-mp-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 0;
+  color: var(--dz-text-2);
+  text-wrap: pretty;
+}
+.dz .dz-mp-note svg { flex: none; margin-top: 1px; }
+.dz .dz-mp-shown { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; }
+/* On: the field's grey with the text's colour; off: an outline and quiet text, as a layer hidden there. */
+.dz .dz-mp-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--dz-control);
+  padding: 0 4px;
+  border-radius: var(--dz-radius);
+  box-shadow: inset 0 0 0 1px var(--dz-border);
+  color: var(--dz-text-3);
+  font-weight: var(--dz-weight-medium);
+  text-decoration: line-through;
+  text-decoration-color: var(--dz-text-3);
+  transition-property: background-color, color, box-shadow;
+  transition-duration: var(--dz-fast);
+}
+@media (hover: hover) {
+  .dz .dz-mp-toggle:hover:not(:disabled) { color: var(--dz-text-2); }
+}
+.dz .dz-mp-toggle[aria-pressed='true'] { background: var(--dz-field); box-shadow: none; color: var(--dz-text); text-decoration: none; }
+.dz .dz-mp-toggle:focus-visible { outline: 2px solid var(--dz-accent); outline-offset: 1px; }
+.dz .dz-mp-back { justify-self: start; margin-left: -8px; }
+.dz .dz-mp-make-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* "New file ▾ → Marketplace card" (NewCardChooser.tsx), inside the gallery's popover. */
+.dz .dz-mp-new { display: grid; gap: 8px; }
+.dz .dz-mp-new-header { display: flex; align-items: flex-start; gap: 8px; margin: -2px 0 8px -4px; }
+.dz .dz-mp-new-header .dz-templates-header { margin-bottom: 0; }
+.dz .dz-mp-new-caption { margin: 4px 0 0; font-size: 11px; line-height: 16px; font-weight: var(--dz-weight-strong); color: var(--dz-text-2); }
+.dz .dz-mp-choices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.dz .dz-mp-choices.is-three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 520px) {
+  .dz .dz-mp-choices, .dz .dz-mp-choices.is-three { grid-template-columns: minmax(0, 1fr); }
+}
+.dz .dz-mp-choice {
+  display: grid;
+  align-content: start;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: var(--dz-radius-card);
+  box-shadow: inset 0 0 0 1px var(--dz-border);
+  text-align: left;
+  transition-property: background-color, box-shadow, scale;
+  transition-duration: var(--dz-fast);
+  transition-timing-function: var(--dz-ease-press);
+}
+@media (hover: hover) {
+  .dz .dz-mp-choice:hover { background: var(--dz-hover); }
+}
+.dz .dz-mp-choice:active { scale: 0.98; }
+.dz .dz-mp-choice[aria-checked='true'] { box-shadow: inset 0 0 0 1.5px var(--dz-accent); background: var(--dz-selected-row-2); }
+.dz .dz-mp-choice:focus-visible { outline: 2px solid var(--dz-accent); outline-offset: 2px; }
+.dz .dz-mp-choice-name { font-weight: var(--dz-weight-strong); color: var(--dz-text); }
+.dz .dz-mp-choice-note { color: var(--dz-text-2); text-wrap: pretty; }
+.dz .dz-mp-new-footer { display: flex; justify-content: flex-end; margin-top: 8px; }
+
+/* Card Canvas: "Export" and "Slide set" (export/ExportTab.tsx). */
+.dz .dz-mp-export, .dz .dz-mp-kit { display: grid; gap: 8px; min-width: 0; }
+.dz .dz-mp-export-row { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.dz .dz-mp-export-row.is-off .dz-mp-export-label { color: var(--dz-text-3); }
+.dz .dz-mp-export-label { flex: none; width: 56px; color: var(--dz-text-2); }
+.dz .dz-mp-export-format { flex: 1; min-width: 0; }
+.dz .dz-mp-export-quality { position: relative; flex: 1; min-width: 0; }
+/* WB's least quality: a hairline under the track, where the thumb's centre would stand at 65 %. */
+.dz .dz-mp-export-tick {
+  position: absolute;
+  bottom: 1px;
+  width: 1px;
+  height: 5px;
+  margin-left: -0.5px;
+  background: var(--dz-text-2);
+  pointer-events: none;
+}
+.dz .dz-mp-export-row.is-off .dz-mp-export-tick { background: var(--dz-text-3); }
+.dz .dz-mp-export-percent { flex: none; width: 64px; }
+.dz .dz-mp-export-market { flex: none; }
+.dz .dz-mp-export-note { margin: 0; color: var(--dz-text-2); line-height: 16px; text-wrap: pretty; }
+.dz .dz-mp-export-note.is-warning { color: #b06a00; }
+.dz[data-theme='dark'] .dz-mp-export-note.is-warning { color: var(--dz-warning); }
+.dz .dz-mp-export-note.is-error { color: var(--dz-danger-text); }
+.dz .dz-mp-export-actions { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
+.dz .dz-mp-export-result { display: grid; gap: 4px; min-width: 0; }
+.dz .dz-mp-export-files { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
+.dz .dz-mp-export-files li { display: flex; align-items: center; gap: 8px; min-height: 22px; color: var(--dz-text); font-variant-numeric: tabular-nums; }
+.dz .dz-mp-export-file { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dz .dz-mp-export-squeezed { flex: none; color: var(--dz-text-2); }
+.dz .dz-mp-export-size { flex: none; color: var(--dz-text-2); }
+.dz .dz-mp-export-files li.is-over .dz-mp-export-size { color: var(--dz-danger-text); font-weight: var(--dz-weight-medium); }
+
+.dz .dz-mp-kit { padding-top: 12px; margin-top: 4px; border-top: 1px solid var(--dz-border); }
+.dz .dz-mp-kit-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.dz .dz-mp-kit-title { font-weight: var(--dz-weight-strong); color: var(--dz-text); }
+.dz .dz-mp-kit-count { color: var(--dz-text-2); font-variant-numeric: tabular-nums; }
+.dz .dz-mp-kit-brand { flex: 1; min-width: 0; }
+.dz .dz-mp-kit-list { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
+.dz .dz-mp-kit-slide { display: flex; align-items: center; gap: 8px; min-height: 28px; }
+.dz .dz-mp-kit-number { flex: none; width: 16px; color: var(--dz-text-3); font-variant-numeric: tabular-nums; }
+.dz .dz-mp-kit-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--dz-text-2); }
+.dz .dz-mp-kit-slide.is-present .dz-mp-kit-name { color: var(--dz-text); }
+.dz .dz-mp-kit-mark { display: inline-grid; flex: none; place-items: center; width: 24px; color: var(--dz-success-text); }
+.dz .dz-mp-kit-add { flex: none; margin-right: -4px; }
+
+/* Catalog Generation */
+/* "Generation" (generate/GenerateTab.tsx): groups under quiet headings, a job's progress and its result, the colour check. */
+.dz .dz-mp-gen { display: grid; gap: 12px; min-width: 0; }
+.dz .dz-mp-gen-group { display: grid; gap: 8px; min-width: 0; padding-top: 12px; border-top: 1px solid var(--dz-border); }
+.dz .dz-mp-gen > .dz-mp-gen-group:first-child { padding-top: 0; border-top: 0; }
+.dz .dz-mp-gen-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 24px; }
+.dz .dz-mp-gen-title { margin: 0; font-size: inherit; font-weight: var(--dz-weight-strong); color: var(--dz-text); }
+.dz .dz-mp-gen-row { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.dz .dz-mp-gen-label { flex: none; min-width: 56px; color: var(--dz-text-2); }
+.dz .dz-mp-gen-num { flex: none; width: 56px; }
+.dz .dz-mp-gen-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.dz .dz-mp-gen-main { justify-self: start; }
+.dz .dz-mp-gen-upload { justify-self: start; }
+.dz .dz-mp-gen-note { margin: 0; color: var(--dz-text-2); line-height: 16px; text-wrap: pretty; }
+.dz .dz-mp-gen-note.is-ok { color: var(--dz-success-text); }
+.dz .dz-mp-gen-note.is-warning { color: #b06a00; }
+.dz[data-theme='dark'] .dz-mp-gen-note.is-warning { color: var(--dz-warning); }
+.dz .dz-mp-gen-note.is-error { color: var(--dz-danger-text); }
+
+/* The job: its step over a thin bar, "Stop"; after it, one line of what it did with "Show". */
+.dz .dz-mp-gen-run { display: grid; gap: 6px; padding: 8px; border-radius: var(--dz-radius); background: var(--dz-field); }
+.dz .dz-mp-gen-run-row { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+.dz .dz-mp-gen-run-row .dz-mp-gen-note { flex: 1; }
+.dz .dz-mp-gen-result { display: grid; grid-template-columns: 14px minmax(0, 1fr); gap: 4px 8px; padding: 8px; border-radius: var(--dz-radius); background: var(--dz-field); line-height: 16px; }
+.dz .dz-mp-gen-result-mark { display: inline-grid; place-items: center; width: 14px; height: 14px; margin-top: 1px; border-radius: 50%; color: #ffffff; background: var(--dz-success); }
+.dz .dz-mp-gen-result.is-warning .dz-mp-gen-result-mark { background: var(--dz-warning); color: #1e1e1e; }
+.dz .dz-mp-gen-result.is-error .dz-mp-gen-result-mark { background: var(--dz-danger); }
+.dz .dz-mp-gen-result-text { color: var(--dz-text); text-wrap: pretty; }
+.dz .dz-mp-gen-result-actions { grid-column: 2; display: flex; flex-wrap: wrap; gap: 4px; margin-left: -8px; }
+
+/* "Product colour as in the photo" or what changes it. */
+.dz .dz-mp-gen-check { display: flex; align-items: flex-start; gap: 8px; margin: 0; line-height: 16px; }
+.dz .dz-mp-gen-check.is-ok { color: var(--dz-text); }
+.dz .dz-mp-gen-check.is-warning { color: var(--dz-text); }
+.dz .dz-mp-gen-check ul { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; }
+.dz .dz-mp-gen-check-mark { display: inline-grid; flex: none; place-items: center; width: 14px; height: 14px; margin-top: 1px; border-radius: 50%; color: #ffffff; background: var(--dz-success); }
+.dz .dz-mp-gen-check.is-warning .dz-mp-gen-check-mark { background: var(--dz-warning); color: #1e1e1e; }
+
+/* The chosen kit: its five colours and fonts, and its pictures to put on the card. */
+.dz .dz-mp-gen-kit-preview { display: flex; align-items: center; gap: 8px; min-width: 0; color: var(--dz-text-2); }
+.dz .dz-mp-gen-kit-dots { display: flex; flex: none; }
+.dz .dz-mp-gen-kit-dot { width: 14px; height: 14px; margin-right: -3px; border-radius: 50%; box-shadow: 0 0 0 1px var(--dz-panel), inset 0 0 0 1px rgb(0 0 0 / 0.1); }
+.dz .dz-mp-gen-kit-fonts { flex: 1; min-width: 0; margin-left: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dz .dz-mp-gen-kit-strip { display: flex; flex-wrap: wrap; gap: 4px; }
+.dz .dz-mp-gen-kit-chip {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 3px;
+  border: 1px solid var(--dz-border);
+  border-radius: var(--dz-radius);
+  background: var(--dz-field);
+  cursor: pointer;
+  transition: border-color var(--dz-fast) var(--dz-ease-out);
+}
+.dz .dz-mp-gen-kit-chip:hover { border-color: var(--dz-border-strong); }
+.dz .dz-mp-gen-kit-chip:focus-visible { outline: 2px solid var(--dz-accent); outline-offset: 1px; }
+.dz .dz-mp-gen-kit-chip:disabled { opacity: 0.5; cursor: default; }
+.dz .dz-mp-gen-kit-chip img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.dz .dz-mp-gen-kit-chip img.is-missing { visibility: hidden; }
+
+/* "Brand kit" (generate/BrandKitDialog.tsx). */
+.dz .dz-mp-gen-kit { display: grid; gap: 14px; min-width: 0; }
+.dz .dz-mp-gen-kit-field { display: grid; gap: 6px; min-width: 0; }
+.dz .dz-mp-gen-kit-set { display: grid; gap: 6px; min-width: 0; margin: 0; padding: 0; border: 0; }
+.dz .dz-mp-gen-kit-label { padding: 0; font-weight: var(--dz-weight-strong); color: var(--dz-text); }
+.dz .dz-mp-gen-kit-sub { flex: none; width: 112px; color: var(--dz-text-2); }
+.dz .dz-mp-gen-kit-row { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.dz .dz-mp-gen-kit-font { flex: 1; min-width: 0; }
+.dz .dz-mp-gen-kit-colors { display: grid; gap: 4px; }
+.dz .dz-mp-gen-kit-color { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.dz .dz-mp-gen-kit-color .dz-mp-gen-kit-sub { width: 104px; }
+.dz .dz-mp-gen-kit-hex { flex: 1; min-width: 0; font-family: var(--dz-mono); }
+.dz .dz-mp-gen-kit-thumb {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 4px;
+  overflow: hidden;
+  border: 1px solid var(--dz-border);
+  border-radius: var(--dz-radius);
+  background: repeating-conic-gradient(var(--dz-checker-a) 0 25%, var(--dz-checker-b) 0 50%) 0 0 / 8px 8px;
+}
+.dz .dz-mp-gen-kit-thumb img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.dz .dz-mp-gen-kit-thumb.is-empty { background: var(--dz-field); border-style: dashed; }
+.dz .dz-mp-gen-kit-thumb.is-missing { background: var(--dz-field); border-color: var(--dz-warning); }
+.dz .dz-mp-gen-kit-missing { font-size: 9px; line-height: 10px; color: var(--dz-text-2); text-align: center; }
+.dz .dz-mp-gen-kit-icons { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.dz .dz-mp-gen-kit-icon { position: relative; }
+.dz .dz-mp-gen-kit-drop {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  display: none;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  color: var(--dz-text);
+  background: var(--dz-panel);
+  box-shadow: 0 0 0 1px var(--dz-border-strong);
+  cursor: pointer;
+}
+.dz .dz-mp-gen-kit-icon:hover .dz-mp-gen-kit-drop, .dz .dz-mp-gen-kit-drop:focus-visible { display: grid; }
+.dz .dz-mp-gen-kit-spacer { flex: 1; }
+
+/* Catalog Generation: "Catalog from a table" (catalog/CatalogRunButton.tsx, catalog/CatalogDialog.tsx). */
+.dz .dz-mp-catalog-entry { display: grid; gap: 4px; min-width: 0; }
+.dz .dz-mp-catalog-entry .dz-btn { justify-self: stretch; }
+.dz .dz-mp-catalog-entry-hint { margin: 0; color: var(--dz-text-2); text-wrap: pretty; }
+
+.dz .dz-mp-catalog .dz-dialog-body { display: grid; gap: 16px; }
+.dz .dz-mp-catalog .dz-dialog-body p { margin: 0; }
+.dz .dz-mp-catalog-intro { color: var(--dz-text-2); text-wrap: pretty; }
+.dz .dz-mp-catalog-field { display: grid; gap: 8px; min-width: 0; }
+.dz .dz-mp-catalog-hint { color: var(--dz-text-2); text-wrap: pretty; }
+.dz .dz-mp-catalog-error { color: var(--dz-danger-text); text-wrap: pretty; }
+
+/* The table: the whole box picks a file and takes a drop. */
+.dz .dz-mp-catalog-drop,
+.dz .dz-mp-catalog-source {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 72px;
+  padding: 14px 16px;
+  border-radius: var(--dz-radius-card);
+  background: var(--dz-field);
+  box-shadow: inset 0 0 0 1px var(--dz-border);
+}
+.dz .dz-mp-catalog-drop { cursor: pointer; transition: box-shadow var(--dz-fast) var(--dz-ease-out), background-color var(--dz-fast) var(--dz-ease-out); }
+.dz .dz-mp-catalog-drop.is-small { min-height: 56px; padding: 10px 12px; }
+@media (hover: hover) {
+  .dz .dz-mp-catalog-drop:hover { background: var(--dz-hover); }
+}
+.dz .dz-mp-catalog-drop.is-over { box-shadow: inset 0 0 0 1.5px var(--dz-accent); }
+.dz .dz-mp-catalog-drop:has(.dz-mp-catalog-drop-input:focus-visible) { outline: 2px solid var(--dz-accent); outline-offset: 1px; }
+.dz .dz-mp-catalog-drop[aria-busy] { cursor: default; opacity: 0.6; }
+.dz .dz-mp-catalog-drop-input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: inherit; }
+.dz .dz-mp-catalog-drop-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--dz-panel);
+  box-shadow: inset 0 0 0 1px var(--dz-border);
+  color: var(--dz-text-2);
+}
+.dz .dz-mp-catalog-source .dz-mp-catalog-drop-icon { color: var(--dz-accent-text); }
+.dz .dz-mp-catalog-drop-text { display: grid; flex: 1; gap: 2px; min-width: 0; }
+.dz .dz-mp-catalog-drop-text b { overflow: hidden; color: var(--dz-text); font-weight: var(--dz-weight-medium); text-overflow: ellipsis; white-space: nowrap; }
+.dz .dz-mp-catalog-drop-text span { color: var(--dz-text-2); font-variant-numeric: tabular-nums; }
+.dz .dz-mp-catalog-paste {
+  width: 100%;
+  min-height: 64px;
+  max-height: 160px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: var(--dz-radius);
+  background: var(--dz-field);
+  color: var(--dz-text);
+  font: inherit;
+  resize: vertical;
+}
+.dz .dz-mp-catalog-paste::placeholder { color: var(--dz-text-3); }
+.dz .dz-mp-catalog-paste:focus-visible { outline: 2px solid var(--dz-accent); outline-offset: -1px; }
+
+/* Its first rows. */
+.dz .dz-mp-catalog-preview {
+  max-height: 200px;
+  overflow: auto;
+  border-radius: var(--dz-radius-card);
+  box-shadow: inset 0 0 0 1px var(--dz-border);
+}
+.dz .dz-mp-catalog-preview:focus-visible { outline: 2px solid var(--dz-accent); outline-offset: 1px; }
+.dz .dz-mp-catalog-preview table { min-width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.dz .dz-mp-catalog-preview th,
+.dz .dz-mp-catalog-preview td {
+  max-width: 180px;
+  padding: 0 10px;
+  height: 28px;
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--dz-border);
+}
+.dz .dz-mp-catalog-preview th { position: sticky; top: 0; background: var(--dz-modal); color: var(--dz-text-2); font-weight: var(--dz-weight-medium); }
+.dz .dz-mp-catalog-preview tr:last-child td { border-bottom: 0; }
+
+/* Which column fills which layer. */
+.dz .dz-mp-catalog-section { display: grid; gap: 4px; min-width: 0; }
+.dz .dz-mp-catalog-section-title { margin: 0 0 2px; color: var(--dz-text-2); font-size: inherit; font-weight: var(--dz-weight-medium); }
+.dz .dz-mp-catalog-row { display: grid; grid-template-columns: minmax(0, 1fr) 200px; align-items: center; gap: 12px; min-height: 32px; }
+.dz .dz-mp-catalog-row .dz-select { width: 100%; }
+.dz .dz-mp-catalog-layer { display: grid; gap: 1px; min-width: 0; }
+.dz .dz-mp-catalog-layer-name { display: flex; align-items: center; gap: 4px; overflow: hidden; color: var(--dz-text); text-overflow: ellipsis; white-space: nowrap; }
+.dz .dz-mp-catalog-layer-name svg { flex: none; color: var(--dz-text-3); }
+.dz .dz-mp-catalog-layer-value,
+.dz .dz-mp-catalog-layer-hint { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dz .dz-mp-catalog-layer-value { color: var(--dz-accent-text); }
+.dz .dz-mp-catalog-layer-hint { color: var(--dz-text-3); }
+.dz .dz-mp-catalog-layer-warn { color: var(--dz-danger-text); }
+.dz .dz-mp-catalog-link {
+  justify-self: start;
+  padding: 0 4px;
+  margin-left: -4px;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  color: var(--dz-accent-text);
+  font: inherit;
+}
+.dz .dz-mp-catalog-link:hover { text-decoration: underline; }
+.dz .dz-mp-catalog-link:focus-visible { outline: 2px solid var(--dz-accent); outline-offset: 1px; }
+.dz .dz-mp-catalog-summary { display: grid; gap: 6px; padding-top: 12px; border-top: 1px solid var(--dz-border); }
+.dz .dz-mp-catalog-note { display: flex; gap: 8px; color: var(--dz-text-2); text-wrap: pretty; font-variant-numeric: tabular-nums; }
+.dz .dz-mp-catalog-note > svg { flex: none; margin-top: 0; }
+.dz .dz-mp-catalog-note.is-warning { color: var(--dz-text); }
+.dz .dz-mp-catalog-note.is-warning > svg { color: var(--dz-warning); }
+
+/* The run. */
+.dz .dz-mp-catalog-run { display: grid; gap: 8px; }
+.dz .dz-mp-catalog-run-head { display: flex; justify-content: space-between; gap: 12px; font-weight: var(--dz-weight-medium); }
+.dz .dz-mp-catalog-run-count { color: var(--dz-text-2); font-weight: var(--dz-weight); font-variant-numeric: tabular-nums; }
+.dz .dz-mp-catalog-bar { height: 4px; border-radius: 2px; background: var(--dz-pressed); overflow: hidden; }
+.dz .dz-mp-catalog-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--dz-accent);
+  transform-origin: left center;
+  scale: var(--dz-ratio, 0) 1;
+  transition: scale 200ms var(--dz-ease-out);
+}
+
+/* The result. */
+.dz .dz-mp-catalog-result { display: grid; gap: 12px; }
+.dz .dz-mp-catalog-done { display: flex; gap: 12px; align-items: flex-start; }
+.dz .dz-mp-catalog-done-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--dz-success) 14%, transparent);
+  color: var(--dz-success);
+}
+.dz .dz-mp-catalog-done.is-warning .dz-mp-catalog-done-icon { background: color-mix(in srgb, var(--dz-warning) 16%, transparent); color: var(--dz-warning); }
+.dz .dz-mp-catalog-done.is-error .dz-mp-catalog-done-icon { background: color-mix(in srgb, var(--dz-danger) 12%, transparent); color: var(--dz-danger); }
+.dz .dz-mp-catalog-done-text { display: grid; gap: 2px; min-width: 0; padding-top: 1px; }
+.dz .dz-mp-catalog-done-title { font-size: 13px; line-height: 20px; font-weight: var(--dz-weight-strong); text-wrap: pretty; font-variant-numeric: tabular-nums; }
+.dz .dz-mp-catalog-missing { display: grid; gap: 6px; padding: 8px 12px; border-radius: var(--dz-radius-card); background: var(--dz-field); }
+.dz .dz-mp-catalog-missing summary { cursor: default; font-weight: var(--dz-weight-medium); font-variant-numeric: tabular-nums; }
+.dz .dz-mp-catalog-missing summary:focus-visible { outline: 2px solid var(--dz-accent); outline-offset: 2px; border-radius: 2px; }
+.dz .dz-mp-catalog-missing ul { display: grid; gap: 2px; max-height: 160px; margin: 0; padding: 0; overflow-y: auto; list-style: none; color: var(--dz-text-2); user-select: text; -webkit-user-select: text; }
+.dz .dz-mp-catalog-missing b { color: var(--dz-text); font-weight: var(--dz-weight-medium); }
+
+@media (max-width: 520px) {
+  .dz .dz-mp-catalog-row { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dz .dz-mp-catalog-drop, .dz .dz-mp-catalog-bar-fill { transition: none; }
+}
+
+/* Performance Loop */
+
+/* "Sales" (loop/SalesTab.tsx, loop/AbTest.tsx, loop/ConnectDialog.tsx): quiet rows of 11 px type, the numbers in tabular figures, one
+   red for a CTR under 2 %, one green for a winner. */
+.dz .dz-mp-loop, .dz .dz-mp-loop-stack { display: grid; gap: 8px; min-width: 0; }
+.dz .dz-mp-loop-block { display: grid; gap: 8px; min-width: 0; padding-top: 8px; border-top: 1px solid var(--dz-border); }
+.dz .dz-mp-loop > .dz-mp-loop-block:first-of-type { padding-top: 0; border-top: 0; }
+.dz .dz-mp-loop-heading { margin: 0; font-size: 11px; line-height: 16px; font-weight: var(--dz-weight-strong); color: var(--dz-text); }
+.dz .dz-mp-loop-caption { margin: 0; font-size: 11px; font-weight: var(--dz-weight-medium); color: var(--dz-text-2); }
+.dz .dz-mp-loop-lead { margin: 0; color: var(--dz-text); text-wrap: pretty; }
+.dz .dz-mp-loop-quiet { margin: 0; color: var(--dz-text-2); text-wrap: pretty; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.dz .dz-mp-loop-help { margin: 0; color: var(--dz-text-2); text-wrap: pretty; }
+.dz .dz-mp-loop-error { margin: 0; color: var(--dz-danger-text); text-wrap: pretty; overflow-wrap: anywhere; }
+.dz .dz-mp-loop-loading { display: flex; align-items: center; gap: 8px; min-height: 24px; color: var(--dz-text-2); }
+.dz .dz-mp-loop-row { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; min-width: 0; }
+.dz .dz-mp-loop-pair { display: grid; grid-template-columns: minmax(0, 1fr) 72px; gap: 8px; }
+.dz .dz-mp-loop-field { display: grid; gap: 4px; min-width: 0; color: var(--dz-text-2); }
+.dz .dz-mp-loop-field.is-inline { grid-template-columns: auto 56px; align-items: center; gap: 8px; }
+.dz .dz-mp-loop-form { display: grid; gap: 12px; }
+.dz .dz-mp-loop-form .dz-mp-loop-field { gap: 6px; }
+
+/* The plan's offer: the steps stay readable, dimmed, until the plan opens them. */
+.dz .dz-mp-loop-steps { display: grid; gap: 6px; margin: 0; padding: 0 0 0 18px; color: var(--dz-text); }
+.dz .dz-mp-loop-steps li { padding-left: 2px; text-wrap: pretty; }
+.dz .dz-mp-loop-steps li > .dz-btn, .dz .dz-mp-loop-steps li > .dz-mp-loop-row { margin-top: 4px; }
+.dz .dz-mp-loop-steps li > span { display: block; }
+
+.dz .dz-mp-loop-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px;
+  border-radius: var(--dz-radius);
+  background: color-mix(in srgb, var(--dz-danger) 8%, transparent);
+  color: var(--dz-text);
+}
+.dz .dz-mp-loop-alert > svg { flex: none; color: var(--dz-danger); margin-top: 1px; }
+
+/* Finding the product. */
+.dz .dz-mp-loop-products { display: grid; gap: 2px; max-height: 200px; margin: 0; padding: 0; overflow-y: auto; list-style: none; }
+.dz .dz-mp-loop-product {
+  display: grid;
+  gap: 1px;
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: var(--dz-radius);
+  text-align: left;
+  transition: background-color var(--dz-fast);
+}
+@media (hover: hover) {
+  .dz .dz-mp-loop-product:hover { background: var(--dz-hover); }
+}
+.dz .dz-mp-loop-product[aria-pressed='true'] { background: var(--dz-selected-row); box-shadow: inset 0 0 0 1px var(--dz-accent); }
+.dz .dz-mp-loop-product:focus-visible { outline: 2px solid var(--dz-accent); outline-offset: -2px; }
+.dz .dz-mp-loop-product-head { display: grid; gap: 1px; min-width: 0; }
+.dz .dz-mp-loop-product-title { min-width: 0; overflow: hidden; color: var(--dz-text); font-weight: var(--dz-weight-medium); text-overflow: ellipsis; white-space: nowrap; }
+
+/* The numbers: two by two, the value large. */
+.dz .dz-mp-loop-numbers { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; margin: 0; }
+.dz .dz-mp-loop-number { display: grid; gap: 0; padding: 6px 8px; border-radius: var(--dz-radius); background: var(--dz-field); min-width: 0; }
+.dz .dz-mp-loop-number dt { color: var(--dz-text-2); }
+.dz .dz-mp-loop-number dd {
+  margin: 0;
+  overflow: hidden;
+  color: var(--dz-text);
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: var(--dz-weight-strong);
+  font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dz .dz-mp-loop-number.is-low dd { color: var(--dz-danger-text); }
+.dz .dz-mp-loop-number.is-low dt::after {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin: 0 0 1px 6px;
+  border-radius: 50%;
+  background: var(--dz-danger);
+}
+.dz .dz-mp-loop-empty { padding: 8px; border-radius: var(--dz-radius); background: var(--dz-field); }
+.dz .dz-mp-loop-spark { display: grid; gap: 2px; margin: 0; }
+.dz .dz-mp-loop-spark svg { display: block; width: 100%; height: 28px; overflow: visible; }
+.dz .dz-mp-loop-spark path { fill: none; stroke: var(--dz-accent); stroke-width: 1.5; vector-effect: non-scaling-stroke; stroke-linejoin: round; stroke-linecap: round; }
+
+/* Card Score. */
+.dz .dz-mp-loop-score { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: var(--dz-radius); background: var(--dz-field); }
+.dz .dz-mp-loop-score-value { font-size: 20px; line-height: 24px; font-weight: var(--dz-weight-strong); font-variant-numeric: tabular-nums; color: var(--dz-text); }
+.dz .dz-mp-loop-score-value .dz-mp-loop-quiet { margin-left: 1px; font-size: 11px; font-weight: var(--dz-weight); }
+.dz .dz-mp-loop-score.is-low .dz-mp-loop-score-value { color: var(--dz-danger-text); }
+.dz .dz-mp-loop-score-text { display: grid; gap: 1px; min-width: 0; }
+
+/* Publishing. */
+.dz .dz-mp-loop-confirm { display: grid; gap: 8px; padding: 8px; border-radius: var(--dz-radius); background: color-mix(in srgb, var(--dz-danger) 8%, transparent); }
+.dz .dz-mp-loop-confirm p { margin: 0; text-wrap: pretty; }
+.dz .dz-mp-loop-last.is-live { color: var(--dz-success-text); }
+.dz .dz-mp-loop-last.is-failed { color: var(--dz-danger-text); }
+.dz .dz-mp-loop-history summary { color: var(--dz-text-2); cursor: default; }
+.dz .dz-mp-loop-history summary:focus-visible { outline: 2px solid var(--dz-accent); outline-offset: 2px; border-radius: 2px; }
+.dz .dz-mp-loop-history ol { display: grid; gap: 4px; margin: 6px 0 0; padding: 0; list-style: none; }
+.dz .dz-mp-loop-history li { display: grid; gap: 0; min-width: 0; }
+.dz .dz-mp-loop-unlink { justify-self: start; margin-left: -8px; color: var(--dz-text-2); }
+
+/* The A/B test. */
+.dz .dz-mp-loop-status { display: flex; align-items: center; gap: 6px; color: var(--dz-text); font-variant-numeric: tabular-nums; }
+.dz .dz-mp-loop-dot { flex: none; width: 6px; height: 6px; border-radius: 50%; background: var(--dz-text-3); }
+.dz .dz-mp-loop-dot.is-running { background: var(--dz-success); }
+.dz .dz-mp-loop-variants { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 2px 8px; margin: 0; }
+.dz .dz-mp-loop-variants dt { color: var(--dz-text-2); font-weight: var(--dz-weight-strong); }
+.dz .dz-mp-loop-variants dd { display: flex; align-items: center; gap: 6px; min-width: 0; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dz .dz-mp-loop-live { flex: none; padding: 0 5px; border-radius: 4px; background: color-mix(in srgb, var(--dz-success) 14%, transparent); color: var(--dz-success-text); font-size: 10px; line-height: 16px; }
+.dz .dz-mp-loop-standing { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.dz .dz-mp-loop-standing th, .dz .dz-mp-loop-standing td { padding: 2px 0; text-align: right; font-weight: var(--dz-weight); }
+.dz .dz-mp-loop-standing thead th { color: var(--dz-text-2); }
+.dz .dz-mp-loop-standing th:first-child { text-align: left; }
+.dz .dz-mp-loop-verdict { display: grid; gap: 4px; padding: 8px; border-radius: var(--dz-radius); background: var(--dz-field); }
+.dz .dz-mp-loop-verdict.is-winner { box-shadow: inset 2px 0 0 var(--dz-success); }
+.dz .dz-mp-loop-verdict-title { margin: 0; font-weight: var(--dz-weight-strong); color: var(--dz-text); overflow-wrap: anywhere; }
+.dz .dz-mp-loop-verdict .dz-btn { justify-self: start; margin-top: 4px; }
+.dz .dz-mp-loop-stop { justify-self: start; margin-left: -8px; }
+.dz .dz-mp-loop-queue { display: grid; gap: 4px; }
+.dz .dz-mp-loop-queue ul { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.dz .dz-mp-loop-queue li { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 0 8px; }
+.dz .dz-mp-loop-queue li .dz-mp-loop-quiet { grid-column: 1; }
+.dz .dz-mp-loop-queue li .dz-btn { grid-column: 2; grid-row: 1 / span 2; }
+.dz .dz-mp-loop-queue-name { min-width: 0; overflow: hidden; color: var(--dz-text); text-align: left; text-overflow: ellipsis; white-space: nowrap; }
+@media (hover: hover) {
+  .dz .dz-mp-loop-queue-name:hover { color: var(--dz-accent-text); }
+}
+.dz .dz-mp-loop-queue-name:focus-visible { outline: 2px solid var(--dz-accent); outline-offset: 1px; border-radius: 2px; }

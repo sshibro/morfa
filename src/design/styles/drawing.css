@@ -1,0 +1,62 @@
+/* Drawing aids over the canvas (rulers, guides, measurements: src/design/editor/Rulers.tsx) and the
+   frame sizes the right panel lists while "Frame" is the tool (src/design/panels/FramePresets.tsx).
+   Canvas interactions never animate (docs/design-tool.md §Design language); rows only change colour. */
+
+/* ── Over the canvas ─────────────────────────────────────────────────────────────────────────── */
+.dz .dz-canvas-aids {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.dz .dz-canvas-aids__paint { position: absolute; left: 0; top: 0; display: block; }
+.dz .dz-ruler { position: absolute; display: none; pointer-events: auto; touch-action: none; }
+.dz .dz-canvas-aids[data-rulers='true'] .dz-ruler { display: block; }
+.dz .dz-ruler.is-top { left: 20px; right: 0; top: 0; height: 20px; cursor: ns-resize; }
+.dz .dz-ruler.is-left { left: 0; top: 20px; bottom: 0; width: 20px; cursor: ew-resize; }
+
+/* Hit strips over the guides: 7 px wide, the guide line drawn on the canvas in their middle. */
+.dz .dz-guide-hits { position: absolute; inset: 0; pointer-events: none; }
+.dz .dz-guide-hit { position: absolute; pointer-events: auto; touch-action: none; }
+.dz .dz-guide-hit[data-axis='X'] { left: 0; top: 20px; bottom: 0; width: 7px; cursor: ew-resize; }
+.dz .dz-guide-hit[data-axis='Y'] { left: 20px; right: 0; top: 0; height: 7px; cursor: ns-resize; }
+.dz .dz-canvas-aids[data-dragging='X'] { cursor: ew-resize; }
+.dz .dz-canvas-aids[data-dragging='Y'] { cursor: ns-resize; }
+
+/* ── Frame sizes ─────────────────────────────────────────────────────────────────────────────── */
+.dz .dz-frame-presets .dz-section-body { gap: 0; padding-bottom: 8px; }
+.dz .dz-preset-list {
+  display: grid;
+  margin: -4px 0 0 -8px;
+  padding: 0;
+  list-style: none;
+}
+.dz .dz-preset-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: 28px;
+  padding: 0 8px;
+  border-radius: var(--dz-radius);
+  color: var(--dz-text);
+  text-align: left;
+  transition: background-color var(--dz-fast) var(--dz-ease-press);
+}
+@media (hover: hover) and (pointer: fine) {
+  .dz .dz-preset-row:hover { background: var(--dz-hover); }
+}
+.dz .dz-preset-row:active { background: var(--dz-pressed); }
+.dz .dz-preset-row:focus-visible { outline: 2px solid var(--dz-accent); outline-offset: -2px; }
+.dz .dz-preset-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dz .dz-preset-size {
+  flex: none;
+  color: var(--dz-text-2);
+  font-variant-numeric: tabular-nums;
+}

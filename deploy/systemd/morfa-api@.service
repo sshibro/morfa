@@ -1,0 +1,44 @@
+# The Morfa api (TypeScript, server/index.ts). One unit per process: morfa-api@1 listens on 127.0.0.1:3401 (metrics on
+# 127.0.0.1:9401), morfa-api@2 on 3402/9402, … Caddy balances them (TARGETS A1: more than one Node thread per VM). Two or more processes need DESIGN_LIVE_FANOUT=postgres for legacy co-editing (in api.env).
+#
+# Secrets and settings: /etc/morfa/api.env (deploy/env/api.env.example; mode 600, never in the repository).
+# Stop: SIGTERM → server/index.ts closes the listener, ends live streams, flushes document writes within SHUTDOWN_GRACE_MS.
+[Unit]
+Description=Morfa api %i
+After=network-online.target postgresql.service
+Wants=network-online.target
+PartOf=morfa.target
+
+[Service]
+Type=simple
+Slice=morfa.slice
+User=morfa
+Group=morfa
+WorkingDirectory=/srv/morfa/current
+EnvironmentFile=/etc/morfa/api.env
+Environment=NODE_ENV=production
+Environment=HOST=127.0.0.1
+Environment=PORT=340%i
+Environment=METRICS_PORT=940%i
+Environment=MORFA_INSTANCE=api-%i
+Environment=SHUTDOWN_GRACE_MS=25000
+ExecStart=/usr/local/bin/node --enable-source-maps --import tsx server/index.ts
+Restart=on-failure
+RestartSec=2
+TimeoutStopSec=30
+KillSignal=SIGTERM
+LimitNOFILE=65536
+# Hardening: the release tree is read-only; only the data directory is written.
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/srv/morfa/data
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+
+[Install]
+WantedBy=morfa.target

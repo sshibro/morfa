@@ -1,0 +1,662 @@
+/* The left panel: pages, the layers tree, assets, and the variables dialog (src/design/panels/left).
+   Rows are 32 px with 16 px of indentation per level, inset 8 px from the panel's edges so a selection
+   reads as one rounded block (radius 5, the controls' radius). No motion on rows: they react to
+   hundreds of clicks and keys a day (emil-design-eng: no animation for high-frequency actions). */
+
+.dz.dz-dragging-row,
+.dz.dz-dragging-row * { cursor: row-resize !important; }
+
+/* ── Pages ───────────────────────────────────────────────────────────────────────────────────── */
+/* The chrome caps its pages slot at 40 % and scrolls it; this panel sizes and scrolls itself. */
+.dz .dz-left-pages:has(> .dz-pages) {
+  max-height: none;
+  overflow: visible;
+  border-bottom: 0;
+}
+.dz .dz-pages {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  max-height: calc((100dvh - 88px) * 0.4);
+  border-bottom: 1px solid var(--dz-border);
+}
+.dz .dz-pages.is-sized { height: var(--dz-pages-h); max-height: none; }
+.dz .dz-pages-header,
+.dz .dz-layers-header {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: none;
+  height: 40px;
+  padding: 0 8px 0 16px;
+}
+.dz .dz-pages-title,
+.dz .dz-layers-title {
+  flex: 1;
+  min-width: 0;
+  font-size: 11px;
+  line-height: 16px;
+  font-weight: var(--dz-weight-strong);
+}
+.dz .dz-pages-list {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  padding-bottom: 8px;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+.dz .dz-page-row {
+  display: flex;
+  align-items: center;
+  height: 32px;
+  margin: 0 8px;
+  padding-right: 8px;
+  border-radius: var(--dz-radius);
+  color: var(--dz-text);
+  white-space: nowrap;
+}
+@media (hover: hover) {
+  .dz .dz-page-row:hover { background: var(--dz-hover); }
+}
+.dz .dz-page-row:focus-visible { outline-offset: -2px; border-radius: var(--dz-radius); }
+.dz .dz-page-row.is-current { font-weight: var(--dz-weight-medium); }
+.dz .dz-page-row.is-dragged { opacity: 0.4; }
+.dz .dz-pages-list.is-dragging .dz-page-row:hover { background: none; }
+.dz .dz-page-check {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  color: var(--dz-text);
+}
+.dz .dz-page-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.dz .dz-input.dz-page-rename { flex: 1; margin-left: -8px; }
+.dz .dz-page-drop {
+  position: absolute;
+  top: 0;
+  left: 16px;
+  right: 16px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--dz-accent);
+  pointer-events: none;
+}
+.dz .dz-pages-divider {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -5px;
+  z-index: 2;
+  height: 9px;
+  cursor: row-resize;
+  touch-action: none;
+}
+.dz .dz-pages-divider::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 3px;
+  height: 2px;
+  background: var(--dz-accent);
+  opacity: 0;
+  transition: opacity var(--dz-fast);
+}
+.dz .dz-pages-divider:focus-visible { outline: none; }
+.dz .dz-pages-divider:focus-visible::after,
+.dz.dz-dragging-row .dz-pages-divider::after { opacity: 1; }
+
+/* ── Layers ──────────────────────────────────────────────────────────────────────────────────── */
+.dz .dz-left-layers:has(> .dz-layers) { overflow: hidden; }
+.dz .dz-layers { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+.dz .dz-layers-scroll {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  outline: none;
+  contain: strict;
+}
+.dz .dz-layers-scroll:focus-visible { outline: none; }
+.dz .dz-layers-content { position: relative; }
+.dz .dz-layers-window { position: absolute; top: 0; left: 0; right: 0; }
+.dz .dz-layers-empty { padding: 4px 16px 16px; color: var(--dz-text-2); text-wrap: pretty; }
+
+.dz .dz-layer-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 32px;
+  margin: 0 8px;
+  padding: 0 0 0 calc(var(--dz-depth, 0) * 16px);
+  color: var(--dz-text);
+  white-space: nowrap;
+}
+.dz .dz-layer-row.is-hovered { background: var(--dz-hover); border-radius: var(--dz-radius); }
+.dz .dz-layer-row.is-selected { background: var(--dz-selected-row); }
+.dz .dz-layer-row.is-in-selected { background: var(--dz-selected-row-2); }
+.dz .dz-layer-row.is-run-top { border-top-left-radius: var(--dz-radius); border-top-right-radius: var(--dz-radius); }
+.dz .dz-layer-row.is-run-bottom { border-bottom-left-radius: var(--dz-radius); border-bottom-right-radius: var(--dz-radius); }
+.dz .dz-layers-scroll:focus-visible .dz-layer-row.is-active { box-shadow: inset 0 0 0 1px var(--dz-accent); border-radius: var(--dz-radius); }
+.dz .dz-layer-row.is-dragged { opacity: 0.4; }
+
+.dz .dz-layer-caret {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 16px;
+  height: 32px;
+  color: var(--dz-text-2);
+}
+.dz .dz-layer-caret svg { rotate: 0deg; }
+.dz .dz-layer-caret.is-open svg { rotate: 90deg; }
+@media (hover: hover) {
+  .dz .dz-layer-caret[data-caret]:hover { color: var(--dz-text); }
+}
+.dz .dz-layer-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 16px;
+  height: 16px;
+  color: var(--dz-text-2);
+}
+.dz .dz-layer-name {
+  flex: 1;
+  min-width: 0;
+  padding: 0 4px 0 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dz .dz-layer-row.is-top .dz-layer-name { font-weight: var(--dz-weight-medium); }
+.dz .dz-layer-row.is-component :is(.dz-layer-icon, .dz-layer-name) { color: var(--dz-component); }
+.dz .dz-layer-row.is-hidden :is(.dz-layer-icon, .dz-layer-name) { color: var(--dz-text-3); }
+.dz .dz-layer-row.is-hidden.is-component :is(.dz-layer-icon, .dz-layer-name) { color: color-mix(in srgb, var(--dz-component) 50%, transparent); }
+.dz .dz-input.dz-layer-rename { flex: 1; min-width: 0; margin: 0 4px 0 2px; padding: 0 6px; }
+
+.dz .dz-layer-actions { position: absolute; top: 4px; right: 4px; display: flex; align-items: center; }
+/* The name runs under the buttons until they show (hover, or a lock or hidden eye that stays). */
+.dz .dz-layer-row:is(.is-hovered, .is-locked, .is-own-hidden) .dz-layer-name { padding-right: 56px; }
+.dz .dz-layer-action {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  color: var(--dz-text-2);
+}
+/* The buttons exist only on the hovered row and on rows that are locked or hidden; on the latter
+   the other button stays invisible until the row is hovered. */
+.dz .dz-layer-row:not(.is-hovered) .dz-layer-action:not(.is-on) { opacity: 0; }
+@media (hover: hover) {
+  .dz .dz-layer-action:hover { color: var(--dz-text); background: var(--dz-pressed); }
+  .dz .dz-layer-row.is-selected .dz-layer-action:hover { background: color-mix(in srgb, var(--dz-accent) 16%, transparent); }
+}
+.dz .dz-layer-action:focus-visible { opacity: 1; outline-offset: -2px; }
+
+/* Where a dragged layer lands: a line with a ring at its start, or a frame around the new parent. */
+.dz .dz-layer-drop-line {
+  position: absolute;
+  top: 0;
+  right: 8px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--dz-accent);
+  pointer-events: none;
+}
+.dz .dz-layer-drop-line::before {
+  content: '';
+  position: absolute;
+  left: -7px;
+  top: -3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  box-sizing: border-box;
+  border: 2px solid var(--dz-accent);
+  background: var(--dz-panel);
+}
+.dz .dz-layer-drop-into {
+  position: absolute;
+  top: 0;
+  left: 8px;
+  right: 8px;
+  height: 32px;
+  border-radius: var(--dz-radius);
+  box-shadow: inset 0 0 0 2px var(--dz-accent);
+  pointer-events: none;
+}
+
+/* Search */
+.dz .dz-layers-search { display: grid; gap: 8px; padding: 0 8px 8px; }
+.dz .dz-layers-clear { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 4px; color: var(--dz-text-2); }
+@media (hover: hover) {
+  .dz .dz-layers-clear:hover { color: var(--dz-text); background: var(--dz-pressed); }
+}
+.dz .dz-layers-kinds { display: flex; flex-wrap: wrap; gap: 4px; }
+.dz .dz-chip {
+  height: 20px;
+  padding: 0 8px;
+  border-radius: 10px;
+  background: var(--dz-field);
+  color: var(--dz-text-2);
+  transition: background-color var(--dz-fast) var(--dz-ease-press), color var(--dz-fast) var(--dz-ease-press);
+}
+@media (hover: hover) {
+  .dz .dz-chip:hover { color: var(--dz-text); }
+}
+.dz .dz-chip[aria-pressed='true'] { background: var(--dz-selected-row); color: var(--dz-accent-text); }
+.dz .dz-chip:focus-visible { outline-offset: -2px; }
+.dz .dz-layer-result {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  margin: 0 8px;
+  padding: 0 8px;
+  border-radius: var(--dz-radius);
+}
+.dz .dz-layer-result.is-hovered { background: var(--dz-hover); }
+.dz .dz-layer-result.is-selected { background: var(--dz-selected-row); }
+.dz .dz-layer-result.is-component :is(.dz-layer-icon, .dz-layer-name) { color: var(--dz-component); }
+.dz .dz-layer-result-text { display: grid; flex: 1; min-width: 0; }
+.dz .dz-layer-result .dz-layer-name { padding: 0; }
+.dz .dz-layer-path { overflow: hidden; color: var(--dz-text-2); text-overflow: ellipsis; white-space: nowrap; }
+
+/* ── Assets ──────────────────────────────────────────────────────────────────────────────────── */
+.dz .dz-assets { display: flex; flex-direction: column; min-height: 100%; }
+.dz .dz-assets-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  background: var(--dz-panel);
+}
+.dz .dz-assets-toolbar > .dz-input { flex: 1; }
+.dz .dz-assets-section .dz-section-body { display: block; padding: 0 0 8px; }
+.dz .dz-assets-toolbar + .dz-assets-section { border-top: 0; }
+.dz .dz-assets-note { padding: 0 16px 8px; color: var(--dz-text-2); text-wrap: pretty; }
+.dz .dz-assets-section .dz-section-body:has(> .dz-assets-open) { display: grid; gap: 8px; padding: 0 16px 12px; }
+.dz .dz-assets-section .dz-section-body:has(> .dz-assets-open) .dz-assets-note { padding: 0; }
+.dz .dz-btn.dz-assets-open { justify-self: start; }
+
+.dz .dz-asset-folder {
+  display: flex;
+  align-items: center;
+  width: calc(100% - 16px);
+  height: 28px;
+  margin: 0 8px;
+  padding-left: calc(var(--dz-depth, 0) * 16px);
+  border-radius: var(--dz-radius);
+  color: var(--dz-text-2);
+  text-align: left;
+}
+.dz .dz-asset-folder.is-page { color: var(--dz-text); font-weight: var(--dz-weight-medium); }
+@media (hover: hover) {
+  .dz .dz-asset-folder:hover { background: var(--dz-hover); color: var(--dz-text); }
+}
+.dz .dz-asset-folder:focus-visible { outline-offset: -2px; }
+.dz .dz-asset-folder .dz-layer-caret { height: 28px; }
+.dz .dz-asset-folder-name { flex: 1; min-width: 0; padding-left: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.dz .dz-asset-list { display: grid; }
+.dz .dz-asset-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 4px 16px 8px calc(var(--dz-depth, 0) * 16px + 16px);
+}
+.dz .dz-asset-item,
+.dz .dz-style-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  border-radius: var(--dz-radius);
+}
+.dz .dz-asset-item { touch-action: none; }
+.dz .dz-asset-item.is-list,
+.dz .dz-style-row {
+  height: 32px;
+  margin: 0 8px;
+  padding: 0 8px 0 calc(var(--dz-depth, 0) * 16px + 16px);
+}
+@media (hover: hover) {
+  .dz :is(.dz-asset-item.is-list, .dz-style-row):hover { background: var(--dz-hover); }
+}
+.dz .dz-style-row.is-open,
+.dz .dz-style-row.is-open:hover { background: var(--dz-selected-row); }
+.dz :is(.dz-asset-item, .dz-style-row):focus-visible { outline-offset: -2px; }
+.dz .dz-asset-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dz .dz-asset-thumb {
+  display: grid;
+  place-items: center;
+  flex: none;
+  overflow: hidden;
+  border-radius: 4px;
+  background: var(--dz-field);
+  box-shadow: inset 0 0 0 1px var(--dz-outline);
+}
+.dz .dz-asset-thumb canvas { display: block; }
+/* Grid tiles: 64 px, radius 8, a press that gives a little (better-ui: scale 0.96). */
+.dz .dz-asset-item.is-grid {
+  flex-direction: column;
+  border-radius: var(--dz-radius-card);
+  transition: scale var(--dz-fast) var(--dz-ease-press);
+}
+.dz .dz-asset-item.is-grid .dz-asset-thumb { border-radius: var(--dz-radius-card); }
+@media (hover: hover) {
+  .dz .dz-asset-item.is-grid:hover .dz-asset-thumb { box-shadow: inset 0 0 0 1px var(--dz-border-strong); }
+}
+.dz .dz-asset-item.is-grid:active:not(.is-dragging) { scale: 0.96; }
+.dz .dz-asset-item.is-dragging { opacity: 0.5; }
+.dz .dz-input.dz-asset-rename { flex: 1; min-width: 0; margin-left: -8px; }
+.dz .dz-asset-rename-popover { width: 220px; padding: 8px; }
+.dz .dz-asset-rename-popover .dz-input.dz-asset-rename { margin: 0; }
+.dz .dz-asset-ghost {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 60;
+  overflow: hidden;
+  border-radius: var(--dz-radius-card);
+  background: var(--dz-panel);
+  box-shadow: var(--dz-shadow-float);
+  opacity: 0.92;
+  pointer-events: none;
+}
+.dz .dz-asset-ghost canvas { display: block; }
+
+/* Style previews */
+.dz .dz-style-chip {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  background:
+    var(--dz-paint),
+    repeating-conic-gradient(var(--dz-checker-a) 0 25%, var(--dz-checker-b) 0 50%) 0 0 / 6px 6px;
+  box-shadow: inset 0 0 0 1px var(--dz-outline);
+}
+.dz .dz-style-text { flex: none; width: 16px; font-size: 12px; line-height: 16px; text-align: center; letter-spacing: -0.02em; }
+.dz .dz-style-icon { display: grid; place-items: center; flex: none; width: 16px; height: 16px; color: var(--dz-text-2); }
+.dz .dz-style-meta { flex: none; max-width: 50%; overflow: hidden; color: var(--dz-text-2); text-overflow: ellipsis; white-space: nowrap; }
+
+/* The style popover */
+.dz .dz-style-editor .dz-popover-body { width: 264px; }
+.dz .dz-style-editor-head {
+  display: flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--dz-border);
+  font-weight: var(--dz-weight-strong);
+}
+.dz .dz-style-editor-body { display: grid; gap: 12px; padding: 12px 16px 16px; }
+.dz .dz-style-label { display: grid; gap: 4px; min-width: 0; color: var(--dz-text-2); }
+.dz .dz-style-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 8px; }
+.dz .dz-style-grid .is-wide { grid-column: 1 / -1; }
+.dz .dz-style-values { display: grid; gap: 8px; }
+.dz .dz-style-field { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.dz .dz-style-field.is-readonly { height: 24px; color: var(--dz-text-2); }
+.dz .dz-input.dz-style-hex { flex: 1; font-variant-numeric: tabular-nums; }
+.dz .dz-number.dz-style-opacity { flex: none; width: 64px; }
+.dz .dz-style-kind { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ── Variables ───────────────────────────────────────────────────────────────────────────────── */
+.dz .dz-variables-dialog .dz-dialog-body { padding: 0; overflow: hidden; }
+.dz .dz-variables {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr);
+  height: min(600px, calc(100dvh - 140px));
+}
+.dz .dz-variables-dialog .dz-dialog-body { container: dz-variables / inline-size; }
+
+.dz .dz-variables-side { display: flex; flex-direction: column; min-height: 0; border-right: 1px solid var(--dz-border); }
+.dz .dz-variables-side-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: none;
+  height: 40px;
+  padding: 0 8px 0 16px;
+  color: var(--dz-text-2);
+  font-weight: var(--dz-weight-medium);
+}
+.dz .dz-variables-collections { flex: 1; min-height: 0; overflow-y: auto; padding-bottom: 8px; }
+.dz .dz-variables-collection {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  margin: 0 8px;
+  padding: 0 8px;
+  border-radius: var(--dz-radius);
+}
+@media (hover: hover) {
+  .dz .dz-variables-collection:hover { background: var(--dz-hover); }
+}
+.dz .dz-variables-collection.is-current { background: var(--dz-selected-row); }
+.dz .dz-variables-collection:focus-visible { outline-offset: -2px; }
+.dz .dz-variables-collection-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dz .dz-variables-count { color: var(--dz-text-2); font-variant-numeric: tabular-nums; }
+.dz .dz-input.dz-variables-rename { flex: 1; min-width: 0; margin-left: -8px; }
+/* A narrow dialog (a phone's sheet, a small window): the collections become a strip over the table, which keeps the width. */
+@container dz-variables (width < 600px) {
+  .dz .dz-variables { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); }
+  .dz .dz-variables-side { flex-direction: row; align-items: center; border-right: 0; border-bottom: 1px solid var(--dz-border); }
+  .dz .dz-variables-side-head { order: 2; padding: 0 8px; }
+  .dz .dz-variables-side-head > span { display: none; }
+  .dz .dz-variables-collections { display: flex; gap: 4px; overflow-x: auto; overflow-y: hidden; padding: 4px 0 4px 8px; }
+  .dz .dz-variables-collection { flex: none; margin: 0; }
+}
+.dz .dz-variables-main { position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 0; overflow: hidden; }
+.dz .dz-variables-empty { display: grid; place-items: center; height: 100%; padding: 24px; }
+.dz .dz-variables-dialog.is-full .dz-variables { height: calc(100dvh - 32px - 56px); }
+
+/* The table (VariablesDialog.tsx): search, the rows' vertical scroll with the head stuck on top, the modes' own bar,
+   the foot. Only the mode columns move sideways: their track shifts by --dz-vars-x, so "Name" and the pinned
+   "Add mode" column never scroll, and the last mode ends where the pinned column starts. */
+.dz .dz-variables-table {
+  --dz-vars-x: 0px;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+}
+.dz .dz-variables-search { padding: 8px 8px 4px; }
+.dz .dz-variables-search .dz-input { max-width: 240px; }
+.dz .dz-variables-scroll { min-height: 0; overflow-x: hidden; overflow-y: auto; outline: none; }
+.dz .dz-variables-row {
+  display: grid;
+  grid-template-columns: var(--dz-vars-name, 240px) minmax(0, 1fr) 40px;
+  align-items: stretch;
+  min-height: 36px;
+}
+.dz .dz-variables-row.is-head {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  min-height: 40px;
+  background: var(--dz-panel);
+  box-shadow: inset 0 -1px 0 var(--dz-border);
+  color: var(--dz-text-2);
+  font-weight: var(--dz-weight-medium);
+}
+.dz .dz-variables-modes { min-width: 0; overflow: clip; }
+.dz .dz-variables-track {
+  display: grid;
+  grid-template-columns: var(--dz-vars-cols);
+  width: var(--dz-vars-track);
+  height: 100%;
+  transform: translateX(var(--dz-vars-x));
+}
+@media (hover: hover) {
+  .dz .dz-variables-rows .dz-variables-row:hover { background: var(--dz-hover); }
+}
+.dz .dz-variables-row.is-selected,
+.dz .dz-variables-rows .dz-variables-row.is-selected:hover { background: var(--dz-selected-row); }
+.dz .dz-variables-cell { position: relative; display: flex; align-items: center; gap: 8px; min-width: 0; padding: 0 8px; }
+.dz .dz-variables-cell.is-name { padding-left: calc(16px + var(--dz-depth, 0) * 12px); user-select: none; }
+.dz .dz-variables-row.is-head .dz-variables-cell.is-name { padding-left: 16px; }
+.dz .dz-variables-cell.is-mode { gap: 6px; cursor: default; }
+.dz .dz-variables-cell.is-add { justify-content: center; padding: 0; }
+.dz .dz-variables-row.is-head .dz-variables-cell.is-add { background: var(--dz-panel); }
+/* Dividers where modes pass under the fixed columns. */
+.dz .dz-variables-table.is-scrolled-start .dz-variables-cell.is-name { box-shadow: inset -1px 0 0 var(--dz-border); }
+.dz .dz-variables-table.is-scrolled-end .dz-variables-cell.is-add { box-shadow: inset 1px 0 0 var(--dz-border); }
+.dz .dz-variables-mode-name,
+.dz .dz-variables-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dz .dz-variables-mode-name { flex: 1; }
+.dz .dz-variables-name { color: var(--dz-text); }
+.dz .dz-variables-default { flex: none; padding: 0 4px; border-radius: 4px; background: var(--dz-field); color: var(--dz-text-2); font-weight: var(--dz-weight); }
+.dz .dz-variables-type { display: grid; place-items: center; flex: none; color: var(--dz-text-2); }
+.dz .dz-variables-mode-menu {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  color: var(--dz-text-2);
+  opacity: 0;
+}
+.dz .dz-variables-cell.is-mode:hover .dz-variables-mode-menu,
+.dz .dz-variables-mode-menu[aria-expanded='true'],
+.dz .dz-variables-mode-menu:focus-visible { opacity: 1; }
+@media (hover: none) {
+  .dz .dz-variables-mode-menu { opacity: 1; }
+}
+/* The column edge a drag resizes (a double click gives the width back). */
+.dz .dz-variables-resize { position: absolute; top: 0; right: -3px; bottom: 0; z-index: 1; width: 6px; cursor: col-resize; touch-action: none; }
+.dz .dz-variables-resize::after { content: ''; position: absolute; top: 8px; bottom: 8px; left: 2px; width: 2px; border-radius: 1px; }
+.dz .dz-variables-resize:hover::after,
+.dz .dz-variables-resize:active::after { background: var(--dz-accent); }
+/* Groups from "/" in the names: the parents greyed, the group's own name strong, folded by the chevron. */
+.dz .dz-variables-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 32px;
+  padding: 8px 16px 0 calc(4px + var(--dz-depth, 0) * 12px);
+  color: var(--dz-text-2);
+}
+.dz .dz-variables-group-name { display: flex; align-items: baseline; gap: 4px; min-width: 0; overflow: hidden; white-space: nowrap; }
+.dz .dz-variables-group-name strong { color: var(--dz-text); font-weight: var(--dz-weight-strong); }
+.dz .dz-variables-group-parents { overflow: hidden; text-overflow: ellipsis; }
+.dz .dz-variables-group .dz-variables-count { margin-left: 4px; }
+.dz .dz-variables-fold { display: grid; place-items: center; flex: none; width: 20px; height: 20px; border-radius: 4px; color: var(--dz-text-2); }
+@media (hover: hover) {
+  .dz .dz-variables-fold:hover { background: var(--dz-pressed); color: var(--dz-text); }
+}
+.dz .dz-variables-row.is-drop-before { box-shadow: inset 0 2px 0 var(--dz-accent); }
+.dz .dz-variables-row.is-drop-after { box-shadow: inset 0 -2px 0 var(--dz-accent); }
+.dz .dz-variables-group.is-drop-into { border-radius: var(--dz-radius); box-shadow: inset 0 0 0 2px var(--dz-accent); }
+.dz .dz-variables-cell.is-mode.is-drop-before { box-shadow: inset 2px 0 0 var(--dz-accent); }
+.dz .dz-variables-note { padding: 16px; color: var(--dz-text-2); }
+.dz .dz-variables-value { display: flex; align-items: center; flex: 1; min-width: 0; padding-right: 24px; }
+.dz .dz-variables-value > :is(.dz-input, .dz-number) { flex: 1; }
+/* Values read as text until hovered or focused, like the hex and string cells. */
+.dz .dz-number.dz-variables-number:not(:focus-within) { background: transparent; }
+/* Swatches in the dark menus keep an edge against the menu. */
+.dz .dz-menu-icon .dz-swatch { box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.24); }
+.dz .dz-variables-color { display: flex; align-items: center; gap: 4px; flex: 1; min-width: 0; padding-left: 6px; }
+.dz .dz-input.dz-variables-hex { flex: 1; padding-left: 4px; font-variant-numeric: tabular-nums; }
+.dz .dz-variables-alpha { color: var(--dz-text-2); font-variant-numeric: tabular-nums; }
+.dz .dz-variables-alias {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  height: 24px;
+  padding: 0 2px 0 6px;
+  border-radius: var(--dz-radius);
+  background: var(--dz-field);
+}
+.dz .dz-variables-alias-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dz .dz-variables-unlink,
+.dz .dz-variables-link {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  color: var(--dz-text-2);
+}
+.dz .dz-variables-link { position: absolute; right: 6px; top: 50%; translate: 0 -50%; opacity: 0; }
+.dz .dz-variables-row:hover .dz-variables-link,
+.dz .dz-variables-link[aria-expanded='true'],
+.dz .dz-variables-link:focus-visible { opacity: 1; }
+@media (hover: hover) {
+  .dz :is(.dz-variables-unlink, .dz-variables-link):hover { background: var(--dz-pressed); color: var(--dz-text); }
+}
+/* The modes' bar: under the mode columns only, clear of the fixed columns and of the rows' own scrollbar. */
+.dz .dz-variables-hbar {
+  display: grid;
+  grid-template-columns: var(--dz-vars-name, 240px) minmax(0, 1fr) calc(40px + var(--dz-vars-gutter, 0px));
+  box-shadow: inset 0 1px 0 var(--dz-border);
+}
+.dz .dz-variables-hbar-scroll { grid-column: 2; min-height: 12px; overflow-x: auto; overflow-y: hidden; }
+.dz .dz-variables-hbar[aria-hidden='true'] { visibility: hidden; height: 0; overflow: hidden; }
+.dz .dz-variables-foot { padding: 8px; background: var(--dz-panel); box-shadow: inset 0 1px 0 var(--dz-border); }
+.dz .dz-variables-editor .dz-popover-body { width: 280px; }
+.dz .dz-variables-editor-body { display: grid; gap: 10px; padding: 12px; }
+.dz .dz-variables-editor-title { font-size: 11px; font-weight: var(--dz-weight-strong); }
+.dz .dz-variables-editor-field { display: grid; gap: 4px; color: var(--dz-text-2); }
+.dz .dz-variables-editor-field .dz-input.dz-variables-rename { margin-left: 0; }
+/* Big files: a page whose layers are being fetched (the switch waits for them). */
+.dz .dz-page-row.is-loading .dz-page-name { opacity: 0.55; }
+.dz .dz-page-row.is-loading .dz-page-name::after { content: '…'; }
+
+/* "Pages" folds, as Figma UI3's Pages section: the chevron hangs in the gutter so the title keeps its place. */
+.dz .dz-pages-fold {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  max-width: 100%;
+  height: 24px;
+  margin-left: -14px;
+  padding: 0 4px 0 0;
+  border-radius: var(--dz-radius);
+  font: inherit;
+  color: inherit;
+  text-align: left;
+}
+.dz .dz-pages-chevron { display: grid; flex: none; place-items: center; width: 12px; color: var(--dz-text-2); }
+.dz .dz-pages-current { min-width: 0; margin-left: 6px; overflow: hidden; color: var(--dz-text-2); font-weight: 400; text-overflow: ellipsis; white-space: nowrap; }
+@media (hover: hover) {
+  .dz .dz-pages-fold:hover .dz-pages-chevron { color: var(--dz-text); }
+}
+.dz .dz-pages.is-folded .dz-pages-list,
+.dz .dz-pages.is-folded .dz-pages-divider { display: none; }
+
+/* "Rename layers": the fields, the tokens under "Replace with", and the names as they will be. */
+.dz .dz-rename-form { display: grid; gap: 10px; }
+.dz .dz-rename-label { display: grid; grid-template-columns: 96px 1fr; align-items: center; gap: 8px; color: var(--dz-text-2); }
+.dz .dz-rename-tokens { display: flex; flex-wrap: wrap; gap: 4px; margin: -4px 0 0 104px; }
+.dz .dz-rename-start { width: 96px; }
+.dz .dz-rename-hint { margin: 0; color: var(--dz-text-2); text-wrap: pretty; }
+.dz .dz-rename-preview { display: grid; gap: 4px; margin: 12px 0 0; padding: 8px 10px; border-radius: var(--dz-radius); background: var(--dz-field); list-style: none; }
+.dz .dz-rename-preview li { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 8px; align-items: baseline; }
+.dz .dz-rename-old { overflow: hidden; color: var(--dz-text-2); text-overflow: ellipsis; white-space: nowrap; }
+.dz .dz-rename-new { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dz .dz-rename-more { color: var(--dz-text-2); }
+
+/* A page divider (an empty page named "-…", as Figma's): a line across the row, no check, not opened by a click. Full row
+   height: the drop maths counts rows of ROW px. */
+.dz .dz-page-row.is-divider { cursor: grab; }
+@media (hover: hover) {
+  .dz .dz-page-row.is-divider:hover { background: none; }
+}
+.dz .dz-page-row.is-divider .dz-page-check { display: none; }
+.dz .dz-page-divider-line { flex: 1; height: 1px; margin-left: 8px; background: var(--dz-border-strong, var(--dz-border)); }

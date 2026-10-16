@@ -1,0 +1,11 @@
+:root { color-scheme: light dark; --bg: #ffffff; --fg: #18181b; --muted: #71717a; --accent: #0d99ff; }
+@media (prefers-color-scheme: dark) { :root { --bg: #1e1e1e; --fg: #f4f4f5; --muted: #a1a1aa; } }
+html, body { height: 100%; margin: 0; }
+body { background: var(--bg); color: var(--fg); font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif; display: grid; place-items: center; }
+main { max-width: 420px; padding: 24px; text-align: center; }
+.mark { width: 56px; height: 56px; }
+h1 { font-size: 20px; margin: 16px 0 8px; font-weight: 600; }
+p { margin: 0 0 20px; color: var(--muted); }
+button { font: inherit; font-weight: 500; color: #fff; background: var(--accent); border: 0; border-radius: 6px; padding: 8px 20px; cursor: pointer; }
+button:disabled { opacity: .6; cursor: default; }
+.hint { margin-top: 12px; min-height: 1.5em; font-size: 12px; }

@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-retry"
+description = "Enables the retry command without any pre-configured scope."
+commands.allow = ["retry"]
+
+[[permission]]
+identifier = "deny-retry"
+description = "Denies the retry command without any pre-configured scope."
+commands.deny = ["retry"]

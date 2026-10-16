@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-save-portable"
+description = "Enables the save_portable command without any pre-configured scope."
+commands.allow = ["save_portable"]
+
+[[permission]]
+identifier = "deny-save-portable"
+description = "Denies the save_portable command without any pre-configured scope."
+commands.deny = ["save_portable"]

@@ -1,0 +1,125 @@
+# Morfa's public names, imported by Caddyfile.morfa (production: certificates by
+# ACME) and Caddyfile.staging (scripts/deploy/staging.sh: Caddy's local CA). Every name comes from /etc/morfa/caddy.env:
+#
+#   {$MORFA_MARKETING_DOMAIN}            morfa.example        the base name: desktop downloads, anything else → 308 to the app
+#   {$MORFA_DOMAIN}                      app.morfa.example    the app (dist/app) and api (/api/*, /uploads/*, /fonts/*);
+#                                                           /n/<node>/collab/* stays as a second path to each node
+#   collab-a.{$MORFA_MARKETING_DOMAIN}   collab-a.morfa.example   collab node a's socket only (wss://…/collab/<file>)
+#   collab-b.{$MORFA_MARKETING_DOMAIN}   collab-b.morfa.example   collab node b's socket only
+#   updates.{$MORFA_MARKETING_DOMAIN}    updates.morfa.example    the desktop updater's JSON and bundles (docs/desktop.md)
+#
+# A collab node's own name lets it move to its own VM by changing one DNS record (api's DESIGN_COLLAB_NODES public base is
+# wss://collab-<node>.morfa.example); the upgrade's Origin is still https://app.morfa.example (MORFA_COLLAB_ORIGINS).
+
+# Every public site: HSTS (a year, every subdomain: all of them are on this Caddy; `preload` is the operator's later choice), no server banner, JSON access logs to journald (Loki keeps them 14 days) without the url= query value.
+(morfa_edge) {
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		-Server
+	}
+	# The link preview's ?url= (server/design/link-preview.ts) is the address someone pasted: never logged.
+	log {
+		output stderr
+		format filter {
+			request>uri query {
+				replace url REDACTED
+			}
+			wrap json
+		}
+	}
+}
+
+# One collab node's public name: only its socket path; its /internal/*, /metrics and /healthz are never routed.
+(morfa_collab_host) {
+	import morfa_edge
+	@socket path /collab/*
+	handle @socket {
+		reverse_proxy {args[0]} {
+			flush_interval -1
+			stream_close_delay 1h
+		}
+	}
+	handle {
+		respond 404
+	}
+}
+
+{$MORFA_MARKETING_DOMAIN:morfa.example} {
+	import morfa_edge
+	encode zstd gzip
+	# Never served: the services' private endpoints and the build's own files. A `handle`, not `respond @private 404`: Caddy
+	# sorts `respond` after `handle`, so the catch-all below would answer first (2026-10-10).
+	# `handle` blocks are mutually exclusive and the one without a matcher goes last (tests/design-deploy-caddy.test.ts).
+	@private path /internal /internal/* /metrics /metrics/* /healthz /api /api/* /BUILD_COMMIT /build-graph.json
+	handle @private {
+		respond 404
+	}
+	# Desktop installers (docs/desktop.md "Downloads"): /download/<file> from MORFA_DOWNLOADS_DIR, uploaded by the operator.
+	handle_path /download/* {
+		root * {$MORFA_DOWNLOADS_DIR:/srv/morfa/downloads}
+		header Cache-Control "public, max-age=300"
+		file_server
+	}
+	# There is no site on the base name: anything else goes to the app.
+	handle {
+		redir https://{$MORFA_DOMAIN:app.morfa.example}{uri} 308
+	}
+}
+
+{$MORFA_DOMAIN:app.morfa.example} {
+	import morfa_edge
+	# Text, scripts, JSON and wasm only: a live stream (text/event-stream, the legacy path) and the sockets stay uncompressed.
+	encode {
+		zstd
+		gzip
+		match {
+			header Content-Type text/html*
+			header Content-Type text/css*
+			header Content-Type text/plain*
+			header Content-Type text/javascript*
+			header Content-Type application/javascript*
+			header Content-Type application/json*
+			header Content-Type application/wasm*
+			header Content-Type image/svg+xml*
+			header Content-Type font/ttf*
+		}
+	}
+	import morfa_routes
+}
+
+collab-a.{$MORFA_MARKETING_DOMAIN:morfa.example} {
+	import morfa_collab_host {$MORFA_COLLAB_A:127.0.0.1:3421}
+}
+
+collab-b.{$MORFA_MARKETING_DOMAIN:morfa.example} {
+	import morfa_collab_host {$MORFA_COLLAB_B:127.0.0.1:3422}
+}
+
+# Tauri's updater asks /desktop/<target>/<arch>/<current version> (desktop/src-tauri/tauri.conf.json): the answer is that
+# platform's latest.json whatever the version asked (the updater itself compares versions), or 204 "no update" while the operator
+# has uploaded none. Bundles and their .sig sit beside it (/desktop/<target>/<arch>/<file>, named in latest.json).
+updates.{$MORFA_MARKETING_DOMAIN:morfa.example} {
+	import morfa_edge
+	root * {$MORFA_UPDATES_DIR:/srv/morfa/updates}
+	header Cache-Control "no-cache"
+	@bundle file
+	handle @bundle {
+		file_server
+	}
+	@check path_regexp check ^/desktop/([a-z0-9_-]+)/([a-z0-9_-]+)/[^/]+$
+	handle @check {
+		rewrite * /desktop/{re.check.1}/{re.check.2}/latest.json
+		@latest file
+		handle @latest {
+			file_server
+		}
+		handle {
+			respond 204
+		}
+	}
+	handle {
+		respond 404
+	}
+}

@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- viewport-fit=cover: the editor reaches under a phone's notch and home indicator and keeps its bars inside
+         env(safe-area-inset-*) (src/design/styles/phone-editor.css). -->
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover" />
+    <meta name="theme-color" content="#F5F5F5" />
+    <!-- The app icon (assets/brand/morfa-app-icon.svg); the PNGs for browsers without SVG icons and for iOS home screens. -->
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <!-- The product's name lives in shared/design/product.ts (PRODUCT_NAME); src/main.tsx sets the title from it. -->
+    <title>Morfa</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

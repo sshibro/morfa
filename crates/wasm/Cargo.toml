@@ -1,0 +1,45 @@
+[package]
+name = "morfa-wasm"
+description = "The engine's JavaScript boundary: one wasm-bindgen package for the browser and for Node (scripts/wasm-build.sh)."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+wasm-bindgen.workspace = true
+# JSON.parse of one node for MorfaDoc::node (the boundary hands JavaScript a plain object).
+js-sys = "0.3"
+morfa-model.workspace = true
+morfa-geometry.workspace = true
+morfa-layout.workspace = true
+morfa-ops.workspace = true
+# The socket's binary wire (decode_frame/encode_frame); the browser build leaves the tickets out.
+morfa-protocol = {path = "../protocol", default-features = false}
+serde = "1"
+serde_json = "1"
+# The removed-id set `group_fit::fit_groups_removing` fills (the order TypeScript's `Draft.removed` lists them).
+indexmap = "2"
+# A checkpoint read from JavaScript's bytes in chunks (parts.rs `decode_from`), never copied whole into wasm memory.
+postcard = {version = "1", default-features = false, features = ["use-std"]}
+
+# The allocator of the wasm builds (lib.rs): faster than the default dlmalloc on the normalize path, and smaller.
+[target.'cfg(target_family = "wasm")'.dependencies]
+talc = "5.1"
+
+[package.metadata.wasm-pack.profile.release]
+# The workspace's release profile already optimises for size; wasm-opt adds its own -Os pass.
+wasm-opt = ["-Os"]
+
+[lints]
+workspace = true
+
+[features]
+# What only the server's build (scripts/wasm-build.sh --target nodejs) exports: MorfaDoc.commit_entry / replay_entry,
+# the store journal entries (`MRFJ`) of collab's journal rows for api (server/design/collab/checkpoint.ts).
+# It also keeps foldhash for node ids (morfa-model `foldhash-ids`): the server reads ids from requests.
+server = ["morfa-model/foldhash-ids", "serde_json/raw_value"]

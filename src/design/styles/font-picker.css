@@ -1,0 +1,74 @@
+/* The font picker (src/design/ui/FontPicker.tsx): a popover beside the design panel with a search
+   field and a virtualized list. Rows are absolutely placed by translateY (the list never lays
+   out more than the rows in view); hover and the keyboard share one active row, coloured only,
+   with no motion (a list walked with the arrows dozens of times a day). */
+
+.dz .dz-font-popover .dz-popover-body { width: 264px; overflow: hidden; }
+
+.dz .dz-font-picker { display: flex; flex-direction: column; }
+
+.dz .dz-font-search {
+  padding: 8px 8px 6px;
+  box-shadow: inset 0 -1px 0 var(--dz-border);
+}
+
+.dz .dz-font-list {
+  position: relative;
+  height: min(380px, calc(100dvh - 160px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  outline: none;
+}
+.dz .dz-font-list-inner { position: relative; padding-bottom: 8px; box-sizing: content-box; }
+
+.dz :is(.dz-font-row, .dz-font-heading, .dz-font-note, .dz-font-local) {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 28px;
+}
+
+.dz .dz-font-heading {
+  display: flex;
+  align-items: flex-end;
+  padding: 0 16px 4px;
+  color: var(--dz-text-2);
+  font-weight: var(--dz-weight-medium);
+}
+
+.dz .dz-font-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  /* Inset like menu rows: 4 px from the popover's edge, radius concentric with its 12 px. */
+  margin: 0 4px;
+  padding: 0 8px 0 4px;
+  border-radius: 8px;
+  color: var(--dz-text);
+  cursor: default;
+}
+.dz .dz-font-row.is-active { background: var(--dz-hover); }
+.dz .dz-font-row.is-selected { color: var(--dz-accent-text); }
+.dz .dz-font-check { display: grid; place-items: center; flex: none; width: 16px; color: var(--dz-accent-text); }
+.dz .dz-font-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 13px;
+  line-height: 18px;
+  letter-spacing: 0;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-synthesis: weight style;
+}
+.dz .dz-font-source { display: grid; place-items: center; flex: none; color: var(--dz-text-3); }
+
+.dz .dz-font-note {
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  color: var(--dz-text-2);
+}
+.dz .dz-font-note.is-wrap { height: auto; min-height: 28px; padding-top: 6px; padding-bottom: 6px; text-wrap: pretty; }
+.dz .dz-font-local { display: flex; align-items: center; padding: 0 10px; }

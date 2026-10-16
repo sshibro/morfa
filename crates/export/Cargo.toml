@@ -1,0 +1,43 @@
+[package]
+name = "morfa-export"
+description = "SVG, PDF and raster export (lane L5)."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+morfa-model.workspace = true
+morfa-geometry.workspace = true
+# Text layout (lane L3); `fonts` adds the font store, shaping and glyph outlines (outline text, PDF fonts).
+morfa-text = {workspace = true, default-features = false}
+# Layer ids: `name.normalize('NFC')` and the `\p{L}`/`\p{N}` classes of svg-export.ts.
+unicode-normalization = "0.1"
+unicode-general-category = "1"
+# `new URL(url).protocol` of a text hyperlink (print flavour): the WHATWG parser.
+url = {version = "2", optional = true}
+# Glyph metrics (decorations, advances) beside lane L3's outlines; the same version morfa-text uses.
+skrifa = {version = "0.48", default-features = false, features = ["std"], optional = true}
+# Shaping with features (Blink turns ligatures off under letter spacing); lane L3's shaper takes none.
+harfrust = {version = "0.14", default-features = false, features = ["std"], optional = true}
+
+# The vector PDF (feature `pdf`): Flate streams, PNG pictures, and resvg (tiny-skia) for the shadows and blurs a
+# PDF cannot hold, until lane L4's vello_cpu lands.
+miniz_oxide = {version = "0.8", optional = true}
+png = {version = "0.17", optional = true}
+resvg = {version = "0.45", default-features = false, features = ["raster-images"], optional = true}
+
+[features]
+# The WHATWG URL parser for print-flavour hyperlinks (`new URL(url).protocol`); without it a plain scheme and host
+# check stands in (the editor's build: the parser's IDNA tables are most of its size).
+default = ["whatwg-url"]
+whatwg-url = ["dep:url"]
+fonts = ["morfa-text/fonts", "morfa-text/woff2", "dep:skrifa", "dep:harfrust"]
+pdf = ["fonts", "whatwg-url", "dep:miniz_oxide", "dep:png", "dep:resvg"]
+
+[dev-dependencies]
+serde_json = {version = "1", features = ["preserve_order", "float_roundtrip"]}
+
+[lints]
+workspace = true

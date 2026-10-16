@@ -1,0 +1,29 @@
+[package]
+name = "morfa-protocol"
+description = "The co-editing socket protocol between the editor, loadgen and the collab service (lane B1, docs/BACKEND.md §2)."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[features]
+default = ["ticket"]
+# Ed25519 socket tickets (minting and checking); the browser build of the protocol leaves them out.
+ticket = ["dep:ed25519-dalek", "dep:base64"]
+
+[dependencies]
+morfa-model.workspace = true
+bytes = "1"
+serde = {version = "1", features = ["derive", "rc"]}
+serde_json = {version = "1", features = ["raw_value"]}
+# The binary wire (src/binary.rs): the encoding of S1's codec (crates/model).
+postcard = {version = "1", default-features = false, features = ["use-std"]}
+base64 = {version = "0.22", optional = true}
+ed25519-dalek = {version = "2", optional = true, features = ["rand_core"]}
+
+[dev-dependencies]
+rand = "0.8"
+
+[lints]
+workspace = true

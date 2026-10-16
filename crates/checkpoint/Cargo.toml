@@ -1,0 +1,24 @@
+[package]
+name = "morfa-checkpoint"
+description = "Document checkpoints in object storage (header, zstd, integrity re-read) and the cold load: checkpoint + journal tail (lane B2)."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+morfa-blobs = {path = "../blobs"}
+morfa-journal = {path = "../journal"}
+morfa-model.workspace = true
+sha2 = "0.10"
+tokio = {version = "1", features = ["rt", "sync", "time", "macros"]}
+tokio-postgres = {version = "0.7", default-features = false, features = ["runtime"]}
+zstd = {version = "0.13", default-features = false, features = ["zstdmt"]}
+
+[dev-dependencies]
+morfa-journal = {path = "../journal", features = ["testdb"]}
+tokio = {version = "1", features = ["rt-multi-thread", "sync", "time", "macros", "process", "io-util"]}
+
+[lints]
+workspace = true

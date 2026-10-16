@@ -1,0 +1,3 @@
+# The offline transfer's legacy normalizer is a frozen bundle: its files are hashed into
+# the transform fingerprint that private transfer evidence is bound to.
+scripts/postgresql/legacy/

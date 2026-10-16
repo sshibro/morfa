@@ -1,0 +1,186 @@
+/* Co-editing presence (src/design/realtime/PresenceUI.tsx): avatars in the right panel's header, the cursors, selections
+   and follow frame of the others over the canvas. The colours are the people's (shared/design/live.ts), never the
+   selection blue. Cursors glide on animation frames (JS, transform only); nothing on the canvas animates otherwise. An
+   avatar that arrives fades in 160 ms and settles from 0.96 in 120 ms (someone joined: rare), a press gives 0.96. */
+
+/* ── Avatars ─────────────────────────────────────────────────────────────────────────────────── */
+/* Beside ▶ and "Export", as many as the header holds (PresenceUI measures it), the rest behind "+N". */
+.dz .dz-live-avatars {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  /* Room for the first avatar's ring. */
+  padding-left: 2px;
+}
+.dz .dz-live-avatar {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  margin: 0 0 0 -2px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--dz-live-color);
+  /* A ring of the panel separates overlapping avatars (concentric: 12 px radius + 2 px). */
+  box-shadow: 0 0 0 2px var(--dz-panel);
+  color: #ffffff;
+  font: var(--dz-weight-strong) 10px/1 var(--dz-font);
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: transform var(--dz-fast) var(--dz-ease-press), opacity var(--dz-base) var(--dz-ease-out), box-shadow var(--dz-fast) var(--dz-ease-out);
+}
+.dz .dz-live-avatar:first-child { margin-left: 0; }
+@starting-style {
+  .dz .dz-live-avatar { opacity: 0; transform: scale(0.96); }
+}
+.dz .dz-live-avatar:active { transform: scale(0.96); }
+.dz .dz-live-avatar:focus-visible { z-index: 1; outline: 2px solid var(--dz-accent); outline-offset: 2px; }
+@media (hover: hover) and (pointer: fine) {
+  /* The hovered one comes on top of its neighbours. */
+  .dz .dz-live-avatar:hover { z-index: 1; }
+}
+/* On another page: present, but quieter (the tooltip names the page). */
+.dz .dz-live-avatar.is-elsewhere { opacity: 0.55; }
+/* Hover comes up only on a fine pointer (a tap must not leave it lit); the keyboard's focus always does. */
+@media (hover: hover) and (pointer: fine) {
+  .dz .dz-live-avatar.is-elsewhere:hover { opacity: 1; }
+}
+.dz .dz-live-avatar.is-elsewhere:focus-visible { opacity: 1; }
+/* Followed: their colour takes the panel ring's place, a thin inner gap keeps it apart (same footprint: no neighbour is covered). */
+.dz .dz-live-avatar.is-following { z-index: 1; box-shadow: inset 0 0 0 1.5px var(--dz-panel), 0 0 0 2px var(--dz-live-color); }
+.dz .dz-live-avatar.is-more {
+  background: var(--dz-field);
+  color: var(--dz-text-2);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+.dz .dz-live-avatar.is-more[aria-expanded='true'] { background: var(--dz-pressed); color: var(--dz-text); }
+/* In the "+N" menu, before each name. */
+.dz .dz-live-avatar.is-small {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  box-shadow: none;
+  font-size: 8px;
+  cursor: inherit;
+}
+
+/* ── Over the canvas ─────────────────────────────────────────────────────────────────────────── */
+.dz .dz-live-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  overflow: hidden;
+  pointer-events: none;
+}
+.dz .dz-live-outlines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.dz .dz-live-outline {
+  fill: none;
+  stroke: var(--dz-live-color);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+/* The text they are typing in. */
+.dz .dz-live-outline.is-editing { stroke-width: 2; }
+
+.dz .dz-live-cursor {
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  transition: opacity var(--dz-fast) var(--dz-ease-out);
+  will-change: transform;
+}
+.dz .dz-live-cursor.is-shown { opacity: 1; }
+/* Figma's collaborator cursor: the tailless pointer in the person's colour with a white rim, its tip (2.5, 2.5) on the point. */
+.dz .dz-live-cursor-arrow {
+  position: absolute;
+  left: -2.5px;
+  top: -2.5px;
+  display: block;
+  overflow: visible;
+  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.3));
+}
+.dz .dz-live-cursor-arrow path {
+  fill: var(--dz-live-color);
+  stroke: #ffffff;
+  stroke-width: 1.75;
+  stroke-linejoin: round;
+}
+/* Their name on a tag of their colour, hung just right of the pointer's foot (Figma's: small corners, no rim). */
+.dz .dz-live-cursor-label {
+  position: absolute;
+  left: 12px;
+  top: 16px;
+  max-width: 180px;
+  overflow: hidden;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--dz-live-color);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.2);
+  color: #ffffff;
+  font: var(--dz-weight-medium) 12px/16px var(--dz-font);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* "Follow": a frame of their colour around the canvas and a pill to stop. */
+.dz .dz-live-follow {
+  position: absolute;
+  inset: 0;
+  box-shadow: inset 0 0 0 2px var(--dz-live-color);
+}
+.dz .dz-live-follow-pill {
+  position: absolute;
+  top: 28px;
+  left: 50%;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  max-width: calc(100% - 48px);
+  padding: 0 2px 0 8px;
+  border-radius: 12px;
+  background: var(--dz-live-color);
+  box-shadow: var(--dz-shadow-float);
+  color: #ffffff;
+  font: var(--dz-weight-medium) 11px/16px var(--dz-font);
+  white-space: nowrap;
+  pointer-events: auto;
+  transform: translateX(-50%);
+}
+.dz .dz-live-follow-pill > span { overflow: hidden; text-overflow: ellipsis; }
+/* Concentric with the pill: 24 px tall, 2 px inset, so 20 px and a 10 px radius. */
+.dz .dz-live-follow-stop {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  transition: background-color var(--dz-fast) var(--dz-ease-out), transform var(--dz-fast) var(--dz-ease-press);
+}
+.dz .dz-live-follow-stop:active { transform: scale(0.96); }
+.dz .dz-live-follow-stop:focus-visible { outline: 2px solid #ffffff; outline-offset: 1px; }
+@media (hover: hover) and (pointer: fine) {
+  .dz .dz-live-follow-stop:hover { background: rgb(255 255 255 / 0.2); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dz .dz-live-avatar, .dz .dz-live-follow-stop { transition-property: opacity, background-color, box-shadow; }
+  .dz .dz-live-avatar:active, .dz .dz-live-follow-stop:active { transform: none; }
+}

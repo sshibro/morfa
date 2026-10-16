@@ -1,0 +1,63 @@
+# The on-call alerts.
+# Thresholds are TARGETS ceilings or BACKEND §8 limits; `for` keeps a short spike from paging.
+groups:
+  - name: morfa
+    rules:
+      - alert: CollabFanoutP99OverCeiling
+        expr: histogram_quantile(0.99, sum by (le) (rate(collab_op_fanout_seconds_bucket[5m]))) > 0.020
+        for: 5m
+        labels: {severity: page, row: M1}
+        annotations:
+          summary: "M1 (op → change queued) p99 above the 20 ms ceiling for 5 minutes"
+      - alert: JournalCommitP99Slow
+        expr: histogram_quantile(0.99, sum by (le) (rate(collab_journal_commit_seconds_bucket[5m]))) > 0.010
+        for: 5m
+        labels: {severity: page, row: D1}
+        annotations:
+          summary: "Journal group commit p99 above 10 ms (TARGETS D1) for 5 minutes"
+      - alert: OpenDocumentsMemoryHigh
+        expr: sum(collab_doc_resident_bytes) / scalar(sum(node_memory_MemTotal_bytes)) > 0.8
+        for: 5m
+        labels: {severity: page, row: M6}
+        annotations:
+          summary: "Open documents hold more than 80 % of the host's memory"
+      - alert: LeaseMovesStorm
+        expr: sum(increase(collab_lease_moves_total[1m])) > 10
+        for: 2m
+        labels: {severity: page}
+        annotations:
+          summary: "More than 10 lease moves a minute: nodes are fighting over files or failing (BACKEND §8)"
+      - alert: CheckpointFailures
+        expr: sum(increase(collab_checkpoint_failures_total[10m])) > 0
+        labels: {severity: page, row: D5}
+        annotations:
+          summary: "Checkpoints are failing: S3 unreachable or integrity re-read refused (the journal tail grows)"
+      - alert: WalArchiveFailing
+        expr: increase(pg_stat_archiver_failed_count[10m]) > 0
+        labels: {severity: page, row: D4}
+        annotations:
+          summary: "PostgreSQL cannot archive WAL to S3: point-in-time recovery is falling behind"
+      - alert: ServiceDown
+        expr: up{job=~"api|collab|postgres|caddy"} == 0
+        for: 2m
+        labels: {severity: page}
+        annotations:
+          summary: "{{ $labels.job }} {{ $labels.instance }} has not answered a scrape for 2 minutes"
+      - alert: ApiSessionP95OverCeiling
+        expr: histogram_quantile(0.95, sum by (le) (rate(api_http_request_duration_seconds_bucket{route="/api/design-files/:id/session"}[5m]))) > 0.050
+        for: 10m
+        labels: {severity: ticket, row: A2}
+        annotations:
+          summary: "A2 (/session) p95 above the 50 ms ceiling for 10 minutes"
+      - alert: ApiServerErrors
+        expr: sum(rate(api_http_request_duration_seconds_count{status="5xx"}[5m])) > 0.5
+        for: 5m
+        labels: {severity: ticket}
+        annotations:
+          summary: "api answers more than 0.5 server errors a second"
+      - alert: DiskAlmostFull
+        expr: node_filesystem_avail_bytes{mountpoint="/",fstype!="tmpfs"} / node_filesystem_size_bytes{mountpoint="/",fstype!="tmpfs"} < 0.15
+        for: 10m
+        labels: {severity: page}
+        annotations:
+          summary: "Less than 15 % of the root disk is free (WAL, journal, MinIO)"

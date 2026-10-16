@@ -1,0 +1,51 @@
+[package]
+name = "morfa-collab"
+description = "The co-editing service: one authoritative document per open file in a DocActor, fan-out, presence, backpressure, catch-up (lane B1, docs/BACKEND.md §2)."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "morfa-collab"
+path = "src/main.rs"
+
+[dependencies]
+morfa-model.workspace = true
+# L2a's port of the co-editing merge and the patched-document check (OpsEngine).
+morfa-ops.workspace = true
+morfa-protocol = {path = "../protocol"}
+# Lane B2's storage: the PostgreSQL journal and lease, checkpoints in S3 (src/pg.rs).
+morfa-journal = {path = "../journal"}
+morfa-lease = {path = "../lease"}
+morfa-checkpoint = {path = "../checkpoint"}
+morfa-blobs = {path = "../blobs"}
+# LISTEN design_acl (src/pg.rs `listen_acl`): api's permission pushes again, for a lost POST /internal/acl.
+tokio-postgres = {version = "0.7", default-features = false, features = ["runtime"]}
+async-trait = "0.1"
+base64 = "0.22"
+axum = {version = "0.8", default-features = false, features = ["http1", "json", "query", "tokio"]}
+# HTTP/1.1 served by hyper directly (lib.rs `serve`): the socket is framed on the upgraded TCP stream (src/ws.rs).
+hyper = {version = "1", features = ["http1", "server"]}
+hyper-util = {version = "0.1", features = ["service", "tokio"]}
+bytes = "1"
+futures-util = {version = "0.3", default-features = false, features = ["sink", "std"]}
+parking_lot = "0.12"
+rand = "0.8"
+serde = {version = "1", features = ["derive", "rc"]}
+serde_json = "1"
+sha2 = "0.10"
+# Socket buffer sizes (Config::send_buffer).
+socket2 = "0.6"
+tokio = {version = "1", features = ["macros", "net", "rt-multi-thread", "signal", "sync", "time"]}
+tokio-tungstenite = "0.29"
+tracing = "0.1"
+tracing-subscriber = {version = "0.3", features = ["env-filter", "fmt"]}
+
+[dev-dependencies]
+# A throwaway migrated PostgreSQL database for tests/pg.rs (skips without MORFA_B2_PG_URL).
+morfa-journal = {path = "../journal", features = ["testdb"]}
+
+[lints]
+workspace = true

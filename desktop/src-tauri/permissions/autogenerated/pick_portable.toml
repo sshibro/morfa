@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-pick-portable"
+description = "Enables the pick_portable command without any pre-configured scope."
+commands.allow = ["pick_portable"]
+
+[[permission]]
+identifier = "deny-pick-portable"
+description = "Denies the pick_portable command without any pre-configured scope."
+commands.deny = ["pick_portable"]

@@ -1,0 +1,175 @@
+/* "Morfa" teams (docs/design-tool.md §Teams): the sidebar's team sections, the browser's team heading, the members and invite
+   dialogs, the invite landing and the editor's read-only state. Tokens only (tokens.css); motion follows the polish
+   skills: colour and opacity at 120 ms, nothing on high-frequency interactions. */
+
+/* ── Sidebar: team sections ─────────────────────────────────────────────────────────────────── */
+.dz .dz-files-place-title {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-height: 28px;
+  padding: 0 0 0 8px;
+}
+.dz .dz-files-place-title-text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dz .dz-files-place-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dz .dz-files-place-actions { display: flex; align-items: center; color: var(--dz-text-2); }
+.dz .dz-files-place-actions .dz-icon-btn { color: inherit; }
+/* The actions wait for the pointer (Figma's sidebar does the same); they stay for keyboard focus, an open menu and touch screens. */
+@media (hover: hover) and (pointer: fine) {
+  .dz .dz-files-place-actions { opacity: 0; transition: opacity var(--dz-fast) var(--dz-ease-press); }
+  .dz .dz-files-place-group:hover .dz-files-place-actions,
+  .dz .dz-files-place-actions:focus-within,
+  .dz .dz-files-place-actions:has([aria-expanded='true']) { opacity: 1; }
+}
+.dz .dz-btn.dz-team-create {
+  justify-content: flex-start;
+  width: 100%;
+  height: 32px;
+  color: var(--dz-text-2);
+  font-weight: var(--dz-weight);
+}
+.dz .dz-btn.dz-team-create:hover:not(:disabled) { color: var(--dz-text); }
+.dz .dz-btn.dz-team-create:active:not(:disabled):not(.is-static) { scale: 0.985; }
+
+/* The space switcher is the sidebar's stand-in on a phone (phone-shell.css); a desktop has the sidebar. */
+.dz .dz-select.dz-files-switcher { display: none; max-width: 40%; }
+
+/* ── The browser's heading in a team ────────────────────────────────────────────────────────── */
+.dz .dz-files-heading-text { min-width: 0; }
+.dz .dz-files-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  margin: -4px 0 2px;
+  color: var(--dz-text-2);
+}
+.dz .dz-files-eyebrow-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dz .dz-files-eyebrow-role {
+  flex: none;
+  padding: 0 6px;
+  border-radius: 4px;
+  background: var(--dz-field);
+  color: var(--dz-text-2);
+  line-height: 18px;
+}
+.dz .dz-files-eyebrow .dz-icon-btn { color: var(--dz-text-2); }
+
+/* ── Dialogs ────────────────────────────────────────────────────────────────────────────────── */
+.dz .dz-team-dialog .dz-dialog-body { display: grid; gap: 12px; }
+.dz .dz-team-dialog .dz-dialog-body p + p { margin-top: 0; }
+.dz .dz-team-field { display: grid; gap: 6px; }
+.dz .dz-team-label { color: var(--dz-text-2); }
+.dz .dz-team-note { color: var(--dz-text-2); text-wrap: pretty; }
+.dz .dz-team-error { color: var(--dz-danger-text); text-wrap: pretty; }
+.dz .dz-team-danger { display: grid; gap: 8px; padding-top: 12px; border-top: 1px solid var(--dz-border); }
+.dz .dz-team-danger-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.dz .dz-team-danger-title { font-weight: var(--dz-weight-medium); }
+.dz .dz-team-danger-text { color: var(--dz-text-2); }
+
+/* "Members" */
+.dz .dz-members .dz-dialog-body { gap: 16px; }
+.dz .dz-members-loading { display: grid; place-items: center; min-height: 96px; color: var(--dz-text-2); }
+.dz .dz-members-list { display: grid; gap: 2px; margin: -4px -8px 0; }
+.dz .dz-member {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  padding: 4px 4px 4px 8px;
+  border-radius: 8px;
+}
+@media (hover: hover) {
+  .dz .dz-member:hover { background: var(--dz-hover); }
+}
+.dz .dz-member-avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--dz-field);
+  box-shadow: inset 0 0 0 1px var(--dz-outline);
+  color: var(--dz-text-2);
+  font-weight: var(--dz-weight-strong);
+  line-height: 1;
+}
+.dz .dz-member-who { display: grid; flex: 1; min-width: 0; }
+.dz .dz-member-name, .dz .dz-member-email { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dz .dz-member-name { font-weight: var(--dz-weight-medium); }
+.dz .dz-member-you { color: var(--dz-text-2); font-weight: var(--dz-weight); }
+.dz .dz-member-email { color: var(--dz-text-2); }
+.dz .dz-member-role.is-static { padding: 0 8px; color: var(--dz-text-2); }
+.dz .dz-select.dz-member-role { flex: none; min-width: 128px; }
+
+.dz .dz-people { display: grid; gap: 8px; }
+.dz .dz-people-lead { margin: 0; }
+
+/* "Invite link": a role and one click that makes the link and copies it; its expiry and uses a click away. */
+.dz .dz-invite { display: grid; gap: 10px; padding-top: 16px; border-top: 1px solid var(--dz-border); }
+.dz .dz-invite-link-row { display: flex; align-items: center; gap: 8px; }
+.dz .dz-invite-link-row .dz-invite-title { flex: 1; min-width: 0; }
+.dz .dz-invite-title { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: var(--dz-weight-strong); }
+.dz .dz-invite-title svg { color: var(--dz-text-2); }
+.dz .dz-invite-settings { margin: -4px 0 0; }
+.dz .dz-invite-hint { margin: -4px 0 0; }
+.dz .dz-link-button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--dz-accent-text);
+  font: inherit;
+  cursor: pointer;
+}
+.dz .dz-link-button:hover { text-decoration: underline; }
+.dz .dz-link-button:focus-visible { outline: 2px solid var(--dz-accent); outline-offset: 2px; border-radius: 2px; }
+.dz .dz-invite-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.dz .dz-invite-link { display: flex; gap: 8px; }
+.dz .dz-invite-link .dz-input { flex: 1; min-width: 0; }
+.dz .dz-invite-link input { font-family: var(--dz-mono); font-size: 11px; }
+.dz .dz-invite-list { display: grid; gap: 2px; margin: 0 -8px; }
+.dz .dz-invite-row { display: flex; align-items: center; gap: 10px; min-height: 32px; padding: 0 4px 0 8px; border-radius: 6px; }
+.dz .dz-invite-role { flex: none; min-width: 96px; font-weight: var(--dz-weight-medium); }
+.dz .dz-invite-line { flex: 1; min-width: 0; color: var(--dz-text-2); font-variant-numeric: tabular-nums; }
+@media (max-width: 560px) {
+  .dz .dz-invite-form { grid-template-columns: 1fr; }
+}
+
+/* "Share" (the editor's and the board's share dialog) */
+.dz .dz-btn.dz-share-copy { color: var(--dz-accent-text); }
+.dz .dz-btn.dz-share-copy svg { color: currentColor; }
+.dz .dz-share-heading { margin: 0; font-size: 11px; font-weight: var(--dz-weight-strong); }
+.dz .dz-member-avatar.is-icon { background: var(--dz-field); box-shadow: none; color: var(--dz-text-2); }
+.dz .dz-member.dz-share-link-row { margin: 0 -8px; }
+.dz .dz-select.dz-share-link-select { flex: none; max-width: 52%; }
+.dz .dz-btn.dz-share-back { justify-self: start; margin: -4px 0 0 -8px; color: var(--dz-text-2); }
+.dz .dz-btn.dz-share-button { flex: none; }
+/* With "Share" beside ▶ and "Export", tighter spacing keeps room for two collaborators' avatars in a 240 px panel (the
+   avatars fold into “+N” by what is left: src/design/realtime/PresenceUI.tsx useHeaderRoom). */
+.dz .dz-right-header:has(.dz-share-button), .dz .dz-float-actions:has(.dz-share-button) { gap: 4px; }
+
+/* The invite landing */
+.dz .dz-invite-by { margin: 0; color: var(--dz-text-2); }
+.dz .dz-invite-hero { display: flex; align-items: center; gap: 12px; }
+.dz .dz-invite-badge {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--dz-selected-row);
+  color: var(--dz-accent-text);
+}
+.dz .dz-invite-team { font-size: 13px; line-height: 20px; font-weight: var(--dz-weight-strong); overflow-wrap: anywhere; }
+.dz .dz-invite-as { color: var(--dz-text-2); }
+
+/* ── The editor, read-only (a developer's or a viewer's file) ───────────────────────────────── */
+.dz .dz-readonly-fieldset { display: contents; margin: 0; padding: 0; border: 0; min-width: 0; }
+.dz .dz-save-status.is-readonly { color: var(--dz-text-2); }
+.dz .dz-file-name.is-static { text-overflow: ellipsis; white-space: nowrap; cursor: default; }
+@media (hover: hover) {
+  .dz .dz-file-name.is-static:hover { background: none; }
+}
+.dz .dz-readonly-panel .dz-panel-section { opacity: 0.72; }

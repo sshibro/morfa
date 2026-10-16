@@ -1,0 +1,45 @@
+/* The meeting's controls on a phone: the reactions bar and the voting bar span the bottom of the
+   screen and, while this person reacts or votes, take the toolbar's place (as on a desktop); the results card hangs under
+   the top bar the width of the screen. Their buttons are thumb-sized. In the design editor and on the board alike. */
+
+@media (max-width: 767px) {
+  /* The board puts these bars at the top (meeting.css, FigJam's place); on a phone the pills hold the top row. The extra class
+     in :is() outweighs that rule by selector, whatever order the stylesheets load in. */
+  .dz.dz-root :is(.dz-phone-editor, .dz-board) :is(.dz-meet-votebar, .dz-meet-votebar.is-voting, .dz-meet-emotebar.dz-meet-emotebar) {
+    top: auto;
+    left: calc(8px + env(safe-area-inset-left, 0px));
+    right: calc(8px + env(safe-area-inset-right, 0px));
+    bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+    height: 48px;
+    max-width: none;
+    translate: none;
+    overflow-x: auto;
+    scrollbar-width: none;
+    touch-action: pan-x;
+  }
+  .dz.dz-root :is(.dz-phone-editor, .dz-board) :is(.dz-meet-votebar.is-voting, .dz-meet-emotebar.dz-meet-emotebar) { bottom: calc(8px + env(safe-area-inset-bottom, 0px)); z-index: 7; }
+  .dz.dz-root .dz-canvas-area:has(.dz-meet-votebar.is-voting, .dz-meet-emotebar) :is(.dz-phone-bottom, .bd-dock) { visibility: hidden; }
+  .dz.dz-root :is(.dz-phone-editor, .dz-board) .dz-meet-emotebar :is(.dz-meet-emote, .dz-meet-icon) { flex: none; min-width: 40px; height: 40px; }
+  .dz.dz-root :is(.dz-phone-editor, .dz-board) .dz-meet-emotebar-hint { display: none; }
+  .dz.dz-root :is(.dz-phone-editor, .dz-board) .dz-meet-results {
+    top: calc(64px + env(safe-area-inset-top, 0px));
+    left: calc(8px + env(safe-area-inset-left, 0px));
+    right: calc(8px + env(safe-area-inset-right, 0px));
+    width: auto;
+    max-height: calc(100% - 152px);
+  }
+  /* The voting bar takes two rows on a phone: what to do over the whole width, then the time and the buttons. */
+  .dz.dz-root :is(.dz-phone-editor, .dz-board) .dz-meet-votebar.dz-meet-votebar {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    row-gap: 4px;
+    height: auto;
+    min-height: 48px;
+    padding: 6px 6px 6px 12px;
+    overflow-x: visible;
+    white-space: normal;
+  }
+  .dz.dz-root :is(.dz-phone-editor, .dz-board) .dz-meet-votebar-text { flex: 1 1 calc(100% - 32px); white-space: normal; }
+  .dz.dz-root :is(.dz-phone-editor, .dz-board) .dz-meet-votebar-time { margin-right: auto; }
+  .dz.dz-root :is(.dz-phone-editor, .dz-board) .dz-meet-votebar .dz-btn { min-height: 40px; }
+}

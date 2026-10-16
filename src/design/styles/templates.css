@@ -1,0 +1,94 @@
+/* "New file ▾" (src/design/files/NewFileMenu.tsx): the split button and the gallery of starter
+   templates. Cards change colour on hover and press with the kit's 0.96 scale; pictures fade in once
+   painted (opacity only). */
+
+.dz .dz-new-file { display: inline-flex; align-items: stretch; }
+.dz .dz-new-file .dz-new-file-main { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+.dz .dz-new-file .dz-new-file-more {
+  width: 28px;
+  padding: 0;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  /* The seam between the halves: a hairline of the button's own text colour. */
+  box-shadow: inset 1px 0 0 rgb(255 255 255 / 0.32);
+}
+.dz .dz-new-file .dz-btn:active:not(:disabled):not(.is-static) { scale: 1; }
+.dz .dz-new-file .dz-new-file-more[aria-expanded='true'] { background: var(--dz-accent-hover); }
+/* The file browser greys icons in its top bar's labels; on the accent the arrow keeps the button's colour. */
+.dz .dz-new-file .dz-new-file-more .dz-btn-label svg { margin-right: 0; color: inherit; }
+
+.dz .dz-templates-popover .dz-popover-body { width: min(712px, calc(100vw - 32px)); }
+.dz .dz-templates { padding: 20px; }
+.dz .dz-templates-header { display: grid; gap: 2px; margin-bottom: 16px; }
+.dz .dz-templates-title { font-size: 13px; line-height: 20px; font-weight: var(--dz-weight-strong); }
+.dz .dz-templates-lead { color: var(--dz-text-2); }
+.dz .dz-templates-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+@media (max-width: 640px) {
+  .dz .dz-templates-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+.dz .dz-template {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  padding: 4px 4px 8px;
+  /* Concentric with the 8 px picture and its 4 px inset. */
+  border-radius: 12px;
+  text-align: left;
+  transition-property: background-color, scale;
+  transition-duration: var(--dz-fast);
+  transition-timing-function: var(--dz-ease-press);
+}
+@media (hover: hover) {
+  .dz .dz-template:hover:not(:disabled) { background: var(--dz-hover); }
+}
+.dz .dz-template:active:not(:disabled) { scale: 0.96; }
+.dz .dz-template:disabled { cursor: default; }
+.dz .dz-template:disabled:not([aria-busy]) { opacity: 0.56; }
+.dz .dz-template:focus-visible { outline-offset: 0; }
+
+.dz .dz-template-thumb {
+  position: relative;
+  display: block;
+  aspect-ratio: 4 / 3;
+  margin-bottom: 6px;
+  overflow: hidden;
+  border-radius: var(--dz-radius-card);
+  background: var(--dz-skeleton);
+  outline: 1px solid var(--dz-outline);
+  outline-offset: -1px;
+}
+.dz .dz-template-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity var(--dz-base) var(--dz-ease-out);
+}
+.dz .dz-template-canvas.is-ready { opacity: 1; }
+.dz .dz-template-blank {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: var(--dz-canvas);
+  color: var(--dz-text-2);
+}
+.dz .dz-template-busy {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgb(255 255 255 / 0.6);
+  color: var(--dz-text);
+}
+.dz[data-theme='dark'] .dz-template-busy { background: rgb(0 0 0 / 0.5); }
+.dz .dz-template-name { padding: 0 4px; font-weight: var(--dz-weight-strong); }
+.dz .dz-template-description { padding: 0 4px; color: var(--dz-text-2); text-wrap: pretty; }

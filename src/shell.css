@@ -1,0 +1,56 @@
+/* What App draws outside the design area: the page itself while the session is read, and the notice when leaving
+   a file could not save it. The design area (.dz) brings its own styles. */
+
+html,
+body {
+  margin: 0;
+}
+
+body {
+  background: #f5f5f5;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background: #1e1e1e;
+  }
+}
+
+.mf-notice {
+  position: fixed;
+  inset: auto 16px 16px auto;
+  z-index: 2147483000;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: min(480px, calc(100vw - 32px));
+  padding: 10px 12px;
+  box-sizing: border-box;
+  border-radius: 12px;
+  background: #1e1e1e;
+  color: #ffffff;
+  font: 450 13px / 20px 'Inter Variable', 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  box-shadow: 0 8px 24px -8px oklch(0 0 0 / 0.4);
+}
+
+.mf-notice-text {
+  flex: 1;
+}
+
+.mf-notice button {
+  flex: none;
+  height: 28px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 5px;
+  background: #0d99ff;
+  color: #ffffff;
+  font: inherit;
+  font-weight: 550;
+  cursor: pointer;
+}
+
+.mf-notice button:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 1px;
+}

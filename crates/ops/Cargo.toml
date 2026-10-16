@@ -1,0 +1,26 @@
+[package]
+name = "morfa-ops"
+description = "Transactions, patches and co-editing merge (lane L2a)."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+# A plain rlib: native Rust (the collab server, lane B1) uses it directly; the browser and Node reach it through
+# crates/wasm (src/ops.rs), the engine's one JavaScript boundary.
+
+[dependencies]
+morfa-model.workspace = true
+# Ordered maps and sets: JavaScript's objects, Sets and Maps iterate in insertion order.
+indexmap = "2"
+# The fast hasher the model's interners use.
+foldhash = "0.2"
+serde = "1"
+# float_roundtrip: numbers parse exactly as JSON.parse reads them (the model enables it too).
+serde_json = {version = "1", features = ["float_roundtrip"]}
+# sin, cos and atan2 of fdlibm, as V8's Math: the platform's libm may differ in the last bit.
+libm = "0.2"
+
+[lints]
+workspace = true

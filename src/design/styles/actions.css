@@ -1,0 +1,103 @@
+/* "Actions" (⌘K), src/design/editor/ActionsMenu.tsx: Figma's Actions menu over the toolbar. A panel surface (light in the light
+   theme, as Figma's), the toolbar's width, 13 px corners with 8 px of inset around 5 px rows (concentric). It grows out of its button
+   when a click opened it: 150 ms, ease-out, opacity and scale from 0.97, transform-origin at the button (ActionsMenu sets --dz-origin);
+   from the keyboard it is there at once (the root's data-input). Rows light at once under the pointer and the arrows. */
+
+.dz .dz-actions {
+  position: fixed;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: 13px;
+  background: var(--dz-panel);
+  color: var(--dz-text);
+  box-shadow: var(--dz-shadow-menu);
+  transform-origin: var(--dz-origin, bottom center);
+  transition: opacity 150ms var(--dz-ease-out), scale 150ms var(--dz-ease-out);
+  @starting-style { opacity: 0; scale: 0.97; }
+}
+.dz[data-input='keyboard'] .dz-actions { transition: none; }
+@media (prefers-reduced-motion: reduce) {
+  .dz .dz-actions {
+    transition: opacity 150ms var(--dz-ease-out);
+    @starting-style { opacity: 0; scale: 1; }
+  }
+}
+/* A component dragged out of "Assets": the menu steps aside so the canvas under it shows (the tile keeps the pointer). */
+.dz .dz-actions.is-dragging { opacity: 0; transition: opacity var(--dz-fast) var(--dz-ease-out); }
+
+.dz .dz-actions-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+  height: 40px;
+  margin: 8px 8px 0;
+  padding: 0 10px;
+  border-radius: 5px;
+  background: var(--dz-field);
+  color: var(--dz-text-2);
+  cursor: text;
+}
+.dz .dz-actions-search input {
+  flex: 1;
+  color: var(--dz-text);
+  font-size: 13px;
+}
+
+.dz .dz-actions-tabs { display: flex; gap: 4px; flex: none; padding: 8px 8px 4px; }
+.dz .dz-actions-tab {
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 5px;
+  color: var(--dz-text-2);
+  font-size: 12px;
+  font-weight: var(--dz-weight-medium);
+}
+@media (hover: hover) {
+  .dz .dz-actions-tab:hover { color: var(--dz-text); }
+}
+.dz .dz-actions-tab[aria-selected='true'] { background: var(--dz-hover); color: var(--dz-text); }
+
+.dz .dz-actions-list,
+.dz .dz-actions-assets {
+  flex: 1;
+  min-height: 0;
+  padding: 0 8px 8px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.dz .dz-actions-heading { display: flex; align-items: center; gap: 12px; min-height: 30px; padding: 6px 8px 0; color: var(--dz-text-2); font-weight: var(--dz-weight-medium); }
+.dz .dz-actions-heading > span:first-child { flex: none; }
+.dz .dz-actions-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 32px;
+  padding: 0 8px;
+  border-radius: 5px;
+  font-size: 12px;
+  cursor: default;
+}
+.dz .dz-actions-item.is-active { background: var(--dz-hover); }
+.dz .dz-actions-item[aria-disabled='true'] { color: var(--dz-text-3); }
+/* The name keeps its width (up to three quarters of the row); a long note beside it gives way. */
+.dz .dz-actions-label { flex: 1 0 auto; max-width: 75%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dz .dz-actions-shortcut { flex: none; color: var(--dz-text-2); font-size: 11px; letter-spacing: 0.04em; }
+.dz .dz-actions-note {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--dz-text-2);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dz .dz-actions-note.is-off { color: var(--dz-text-3); }
+.dz .dz-actions-empty { margin: 0; padding: 16px 8px; color: var(--dz-text-2); }
+
+/* "Assets" uses the left panel's sections (styles/panel-left.css), a little roomier. */
+.dz .dz-actions-assets .dz-assets-section { border-top: 0; }

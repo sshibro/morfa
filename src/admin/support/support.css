@@ -1,0 +1,736 @@
+/* The support inbox (src/admin/support): the list, the conversation and the account beside it. Tokens: admin.css. The screen fills the
+   workspace below the top bar; the list and the conversation scroll on their own. */
+
+.mfa-support {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 20px;
+  min-height: 0;
+}
+
+.mfa-panes {
+  display: grid;
+  grid-template-columns: 364px minmax(0, 1fr);
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: 22px;
+  background: var(--mfa-raised);
+  box-shadow: var(--mfa-shadow-card);
+}
+
+/* ── The list ─────────────────────────────────────────────────────────────── */
+
+.mfa-inbox {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border-right: 1px solid var(--mfa-line);
+}
+
+.mfa-inbox-tools {
+  display: grid;
+  gap: 10px;
+  padding: 14px 14px 12px;
+  border-bottom: 1px solid var(--mfa-line);
+}
+
+.mfa-filters.is-tight {
+  flex-wrap: nowrap;
+  gap: 4px;
+}
+
+.mfa-filters.is-tight .mfa-filter {
+  flex: 1 1 auto;
+  justify-content: center;
+  gap: 5px;
+  height: 30px;
+  padding: 0 9px;
+  font-size: 12.5px;
+}
+
+.mfa-inbox-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.mfa-threads {
+  display: grid;
+  gap: 2px;
+  padding: 6px;
+}
+
+.mfa-thread {
+  position: relative;
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) 8px;
+  align-items: center;
+  gap: 12px;
+  min-height: 64px;
+  padding: 10px 10px 10px 10px;
+  border-radius: 14px;
+  transition: background-color 120ms ease;
+}
+
+.mfa-thread:hover {
+  background: var(--mfa-hover);
+}
+
+.mfa-thread.is-active {
+  background: var(--mfa-brand-soft);
+}
+
+.mfa-thread.is-skeleton {
+  pointer-events: none;
+}
+
+.mfa-thread-main {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.mfa-thread-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.mfa-thread-top b {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 550;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mfa-thread.is-unread .mfa-thread-top b {
+  font-weight: 700;
+}
+
+.mfa-thread-when {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--mfa-text-3);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.mfa-thread-preview {
+  overflow: hidden;
+  color: var(--mfa-text-2);
+  font-size: 13px;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mfa-thread.is-unread .mfa-thread-preview {
+  color: var(--mfa-text);
+  font-weight: 550;
+}
+
+.mfa-thread.is-closed .mfa-thread-preview {
+  color: var(--mfa-text-3);
+}
+
+.mfa-thread-you {
+  color: var(--mfa-text-3);
+  font-weight: 500;
+}
+
+.mfa-thread-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--mfa-brand);
+}
+
+.mfa-wait {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 7px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.mfa-wait.is-neutral {
+  background: var(--mfa-fog);
+  color: var(--mfa-text-2);
+}
+
+.mfa-wait.is-warn {
+  background: var(--mfa-warn-soft);
+  color: var(--mfa-warn-text);
+}
+
+.mfa-wait.is-danger {
+  background: var(--mfa-bad-soft);
+  color: var(--mfa-bad-text);
+}
+
+.mfa-thread.is-active .mfa-wait.is-neutral {
+  background: var(--mfa-bg);
+}
+
+/* Empty: everyone has an answer (the brand's three shapes with a check), or a search found nobody. */
+.mfa-answered {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 56px 20px;
+  text-align: center;
+}
+
+.mfa-answered b {
+  margin-top: 10px;
+  font: 650 17px / 1.3 var(--mfa-display);
+}
+
+.mfa-answered > span:last-child {
+  color: var(--mfa-text-3);
+  font-size: 13px;
+}
+
+.mfa-answered.is-search b {
+  margin-top: 6px;
+  font-size: 15px;
+}
+
+.mfa-answered-art {
+  position: relative;
+  width: 96px;
+  height: 96px;
+}
+
+.mfa-answered-symbol {
+  width: 84px;
+  height: 84px;
+}
+
+.mfa-answered-check {
+  position: absolute;
+  right: -2px;
+  bottom: 2px;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--mfa-status-good);
+  color: #ffffff;
+  box-shadow: 0 0 0 4px var(--mfa-raised);
+}
+
+/* ── The conversation ─────────────────────────────────────────────────────── */
+
+.mfa-convo-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 296px;
+  min-height: 0;
+  min-width: 0;
+}
+
+.mfa-convo {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+}
+
+.mfa-convo-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 68px;
+  padding: 12px 16px 12px 20px;
+  border-bottom: 1px solid var(--mfa-line);
+}
+
+.mfa-convo-who {
+  flex: 1;
+  border-radius: 12px;
+}
+
+.mfa-convo-who:hover b {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.mfa-convo-back {
+  display: none;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  margin-left: -8px;
+  border-radius: 999px;
+  color: var(--mfa-text-2);
+}
+
+.mfa-convo-back:hover {
+  background: var(--mfa-hover);
+}
+
+.mfa-convo-profile {
+  display: none;
+  align-items: center;
+  gap: 2px;
+  height: 32px;
+  padding: 0 8px 0 12px;
+  border-radius: 999px;
+  color: var(--mfa-link);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.mfa-convo-profile:hover {
+  background: var(--mfa-brand-soft);
+}
+
+.mfa-convo-error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 20px;
+  background: var(--mfa-bad-soft);
+  color: var(--mfa-bad-text);
+  font-size: 13px;
+  font-weight: 550;
+}
+
+.mfa-convo-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 12px 24px 20px;
+}
+
+.mfa-convo-loading {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-top: 20px;
+}
+
+.mfa-messages {
+  display: flex;
+  flex-direction: column;
+}
+
+.mfa-message-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.mfa-day {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 18px 0 6px;
+  color: var(--mfa-text-3);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.mfa-day::before,
+.mfa-day::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--mfa-line);
+}
+
+.mfa-message {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  max-width: min(72%, 560px);
+  margin-top: 12px;
+}
+
+.mfa-message.is-grouped {
+  margin-top: 3px;
+}
+
+.mfa-message.is-operator {
+  align-self: flex-end;
+  align-items: flex-end;
+}
+
+.mfa-bubble {
+  padding: 9px 14px 10px;
+  border-radius: 20px;
+  font-size: 14px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.mfa-message.is-user .mfa-bubble {
+  border-bottom-left-radius: 6px;
+  background: var(--mfa-fog);
+  color: var(--mfa-text);
+}
+
+.mfa-message.is-operator .mfa-bubble {
+  border-bottom-right-radius: 6px;
+  background: var(--mfa-brand);
+  color: #ffffff;
+}
+
+.mfa-message.is-user.is-grouped .mfa-bubble {
+  border-top-left-radius: 6px;
+}
+
+.mfa-message.is-operator.is-grouped .mfa-bubble {
+  border-top-right-radius: 6px;
+}
+
+.mfa-message.is-pending .mfa-bubble {
+  opacity: 0.62;
+}
+
+.mfa-message.is-failed .mfa-bubble {
+  opacity: 1;
+  background: var(--mfa-bg);
+  color: var(--mfa-text);
+  box-shadow: inset 0 0 0 1.5px var(--mfa-status-critical);
+}
+
+.mfa-message-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 5px;
+  padding: 0 6px;
+  color: var(--mfa-text-3);
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.mfa-context {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 8px;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px var(--mfa-line-strong);
+  color: var(--mfa-text-2);
+  font-weight: 550;
+}
+
+.mfa-seen {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--mfa-link);
+  font-weight: 600;
+}
+
+.mfa-failed-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--mfa-bad-text);
+  font-weight: 600;
+}
+
+.mfa-retry {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--mfa-link);
+  font-size: 11.5px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.mfa-convo-note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 20px 8px;
+  color: var(--mfa-text-3);
+  font-size: 12.5px;
+}
+
+.mfa-composer {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  margin: 0 16px 16px;
+  padding: 6px 6px 6px 16px;
+  border-radius: 24px;
+  background: var(--mfa-bg);
+  box-shadow: inset 0 0 0 1px var(--mfa-line-strong);
+  transition: box-shadow 140ms ease;
+}
+
+.mfa-composer:focus-within {
+  box-shadow: inset 0 0 0 2px var(--mfa-brand);
+}
+
+.mfa-composer textarea {
+  flex: 1;
+  min-width: 0;
+  min-height: 36px;
+  max-height: 200px;
+  padding: 8px 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font-size: 14px;
+  line-height: 1.45;
+  resize: none;
+}
+
+.mfa-composer textarea:focus-visible {
+  outline: 0;
+}
+
+.mfa-composer textarea::placeholder {
+  color: var(--mfa-text-3);
+}
+
+.mfa-composer-count {
+  align-self: center;
+  color: var(--mfa-text-3);
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.mfa-composer-count.is-over {
+  color: var(--mfa-bad-text);
+  font-weight: 650;
+}
+
+.mfa-send {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--mfa-brand);
+  color: #ffffff;
+  cursor: pointer;
+  transition: background-color 140ms ease, opacity 140ms ease;
+}
+
+.mfa-send:hover {
+  background: var(--mfa-brand-hover);
+}
+
+.mfa-send:disabled {
+  background: var(--mfa-fog);
+  color: var(--mfa-text-3);
+  cursor: default;
+}
+
+.mfa-convo-empty {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 6px;
+  padding: 40px;
+  text-align: center;
+}
+
+.mfa-convo-empty b {
+  margin-top: 8px;
+  font: 650 17px / 1.3 var(--mfa-display);
+}
+
+.mfa-convo-empty > span:last-child {
+  color: var(--mfa-text-3);
+  font-size: 13px;
+}
+
+/* ── The account beside it ────────────────────────────────────────────────── */
+
+.mfa-acard {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-height: 0;
+  padding: 20px;
+  overflow-y: auto;
+  border-left: 1px solid var(--mfa-line);
+}
+
+.mfa-acard-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mfa-acard-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.mfa-acard-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 12px;
+  margin: 0;
+}
+
+.mfa-acard-facts div {
+  display: grid;
+  gap: 2px;
+}
+
+.mfa-acard-facts dt {
+  color: var(--mfa-text-3);
+  font-size: 12px;
+  font-weight: 550;
+}
+
+.mfa-acard-facts dd {
+  margin: 0;
+  font: 650 16px / 1.25 var(--mfa-display);
+  font-variant-numeric: tabular-nums;
+}
+
+.mfa-acard-facts dd small {
+  color: var(--mfa-text-3);
+  font: 500 12px var(--mfa-font);
+}
+
+.mfa-acard-spark {
+  display: grid;
+  gap: 6px;
+  padding-top: 14px;
+  border-top: 1px solid var(--mfa-line);
+}
+
+.mfa-acard-spark > span,
+.mfa-acard-spark small {
+  color: var(--mfa-text-3);
+  font-size: 12px;
+  font-weight: 550;
+}
+
+.mfa-acard-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-top: auto;
+  color: var(--mfa-link);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.mfa-acard-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ── Narrower screens ─────────────────────────────────────────────────────── */
+
+@media (max-width: 1320px) {
+  .mfa-convo-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .mfa-acard {
+    display: none;
+  }
+
+  .mfa-convo-profile {
+    display: inline-flex;
+  }
+}
+
+@media (max-width: 1000px) {
+  .mfa-panes {
+    grid-template-columns: 300px minmax(0, 1fr);
+  }
+}
+
+/* A phone (and a narrow window): the list, then the conversation in its place. */
+@media (max-width: 860px) {
+  .mfa-panes {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .mfa-support.has-thread .mfa-inbox,
+  .mfa-support:not(.has-thread) .mfa-convo-empty {
+    display: none;
+  }
+
+  .mfa-inbox {
+    border-right: 0;
+  }
+
+  .mfa-convo-back {
+    display: grid;
+  }
+}
+
+@media (max-width: 760px) {
+  .mfa-support {
+    gap: 16px;
+  }
+
+  .mfa-support.has-thread > .mfa-head {
+    display: none;
+  }
+
+  .mfa-panes {
+    margin: 0 calc(-1 * var(--mfa-gutter) + 4px);
+    border-radius: 18px;
+  }
+
+  .mfa-convo-head {
+    padding: 10px 10px 10px 16px;
+    gap: 10px;
+  }
+
+  .mfa-convo-head .mfa-btn {
+    padding: 0 12px;
+  }
+
+  .mfa-convo-head .mfa-btn svg {
+    display: none;
+  }
+
+  .mfa-convo-head .mfa-convo-profile {
+    display: none;
+  }
+
+  .mfa-convo-scroll {
+    padding: 8px 14px 16px;
+  }
+
+  .mfa-message {
+    max-width: 86%;
+  }
+
+  .mfa-composer {
+    margin: 0 10px 10px;
+  }
+
+}

@@ -1,0 +1,228 @@
+/* Dev annotations and measurements (docs/design-tool.md §Dev annotations and measurements): the notes beside annotated
+   layers, the note being written, and their list in "Code". The canvas lines are drawn in src/design/annotations/ui. Notes
+   follow the canvas without animation (canvas interactions never animate); the editor card fades and scales in from its
+   layer's side, 160 ms ease-out, and not at all when opened from the keyboard. Tokens from tokens.css; each note's
+   category colour is `--dz-note`. */
+
+/* ── Over the canvas ─────────────────────────────────────────────────────────────────────────── */
+.dz .dz-annotations-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  overflow: hidden;
+  pointer-events: none;
+}
+.dz .dz-annotations-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* A layer's notes: a column beside its top-right corner (translate is written by the layer on every pan). */
+.dz .dz-annotation-stack {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  width: 240px;
+}
+
+.dz .dz-annotation {
+  --dz-note: #7a7a7a;
+  position: relative;
+  box-sizing: border-box;
+  max-width: 220px;
+  padding: 7px 10px 8px 12px;
+  border-radius: var(--dz-radius-card);
+  background: var(--dz-panel);
+  color: var(--dz-text);
+  font-size: 11px;
+  line-height: 16px;
+  /* The category's colour as a bar on the leading edge, inside the card's own radius. */
+  box-shadow: inset 3px 0 0 var(--dz-note), var(--dz-shadow-float);
+  pointer-events: auto;
+  cursor: default;
+}
+.dz .dz-annotation.is-editable {
+  cursor: pointer;
+  transition: box-shadow var(--dz-fast) var(--dz-ease-press), scale var(--dz-fast) var(--dz-ease-press);
+}
+@media (hover: hover) and (pointer: fine) {
+  .dz .dz-annotation.is-editable:hover { box-shadow: inset 3px 0 0 var(--dz-note), 0 0 0 1px var(--dz-border-strong), var(--dz-shadow-menu); }
+}
+.dz .dz-annotation.is-editable:active { scale: 0.985; }
+.dz .dz-annotation:focus-visible { outline: 2px solid var(--dz-accent); outline-offset: 2px; }
+
+.dz .dz-annotation-chip {
+  display: inline-flex;
+  align-items: center;
+  height: 16px;
+  margin-bottom: 4px;
+  padding: 0 6px;
+  border-radius: 4px;
+  background: var(--dz-note);
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: var(--dz-weight-strong);
+}
+.dz .dz-annotation-text {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 8;
+  line-clamp: 8;
+}
+.dz .dz-annotation-props {
+  display: grid;
+  gap: 2px;
+  margin: 6px 0 0;
+}
+.dz .dz-annotation-text + .dz-annotation-props { padding-top: 6px; border-top: 1px solid var(--dz-border); }
+.dz .dz-annotation-prop {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 16px;
+}
+.dz .dz-annotation-prop dt { flex: 1; min-width: 0; color: var(--dz-text-2); }
+.dz .dz-annotation-prop dd { margin: 0; font-variant-numeric: tabular-nums; text-align: right; overflow-wrap: anywhere; }
+
+/* ── Writing a note ──────────────────────────────────────────────────────────────────────────── */
+.dz .dz-annotation.is-editor {
+  --dz-note: var(--dz-border-strong);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 260px;
+  max-width: 260px;
+  padding: 8px 8px 8px 11px;
+  box-shadow: inset 3px 0 0 var(--dz-note), var(--dz-shadow-menu);
+  transform-origin: left top;
+  transition: opacity var(--dz-base) var(--dz-ease-out), scale var(--dz-base) var(--dz-ease-out);
+  @starting-style { opacity: 0; scale: 0.97; }
+}
+.dz[data-input='keyboard'] .dz-annotation.is-editor { transition: none; }
+@media (prefers-reduced-motion: reduce) {
+  .dz .dz-annotation.is-editor { transition: opacity var(--dz-base) var(--dz-ease-out); @starting-style { opacity: 0; scale: 1; } }
+}
+
+.dz .dz-annotation-categories { display: flex; flex-wrap: wrap; gap: 4px; }
+.dz .dz-annotation-category {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 22px;
+  padding: 0 8px 0 7px;
+  border: 1px solid var(--dz-border);
+  border-radius: 11px;
+  background: none;
+  color: var(--dz-text);
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+  transition: background-color var(--dz-fast) var(--dz-ease-press), border-color var(--dz-fast) var(--dz-ease-press), scale var(--dz-fast) var(--dz-ease-press);
+}
+@media (hover: hover) and (pointer: fine) {
+  .dz .dz-annotation-category:hover { background: var(--dz-hover); }
+}
+.dz .dz-annotation-category:active { scale: 0.96; }
+.dz .dz-annotation-category:focus-visible { outline: 2px solid var(--dz-accent); outline-offset: 1px; }
+.dz .dz-annotation-category[aria-checked='true'] {
+  border-color: var(--dz-note);
+  background: color-mix(in srgb, var(--dz-note) 14%, transparent);
+}
+.dz .dz-annotation-dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--dz-note);
+}
+
+.dz .dz-annotation-input {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 48px;
+  padding: 6px 8px;
+  border: 1px solid var(--dz-border);
+  border-radius: var(--dz-radius);
+  background: var(--dz-field);
+  color: var(--dz-text);
+  font: inherit;
+  font-size: 11px;
+  line-height: 16px;
+  resize: none;
+}
+.dz .dz-annotation-input::placeholder { color: var(--dz-text-3); }
+.dz .dz-annotation-input:focus { outline: none; border-color: var(--dz-accent); box-shadow: 0 0 0 1px var(--dz-accent); }
+.dz .dz-annotation.is-editor .dz-annotation-props { margin: 0; }
+.dz .dz-annotation.is-editor .dz-annotation-prop { min-height: 24px; }
+.dz .dz-annotation-actions { display: flex; align-items: center; gap: 4px; }
+.dz .dz-annotation-spacer { flex: 1; }
+
+/* ── "Code": notes and measurements for developers ────────────────────────────────────────────── */
+.dz .dz-devnotes .dz-section-body { gap: 0; padding: 0 8px 8px; }
+.dz .dz-devnotes .dz-panel-note { margin: 0; padding: 0 8px 4px; }
+.dz .dz-devnotes kbd {
+  padding: 0 4px;
+  border: 1px solid var(--dz-border);
+  border-radius: 3px;
+  font: inherit;
+  font-size: 10px;
+}
+.dz .dz-devnotes-list { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; }
+.dz .dz-devnote {
+  --dz-note: #7a7a7a;
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  border-radius: var(--dz-radius);
+}
+.dz .dz-devnote.is-measure { --dz-note: #e83d9a; }
+.dz .dz-devnote.is-selected { background: var(--dz-selected-row); }
+.dz .dz-devnote-main {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+  gap: 2px;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: var(--dz-radius);
+  background: none;
+  color: var(--dz-text);
+  font: inherit;
+  font-size: 11px;
+  line-height: 16px;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color var(--dz-fast) var(--dz-ease-press);
+}
+@media (hover: hover) and (pointer: fine) {
+  .dz .dz-devnote-main:hover { background: var(--dz-hover); }
+  .dz .dz-devnote.is-selected .dz-devnote-main:hover { background: none; }
+}
+.dz .dz-devnote-main:focus-visible { outline: 2px solid var(--dz-accent); outline-offset: -2px; }
+.dz .dz-devnote-head { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.dz .dz-devnote-head svg { flex: none; color: var(--dz-note); }
+.dz .dz-devnote-layer { flex: 1; min-width: 0; overflow: hidden; font-weight: var(--dz-weight-medium); text-overflow: ellipsis; white-space: nowrap; }
+.dz .dz-devnote-category { flex: none; color: var(--dz-text-2); }
+.dz .dz-devnote-text { padding-left: 14px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.dz .dz-devnote-prop { display: flex; gap: 8px; padding-left: 14px; color: var(--dz-text-2); }
+.dz .dz-devnote-prop > span:first-child { flex: 1; min-width: 0; }
+.dz .dz-devnote-value { flex: none; color: var(--dz-text); font-variant-numeric: tabular-nums; }
+.dz .dz-devnote-remove { flex: none; margin: 2px 2px 0 0; opacity: 0; transition: opacity var(--dz-fast) var(--dz-ease-press); }
+.dz .dz-devnote:focus-within .dz-devnote-remove,
+.dz .dz-devnote.is-selected .dz-devnote-remove { opacity: 1; }
+@media (hover: hover) and (pointer: fine) {
+  .dz .dz-devnote:hover .dz-devnote-remove { opacity: 1; }
+}
+@media not ((hover: hover) and (pointer: fine)) {
+  .dz .dz-devnote-remove { opacity: 1; }
+}

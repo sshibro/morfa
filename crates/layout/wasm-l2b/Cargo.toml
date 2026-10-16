@@ -1,0 +1,30 @@
+# The wasm build of the layout stages, for the Node benches and the stage diff through V8
+# (scripts/bench/layout.ts, scripts/layout/stage-diff.ts --wasm): not a workspace member and not the
+# engine's API (that is crates/wasm).
+#   wasm-pack build crates/layout/wasm-l2b --release --target nodejs --out-dir pkg
+[package]
+name = "morfa-layout-wasm-l2b"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[workspace]
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+morfa-layout = {path = ".."}
+morfa-model = {path = "../../model"}
+wasm-bindgen = "0.2"
+serde_json = {version = "1", features = ["float_roundtrip"]}
+indexmap = "2"
+
+# The workspace's release profile (what the editor ships).
+[profile.release]
+opt-level = "s"
+lto = "fat"
+codegen-units = 1
+
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = ["-Os"]

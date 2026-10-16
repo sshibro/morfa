@@ -1,0 +1,26 @@
+[package]
+name = "morfa-text-fonts-wasm"
+description = "Lane L3's font module: the store, harfrust shaping and skrifa outlines as a wasm module of its own (scripts/wasm-text-build.sh)."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+morfa-text = {workspace = true, default-features = false, features = ["fonts"]}
+wasm-bindgen.workspace = true
+
+[features]
+default = ["woff2"]
+# Decode woff2 in the browser (wuff); off when the fonts are served pre-decoded.
+woff2 = ["morfa-text/woff2"]
+
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = ["-Oz"]
+
+[lints]
+workspace = true

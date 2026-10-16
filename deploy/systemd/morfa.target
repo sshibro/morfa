@@ -1,0 +1,9 @@
+# Starts and stops the Morfa services of a host together (`systemctl start morfa.target`). Which instances run is decided by
+# which are enabled: api@1 api@2 worker collab@a collab@b on bench-ru (scripts/deploy/provision-bench.sh).
+[Unit]
+Description=Morfa services
+Wants=network-online.target
+After=network-online.target
+
+[Install]
+WantedBy=multi-user.target

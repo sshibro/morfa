@@ -1,0 +1,8 @@
+{
+  "name": "morfa",
+  "version": "1.0.0",
+  "description": "Design in Morfa from Claude Code: build screens on the canvas, read frames as code, put your own pictures in.",
+  "author": {"name": "Morfa", "url": "https://morfa.example"},
+  "homepage": "https://morfa.example",
+  "keywords": ["design", "figma", "ui", "canvas", "mcp"]
+}

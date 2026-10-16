@@ -1,0 +1,48 @@
+# Production's two-VM layout: Prometheus on the database VM, the services on the app VM.
+# scripts/deploy/remote/prod.sh writes this file over prometheus.yml with APP_PRIVATE_IP replaced. The app VM's services stay on
+# loopback; its Caddy answers only their /metrics on the private address, port 9400 (deploy/caddy/morfa-metrics.caddy). Job names
+# and labels are prometheus.yml's, so alerts.yml and targets-rules.yml read the same series.
+global:
+  scrape_interval: 5s
+  evaluation_interval: 15s
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: [127.0.0.1:9093]
+
+rule_files:
+  - /etc/prometheus/alerts.yml
+  - /etc/prometheus/targets-rules.yml
+
+scrape_configs:
+  - job_name: api
+    static_configs:
+      - targets: [APP_PRIVATE_IP:9400]
+        labels: {process: api-1, __metrics_path__: /api-1/metrics}
+      - targets: [APP_PRIVATE_IP:9400]
+        labels: {process: api-2, __metrics_path__: /api-2/metrics}
+  - job_name: collab
+    static_configs:
+      - targets: [APP_PRIVATE_IP:9400]
+        labels: {node: a, __metrics_path__: /collab-a/metrics}
+      - targets: [APP_PRIVATE_IP:9400]
+        labels: {node: b, __metrics_path__: /collab-b/metrics}
+  - job_name: render
+    metrics_path: /render/metrics
+    static_configs:
+      - targets: [APP_PRIVATE_IP:9400]
+  - job_name: caddy
+    metrics_path: /caddy/metrics
+    static_configs:
+      - targets: [APP_PRIVATE_IP:9400]
+  # This VM: its own node, PostgreSQL and the observability services.
+  - job_name: node
+    static_configs:
+      - targets: [127.0.0.1:9100]
+  - job_name: postgres
+    static_configs:
+      - targets: [127.0.0.1:9187]
+  - job_name: observability
+    static_configs:
+      - targets: [127.0.0.1:9090, 127.0.0.1:3200, 127.0.0.1:3100, 127.0.0.1:12345, 127.0.0.1:9093]

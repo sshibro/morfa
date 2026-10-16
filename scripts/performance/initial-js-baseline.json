@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "ceilingsKiB": {
+    "designFiles": 230,
+    "designEditor": 700
+  },
+  "routes": {
+    "designFiles": 214400,
+    "designEditor": 680282
+  }
+}

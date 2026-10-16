@@ -1,0 +1,5 @@
+{
+  "mcpServers": {
+    "morfa": {"type": "http", "url": "https://app.morfa.example/mcp"}
+  }
+}

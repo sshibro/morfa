@@ -1,0 +1,59 @@
+/* The support chat's badges in the design area (SupportButton.tsx, the editor's main menu, the board's help pill): the count of the
+   operator's unread answers in the brand's indigo, ringed with the ground behind it so it reads on any button. */
+
+.dz .mf-support-button {
+  position: relative;
+}
+
+.dz .mf-support-badge {
+  position: absolute;
+  top: 1px;
+  right: 0;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  box-sizing: border-box;
+  border-radius: 999px;
+  background: var(--mf-brand, #4338ff);
+  color: #ffffff;
+  box-shadow: 0 0 0 2px var(--dz-panel);
+  font-size: 10px;
+  line-height: 16px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  pointer-events: none;
+  animation: mf-support-badge-in 260ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* A dot where a count would crowd the button (the editor's menu button, the board's help pill). */
+.dz .mf-support-dot {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--mf-brand, #4338ff);
+  box-shadow: 0 0 0 2px var(--dz-panel);
+  pointer-events: none;
+  animation: mf-support-badge-in 260ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes mf-support-badge-in {
+  from {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dz .mf-support-badge,
+  .dz .mf-support-dot {
+    animation: none;
+  }
+}
+
+.dz .mf-support-anchor {
+  position: relative;
+}

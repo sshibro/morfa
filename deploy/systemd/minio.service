@@ -1,0 +1,26 @@
+# bench-ru only: MinIO as the S3 stand-in until the operator's Timeweb S3 bucket exists. D/S rows measured on it are marked
+# "provisional: MinIO stand-in". Listens on 127.0.0.1:9000 (API) and 127.0.0.1:9001 (console, SSH tunnel only); data in
+# /srv/minio; root credentials in /etc/morfa/minio.env (generated on the VM). It sits in morfa.slice: it is part of the
+# system under test, as S3 would be on the provider's side.
+[Unit]
+Description=MinIO (S3 stand-in for bench-ru)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+Slice=morfa.slice
+User=minio
+Group=minio
+EnvironmentFile=/etc/morfa/minio.env
+ExecStart=/usr/local/bin/minio server /srv/minio --address 127.0.0.1:9000 --console-address 127.0.0.1:9001 --quiet
+Restart=on-failure
+RestartSec=2
+LimitNOFILE=65536
+NoNewPrivileges=yes
+ProtectSystem=strict
+ReadWritePaths=/srv/minio
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target

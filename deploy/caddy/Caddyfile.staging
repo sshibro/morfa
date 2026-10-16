@@ -1,0 +1,29 @@
+# The local staging edge (scripts/deploy/staging.sh): production's sites (morfa-sites.caddy) and routes (morfa-routes.caddy) on
+# the names <MORFA_MARKETING_DOMAIN> = morfa.test, app.morfa.test, collab-a/b.morfa.test, updates.morfa.test, all resolving to
+# 127.0.0.1 (/etc/hosts), with certificates from Caddy's local CA instead of ACME. Plus a TLS front for MinIO, since pgBackRest
+# speaks only HTTPS to S3 (as on bench-ru). Run by staging.sh in the caddy:2 image on the host network.
+{
+	local_certs
+	skip_install_trust
+	admin localhost:{$MORFA_CADDY_ADMIN_PORT:2019}
+	metrics
+	http_port {$MORFA_HTTP_PORT:80}
+	https_port {$MORFA_HTTPS_PORT:443}
+	servers {
+		timeouts {
+			read_header 10s
+			idle 2m
+		}
+		trusted_proxies static private_ranges
+	}
+}
+
+import morfa-routes.caddy
+import morfa-sites.caddy
+import morfa-metrics.caddy
+
+https://s3.{$MORFA_MARKETING_DOMAIN}:{$MORFA_S3_TLS_PORT:9443} {
+	bind 127.0.0.1
+	tls internal
+	reverse_proxy {$MORFA_S3_UPSTREAM:127.0.0.1:9100}
+}

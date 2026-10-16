@@ -1,0 +1,28 @@
+# /etc/pgbackrest/pgbackrest.conf — PostgreSQL base backups and the WAL archive in S3.
+# Owner postgres, mode 640. Keys come from the VM (bench-ru: generated MinIO keys; production: the Timeweb S3 key), never the repo.
+[global]
+repo1-type=s3
+repo1-s3-uri-style=path
+repo1-s3-endpoint=s3.timeweb.cloud
+repo1-s3-region=ru-1
+repo1-s3-bucket=CHANGE_ME
+repo1-s3-key=CHANGE_ME
+repo1-s3-key-secret=CHANGE_ME
+repo1-path=/pgbackrest
+# Two full backups and every WAL segment between them: point-in-time recovery to any moment of the last two days.
+repo1-retention-full=2
+# Encrypted at rest with a key that is not the bucket's (Russian data-residency law 152-FZ: the provider never reads the dumps).
+repo1-cipher-type=aes-256-cbc
+repo1-cipher-pass=CHANGE_ME
+compress-type=zst
+compress-level=3
+process-max=2
+start-fast=y
+archive-async=y
+spool-path=/var/spool/pgbackrest
+log-level-console=info
+log-level-file=detail
+
+[morfa]
+pg1-path=/var/lib/postgresql/18/main
+pg1-port=5432

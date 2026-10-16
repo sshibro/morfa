@@ -1,0 +1,323 @@
+/* The editor's chrome: the side panels, their headers and tabs, the floating toolbar, the zoom.
+   The canvas area contains its own layout and paint, so nothing the canvas does reaches the panels. */
+
+.dz .dz-editor {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  background: var(--dz-canvas);
+}
+.dz .dz-canvas-area {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  background: var(--dz-canvas);
+  contain: layout paint;
+}
+.dz .dz-editor.is-ui-hidden :is(.dz-side-panel, .dz-toolbar, .dz-float-bar) { display: none; }
+.dz.dz-root:has(.dz-editor:not(.is-ui-hidden)) { --dz-toast-bottom: 76px; }
+
+/* ── Panel frame ─────────────────────────────────────────────────────────────────────────────── */
+.dz .dz-panel-header {
+  display: flex;
+  align-items: center;
+  flex: none;
+  height: 48px;
+  border-bottom: 1px solid var(--dz-border);
+}
+/* No gap: the zoom's own left padding is the space, and the English tab names ("Prototype") leave the 240 px row no room for 4 px more. */
+.dz .dz-panel-tabs {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex: none;
+  height: 40px;
+  padding: 0 8px;
+  border-bottom: 1px solid var(--dz-border);
+}
+.dz .dz-panel-body { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+.dz .dz-scroll { overflow-x: hidden; overflow-y: auto; }
+/* A mode that hides the right panel's tabs (comment mode) keeps the zoom at their place. */
+.dz .dz-panel-override-spacer { flex: 1; }
+
+/* The navigation bar along the left edge (chrome/NavRail.tsx), as Figma Design's current one: the main menu on
+   top, then labelled views (20 px glyphs over 10 px labels; 68 px wide so "Comments" and "Variables" fit), a tint
+   on the chosen one. */
+.dz .dz-nav {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+  width: 68px;
+  padding: 8px 0;
+  border-right: 1px solid var(--dz-border);
+  background: var(--dz-panel);
+}
+.dz .dz-nav .dz-app-menu { padding: 0 2px 0 4px; }
+.dz .dz-nav-divider { flex: none; width: 24px; height: 1px; margin: 4px 0; background: var(--dz-border); }
+.dz .dz-nav-tabs { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.dz .dz-nav-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  width: 64px;
+  padding: 2px 0 4px;
+  border-radius: 8px;
+  color: var(--dz-text-2);
+}
+.dz .dz-nav-icon { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 8px; transition: background-color var(--dz-fast) var(--dz-ease-press); }
+.dz .dz-nav-label { font-size: 10px; line-height: 12px; white-space: nowrap; }
+.dz .dz-nav-item[aria-selected='true'] { color: var(--dz-text); }
+.dz .dz-nav-item[aria-selected='true'] .dz-nav-icon { background: var(--dz-selected-row); color: var(--dz-accent-text); }
+@media (hover: hover) {
+  .dz .dz-nav-item:hover .dz-nav-icon { background: var(--dz-hover); }
+  .dz .dz-nav-item[aria-selected='true']:hover .dz-nav-icon { background: var(--dz-selected-row); }
+}
+.dz .dz-nav-item:focus-visible { outline: 2px solid var(--dz-accent); outline-offset: -2px; }
+.dz .dz-nav-badge { position: absolute; top: 0; right: 4px; }
+
+/* Left: the main menu, the file name over its save state, the hide-interface button. */
+.dz .dz-left-header { gap: 4px; padding: 0 8px; }
+.dz .dz-app-menu {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  flex: none;
+  height: 32px;
+  padding: 0 4px 0 8px;
+  border-radius: 6px;
+  color: var(--dz-text);
+  transition: background-color var(--dz-fast) var(--dz-ease-press);
+}
+.dz .dz-app-menu svg + svg { color: var(--dz-text-2); }
+/* The product's symbol in colour (src/brand/marks.tsx), where a tool keeps its own mark: on its main menu. */
+.dz .dz-app-menu-mark { flex: none; width: 18px; height: 18px; margin-right: 2px; }
+@media (hover: hover) {
+  .dz .dz-app-menu:hover { background: var(--dz-hover); }
+}
+.dz .dz-app-menu[aria-expanded='true'] { background: var(--dz-pressed); }
+.dz .dz-file-title {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex: 1;
+  min-width: 0;
+  height: 40px;
+}
+.dz .dz-file-name {
+  display: block;
+  max-width: 100%;
+  height: 20px;
+  margin-left: -4px;
+  padding: 0 4px;
+  overflow: hidden;
+  border-radius: 4px;
+  font-size: 12px;
+  line-height: 20px;
+  font-weight: var(--dz-weight-strong);
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: background-color var(--dz-fast) var(--dz-ease-press);
+}
+@media (hover: hover) {
+  .dz .dz-file-name:hover { background: var(--dz-hover); }
+}
+.dz .dz-file-name:focus-visible { outline-offset: -1px; border-radius: 4px; }
+.dz .dz-input.dz-file-name-input {
+  height: 20px;
+  margin-left: -4px;
+  padding: 0 4px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: var(--dz-weight-strong);
+}
+.dz .dz-save-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  align-self: flex-start;
+  max-width: 100%;
+  height: 16px;
+  overflow: hidden;
+  color: var(--dz-text-2);
+  white-space: nowrap;
+  border-radius: 4px;
+}
+.dz .dz-save-status.is-offline { color: var(--dz-danger-text); }
+
+/* "File": pages above layers, each scrolling on its own. */
+.dz .dz-left-pages {
+  flex: none;
+  max-height: 40%;
+  overflow-y: auto;
+  border-bottom: 1px solid var(--dz-border);
+}
+.dz .dz-left-layers { flex: 1; min-height: 0; overflow: auto; }
+
+/* Right: the player and export; the tab row carries the zoom. */
+.dz .dz-right-header { justify-content: flex-end; gap: 8px; padding: 0 12px 0 8px; }
+.dz .dz-zoom {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: var(--dz-control);
+  margin-left: auto;
+  padding: 0 4px 0 8px;
+  border-radius: var(--dz-radius);
+  color: var(--dz-text-2);
+  font-variant-numeric: tabular-nums;
+  transition: background-color var(--dz-fast) var(--dz-ease-press), color var(--dz-fast) var(--dz-ease-press);
+}
+@media (hover: hover) {
+  .dz .dz-zoom:hover { background: var(--dz-hover); color: var(--dz-text); }
+}
+.dz .dz-zoom[aria-expanded='true'] { background: var(--dz-pressed); color: var(--dz-text); }
+
+/* ── Floating toolbar ────────────────────────────────────────────────────────────────────────── */
+/* Figma's UI3 bar, measured on its retina screenshots: 48 px tall (32 px buttons in an 8 px inset),
+   24 px glyphs drawn at the icons' 1.5 px stroke, 16 px chevrons a pixel from their button, 8 px
+   between groups, a full-height divider and an inset segment of modes at the right end.
+   Concentric: the bar's 13 px is the buttons' 5 px plus the 8 px inset; the segment keeps the
+   buttons' 5 px and its modes sit 2 px in with 3 px corners.
+   Its buttons, chevrons and modes light and unlight at once: tools and modes switch from the
+   keyboard all day (emil-design-eng: no animation on 100×/day actions). */
+.dz .dz-toolbar {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  height: 48px;
+  padding: 0 8px;
+  border-radius: 13px;
+  background: var(--dz-panel);
+  box-shadow: var(--dz-shadow-float);
+  translate: -50% 0;
+}
+.dz .dz-toolbar-tools { display: flex; align-items: center; gap: 8px; }
+
+/* "Hide UI" (⇧\, Figma's Minimize UI): the side panels fold into two bars over the canvas, in the
+   toolbar's surface, corners and shadow — the file top left, its actions top right. The canvas takes the width. */
+.dz .dz-float-bar {
+  position: absolute;
+  top: 12px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 48px;
+  padding: 0 8px;
+  border-radius: 13px;
+  background: var(--dz-panel);
+  box-shadow: var(--dz-shadow-float);
+}
+.dz .dz-float-file { left: 12px; max-width: min(340px, calc(50% - 18px)); }
+.dz .dz-float-file .dz-file-title { flex: none; max-width: 240px; padding: 0 4px; }
+/* The name hangs 4 px left into the padding (its hover background lines up with the status): give those 4 px back. */
+.dz .dz-float-file .dz-file-name { max-width: calc(100% + 4px); }
+.dz .dz-float-actions { right: 12px; gap: 8px; max-width: calc(50% - 18px); }
+.dz .dz-tool-group { display: flex; align-items: center; gap: 1px; }
+.dz .dz-toolbar :is(.dz-icon-btn.is-32, .dz-tool-flyout) { border-radius: 5px; }
+.dz .dz-tool-flyout {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 32px;
+  color: var(--dz-text-2);
+}
+@media (hover: hover) {
+  .dz .dz-tool-flyout:hover { background: var(--dz-hover); color: var(--dz-text); }
+}
+.dz .dz-tool-flyout[aria-expanded='true'] { background: var(--dz-pressed); color: var(--dz-text); }
+/* The flyouts (ui/Menu `is-tools`): Figma's rows, 32 px, the tool's icon in a 24 px box between the check and the name. */
+.dz .dz-menu.is-tools .dz-menu-item { min-height: 32px; }
+.dz .dz-menu.is-tools .dz-menu-icon { width: 24px; height: 24px; margin-left: -4px; }
+/* Edge to edge, as Figma's: it splits the bar, not a row of buttons. */
+.dz .dz-toolbar-divider { align-self: stretch; flex: none; width: 1px; margin: 0 8px; background: var(--dz-border); }
+
+/* "Actions" (⌘K): lit in the accent while its menu is open, as a chosen tool is. */
+.dz .dz-toolbar .dz-actions-button[aria-expanded='true'] { background: var(--dz-accent); color: var(--dz-on-accent); }
+.dz .dz-actions-button { position: relative; }
+
+/* The modes: an inset segment, the current one raised and in its colour (Dev Mode's is green, as in Figma), in the
+   text shades of the accent and the green so the glyph keeps 3:1 on the raised square. */
+.dz .dz-toolbar-modes {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 32px;
+  padding: 2px;
+  border-radius: 5px;
+  background: var(--dz-field);
+}
+.dz .dz-toolbar-mode {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 3px;
+  color: var(--dz-text-2);
+}
+@media (hover: hover) {
+  .dz .dz-toolbar-mode:hover { color: var(--dz-text); }
+}
+.dz .dz-toolbar-mode[aria-checked='true'] {
+  background: var(--dz-panel);
+  color: var(--dz-accent-text);
+  box-shadow: 0 0 0 0.5px rgb(0 0 0 / 0.12), 0 1px 2px rgb(0 0 0 / 0.06);
+}
+.dz .dz-toolbar-mode[aria-checked='true'][data-mode='code'] { color: var(--dz-success-text); }
+.dz[data-theme='dark'] .dz-toolbar-mode[aria-checked='true'] { background: var(--dz-canvas); box-shadow: none; }
+.dz .dz-toolbar-mode:focus-visible { outline-offset: -2px; }
+
+/* ── Loading and error frames of the editor route ────────────────────────────────────────────── */
+.dz .dz-editor-state { display: grid; place-items: center; height: 100%; }
+.dz .dz-skeleton-bar {
+  display: block;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--dz-skeleton);
+  animation: dz-pulse 1.6s ease-in-out infinite;
+}
+.dz .dz-skeleton-rows { display: grid; gap: 14px; padding: 16px; }
+.dz .dz-canvas-spinner { position: absolute; inset: 0; margin: auto; color: var(--dz-text-3); }
+.dz .dz-open-progress { position: absolute; left: 0; right: 0; top: calc(50% + 22px); text-align: center; font-size: 12px; color: var(--dz-text-3); font-variant-numeric: tabular-nums; }
+.dz .dz-canvas-placeholder { position: absolute; inset: 0; }
+.dz .dz-zoom:disabled { color: var(--dz-text-3); background: none; }
+
+/* Read-only page and layer lists of the placeholder editor (the panels' own modules replace them). */
+.dz .dz-simple-list { display: grid; margin: -4px -8px 0 -16px; }
+.dz .dz-simple-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 16px;
+  color: var(--dz-text);
+  text-align: left;
+  white-space: nowrap;
+}
+@media (hover: hover) {
+  .dz button.dz-simple-row:hover { background: var(--dz-hover); }
+}
+.dz .dz-simple-row > span { overflow: hidden; text-overflow: ellipsis; }
+.dz .dz-simple-row svg { color: var(--dz-text-2); }
+.dz .dz-simple-row.is-current { font-weight: var(--dz-weight-strong); }
+.dz .dz-simple-row.is-current::after { content: ''; width: 16px; }
+.dz .dz-panel-note { color: var(--dz-text-2); text-wrap: pretty; }
+.dz .dz-prop-row { display: flex; align-items: center; gap: 8px; }
+.dz .dz-prop-row .dz-input { flex: 1; }
+
+/* Big files: the memory budget under the file name (chrome/MemoryIndicator.tsx). */
+.dz .dz-memory { display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; height: 14px; margin-top: 1px; color: var(--dz-text-2); font-size: 10px; line-height: 14px; border-radius: 4px; cursor: default; }
+.dz .dz-memory-bar { display: block; width: 56px; height: 4px; border-radius: 2px; background: var(--dz-pressed); overflow: hidden; }
+.dz .dz-memory-fill { display: block; height: 100%; border-radius: 2px; background: var(--dz-text-2); }
+.dz .dz-memory.is-warn .dz-memory-fill { background: #d9a400; }
+.dz .dz-memory.is-high .dz-memory-fill, .dz .dz-memory.is-full .dz-memory-fill { background: var(--dz-danger-text); }
+.dz .dz-memory.is-high .dz-memory-text, .dz .dz-memory.is-full .dz-memory-text { color: var(--dz-danger-text); }

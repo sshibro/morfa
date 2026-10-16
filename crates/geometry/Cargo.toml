@@ -1,0 +1,26 @@
+[package]
+name = "morfa-geometry"
+description = "Paths, bounds, boolean operations, outline stroke, flatten, hit test, spatial index (lane L1)."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+morfa-model.workspace = true
+# Text that overflows its box counts in render bounds (lane L3's layout; no fonts: the fixed test measurer).
+morfa-text = {workspace = true, default-features = false}
+# fdlibm in Rust (musl's port): the same sin/cos/atan2/tan/acos/pow natively and in WASM, as V8's Math.*.
+libm = "0.2"
+# foldhash maps for the hit tester's per-document tables and the spatial grid (SipHash dominated picking).
+hashbrown = {version = "0.17", default-features = false, features = ["default-hasher", "inline-more"]}
+# The live-drawing boolean (`boolean::combine_paths_live`, lane G): an integer-snapped overlay, compared with
+# polygon-clipping by area. Writes keep the bit-exact polygon-clipping port (`clip`).
+i_overlay = {version = "4.5", default-features = false}
+
+[dev-dependencies]
+serde_json = {version = "1", features = ["preserve_order", "float_roundtrip"]}
+
+[lints]
+workspace = true

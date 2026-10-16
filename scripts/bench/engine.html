@@ -1,0 +1,31 @@
+<!doctype html>
+<!-- Lane S2's engine bench in the browser (node scripts/bench/engine.ts --chrome serves and opens this). -->
+<meta charset="utf-8" />
+<title>morfa engine bench</title>
+<link rel="icon" href="data:," />
+<pre id="out">running…</pre>
+<script type="module">
+  import init, * as wasm from '/src/design/wasm/morfa_wasm.js';
+  import {setEngineWasm} from '/shared/design/engine-switch.ts';
+  import initGeometry, * as geometry from '/src/design/wasm-geometry/morfa_geometry_wasm.js';
+  import {setGeometryWasm} from '/shared/design/geometry-wasm.ts';
+  import {formatRows} from '/scripts/bench/engine-core.ts';
+  const core = new URLSearchParams(location.search).get('core') ?? 'engine';
+  const {bench} = await import(/* @vite-ignore */ `/scripts/bench/${core}-core.ts`);
+  const out = document.getElementById('out');
+  try {
+    await init();
+    setEngineWasm(wasm);
+    await initGeometry();
+    setGeometryWasm(geometry);
+    const only = new URLSearchParams(location.search).get('only') ?? undefined;
+    if (new URLSearchParams(location.search).has('wait')) await new Promise(resolve => (window.__go = resolve));
+    const numbers = name => (new URLSearchParams(location.search).has(name) ? Number(new URLSearchParams(location.search).get(name)) : undefined);
+    const rows = bench({only, commits: numbers('commits'), rounds: numbers('rounds'), modes: new URLSearchParams(location.search).get('modes')?.split(','), heapUsed: () => performance.memory?.usedJSHeapSize ?? null, gc: () => globalThis.gc?.(), heapIncludesWasm: true});
+    out.textContent = formatRows(rows, `chrome: ${core}`);
+    window.__bench = {rows};
+  } catch (error) {
+    out.textContent = `failed: ${error?.stack ?? error}`;
+    window.__bench = {error: String(error?.stack ?? error)};
+  }
+</script>

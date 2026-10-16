@@ -1,0 +1,57 @@
+/* Vector editing: the editor's bar over the canvas and the boolean split button of the design
+   panel. The canvas marks themselves (anchors, handles) are drawn on the overlay canvas
+   (src/design/engine/vector-edit/draw.ts). */
+
+/* ── The vector editor's bar ─────────────────────────────────────────────────────────────────── */
+/* It takes the toolbar's place and look while a vector is edited; the swap is instant, as entering
+   the editor is a keyboard action as often as a pointer one (emil-design-eng: no motion there). */
+.dz .dz-vector-bar {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 48px;
+  padding: 0 8px;
+  /* Concentric: 5 px controls plus the 8 px inset, as the toolbar. */
+  border-radius: 13px;
+  background: var(--dz-panel);
+  box-shadow: var(--dz-shadow-float);
+  translate: -50% 0;
+}
+.dz .dz-canvas-area:has(.dz-vector-bar) .dz-toolbar { visibility: hidden; }
+.dz .dz-editor.is-ui-hidden .dz-vector-bar { display: none; }
+.dz .dz-vector-bar .dz-icon-btn.is-32 { border-radius: 5px; }
+.dz .dz-vector-bar .dz-vector-done {
+  margin-left: 6px;
+  padding: 0 14px;
+  border-radius: 5px;
+  font-weight: var(--dz-weight-medium);
+}
+
+/* ── "Boolean operations" split button (panel header, 24 px) ────────────────────────────────────── */
+.dz .dz-boolean-menu {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  border-radius: var(--dz-radius);
+}
+.dz .dz-boolean-menu > .dz-icon-btn { border-radius: var(--dz-radius) 0 0 var(--dz-radius); }
+.dz .dz-boolean-chevron {
+  display: grid;
+  place-items: center;
+  width: 14px;
+  height: var(--dz-control);
+  border-radius: 0 var(--dz-radius) var(--dz-radius) 0;
+  color: var(--dz-text-2);
+  transition: background-color var(--dz-fast) var(--dz-ease-press), color var(--dz-fast) var(--dz-ease-press);
+}
+@media (hover: hover) {
+  /* The two halves light up together, so the pair reads as one control. */
+  .dz .dz-boolean-menu:not(.is-disabled):hover > :is(.dz-icon-btn, .dz-boolean-chevron) { background: var(--dz-hover); }
+  .dz .dz-boolean-menu:not(.is-disabled) > .dz-boolean-chevron:hover { color: var(--dz-text); }
+}
+.dz .dz-boolean-chevron[aria-expanded='true'] { background: var(--dz-pressed); color: var(--dz-text); }
+.dz .dz-boolean-chevron:disabled { color: var(--dz-text-3); }

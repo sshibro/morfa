@@ -1,0 +1,12 @@
+<!doctype html>
+<!-- Browser smoke for the web build of crates/wasm (scripts/wasm-build.sh first; run: node scripts/wasm-smoke.mjs). -->
+<meta charset="utf-8" />
+<title>morfa-wasm smoke</title>
+<link rel="icon" href="data:," />
+<p id="out">loading morfa-wasm…</p>
+<script type="module">
+  import init, {version} from '/src/design/wasm/morfa_wasm.js';
+  const out = document.getElementById('out');
+  try { await init(); out.textContent = `morfa-wasm ${version()}`; out.dataset.state = 'ok'; }
+  catch (error) { out.textContent = `morfa-wasm failed: ${error}`; out.dataset.state = 'error'; }
+</script>

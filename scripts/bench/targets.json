@@ -1,0 +1,1903 @@
+{
+ "$comment": "The numbers of docs/TARGETS.md, one source: scripts/bench/targets-md.ts writes the tables of TARGETS.md from the cells here (npm run targets:md -- --check keeps them byte-identical); scripts/bench/targets.ts reads the metrics. cells = the six table cells verbatim; metrics = the machine-readable target/ceiling (better: lower|higher|rule).",
+ "version": 1,
+ "doc": "docs/TARGETS.md",
+ "tableHeader": "| # | Scenario | Metric | Target | Ceiling | Src |",
+ "tableRule": "|---|---|---|---|---|---|",
+ "sections": [
+  {
+   "id": "1",
+   "title": "Canvas",
+   "bench": "canvas",
+   "machines": [
+    "laptop"
+   ]
+  },
+  {
+   "id": "2",
+   "title": "Editing operations",
+   "bench": "edit-ops",
+   "machines": [
+    "laptop"
+   ]
+  },
+  {
+   "id": "3",
+   "title": "Multiplayer",
+   "bench": "collab-load",
+   "machines": [
+    "bench-ru",
+    "dev-4"
+   ]
+  },
+  {
+   "id": "3b",
+   "title": "Wire, codec and checkpoint format",
+   "bench": "codec",
+   "machines": [
+    "bench-ru",
+    "laptop",
+    "dev-4"
+   ]
+  },
+  {
+   "id": "4",
+   "title": "Durability",
+   "bench": "durability",
+   "machines": [
+    "bench-ru",
+    "dev-4"
+   ]
+  },
+  {
+   "id": "5",
+   "title": "Load, save, checkpoints",
+   "bench": "open-save",
+   "machines": [
+    "bench-ru",
+    "dev-4"
+   ]
+  },
+  {
+   "id": "6",
+   "title": "Export and thumbnails",
+   "bench": "export",
+   "machines": [
+    "bench-ru",
+    "dev-4"
+   ]
+  },
+  {
+   "id": "7",
+   "title": "API",
+   "bench": "api",
+   "machines": [
+    "bench-ru",
+    "dev-4"
+   ]
+  },
+  {
+   "id": "8",
+   "title": "Cost",
+   "bench": "cost",
+   "machines": [
+    "bench-ru",
+    "dev-4"
+   ]
+  }
+ ],
+ "rows": [
+  {
+   "id": "C1",
+   "section": "1",
+   "bench": "canvas",
+   "lane": "L4",
+   "star": false,
+   "cells": [
+    "C1",
+    "Pan `f20k`, nothing selected",
+    "fps / frame p99",
+    "60 / ≤ 16.7 ms",
+    "55 / 25 ms",
+    "M (budget today)"
+   ],
+   "metrics": [
+    {
+     "key": "fps",
+     "label": "fps",
+     "unit": "fps",
+     "better": "higher",
+     "target": 60,
+     "ceiling": 55
+    },
+    {
+     "key": "frameP99",
+     "label": "frame p99",
+     "unit": "ms",
+     "better": "lower",
+     "target": 16.7,
+     "ceiling": 25
+    }
+   ]
+  },
+  {
+   "id": "C2",
+   "section": "1",
+   "bench": "canvas",
+   "lane": "L4",
+   "star": false,
+   "cells": [
+    "C2",
+    "Pan `f100k`",
+    "fps / frame p99",
+    "60 / ≤ 20 ms",
+    "50 / 33 ms",
+    "P"
+   ],
+   "metrics": [
+    {
+     "key": "fps",
+     "label": "fps",
+     "unit": "fps",
+     "better": "higher",
+     "target": 60,
+     "ceiling": 50
+    },
+    {
+     "key": "frameP99",
+     "label": "frame p99",
+     "unit": "ms",
+     "better": "lower",
+     "target": 20,
+     "ceiling": 33
+    }
+   ]
+  },
+  {
+   "id": "C3",
+   "section": "1",
+   "bench": "canvas",
+   "lane": "L4",
+   "star": true,
+   "cells": [
+    "C3",
+    "Pan `f500k` ★",
+    "fps / frame p99",
+    "≥ 45 / ≤ 33 ms",
+    "30 / 66 ms",
+    "P; needs the L4 GPU renderer"
+   ],
+   "metrics": [
+    {
+     "key": "fps",
+     "label": "fps",
+     "unit": "fps",
+     "better": "higher",
+     "target": 45,
+     "ceiling": 30
+    },
+    {
+     "key": "frameP99",
+     "label": "frame p99",
+     "unit": "ms",
+     "better": "lower",
+     "target": 33,
+     "ceiling": 66
+    }
+   ]
+  },
+  {
+   "id": "C4",
+   "section": "1",
+   "bench": "canvas",
+   "lane": "L4",
+   "star": false,
+   "cells": [
+    "C4",
+    "Zoom (pinch 1× → 4× → 1×, 4 s) on `f100k`",
+    "frame p99",
+    "≤ 33 ms (tiles may re-raster within budget)",
+    "50 ms",
+    "P"
+   ],
+   "metrics": [
+    {
+     "key": "frameP99",
+     "label": "frame p99",
+     "unit": "ms",
+     "better": "lower",
+     "target": 33,
+     "ceiling": 50
+    }
+   ]
+  },
+  {
+   "id": "C5",
+   "section": "1",
+   "bench": "canvas",
+   "lane": "L4",
+   "star": false,
+   "cells": [
+    "C5",
+    "Pan `f20k` with 5 000 layers selected",
+    "frame p95",
+    "≤ 12 ms",
+    "17 ms",
+    "M: 17 ms at 1× today"
+   ],
+   "metrics": [
+    {
+     "key": "frameP95",
+     "label": "frame p95",
+     "unit": "ms",
+     "better": "lower",
+     "target": 12,
+     "ceiling": 17
+    }
+   ]
+  },
+  {
+   "id": "C6",
+   "section": "1",
+   "bench": "canvas",
+   "lane": "L4",
+   "star": false,
+   "cells": [
+    "C6",
+    "Pointer move → pixel (drag one layer, `f100k`)",
+    "input-to-pixel p95",
+    "≤ 33 ms (2 frames)",
+    "50 ms",
+    "P"
+   ],
+   "metrics": [
+    {
+     "key": "inputToPixelP95",
+     "label": "input-to-pixel p95",
+     "unit": "ms",
+     "better": "lower",
+     "target": 33,
+     "ceiling": 50
+    }
+   ]
+  },
+  {
+   "id": "C7",
+   "section": "1",
+   "bench": "canvas",
+   "lane": "L4 + B3",
+   "star": false,
+   "cells": [
+    "C7",
+    "Open `f100k` cold (empty caches, 50 Mbit/s)",
+    "first paint / interactive",
+    "≤ 3 s / ≤ 5 s",
+    "5 s / 8 s",
+    "P; F says load fell 3× with WASM, no absolute"
+   ],
+   "metrics": [
+    {
+     "key": "firstPaint",
+     "label": "first paint",
+     "unit": "ms",
+     "better": "lower",
+     "target": 3000,
+     "ceiling": 5000
+    },
+    {
+     "key": "interactive",
+     "label": "interactive",
+     "unit": "ms",
+     "better": "lower",
+     "target": 5000,
+     "ceiling": 8000
+    }
+   ]
+  },
+  {
+   "id": "C8",
+   "section": "1",
+   "bench": "canvas",
+   "lane": "B3 (IndexedDB checkpoint, WASM cache)",
+   "star": false,
+   "cells": [
+    "C8",
+    "Open `f100k` warm (checkpoint in IndexedDB, WASM compiled cache)",
+    "first paint / interactive",
+    "≤ 1 s / ≤ 1.5 s",
+    "2 s / 3 s",
+    "P"
+   ],
+   "metrics": [
+    {
+     "key": "firstPaint",
+     "label": "first paint",
+     "unit": "ms",
+     "better": "lower",
+     "target": 1000,
+     "ceiling": 2000
+    },
+    {
+     "key": "interactive",
+     "label": "interactive",
+     "unit": "ms",
+     "better": "lower",
+     "target": 1500,
+     "ceiling": 3000
+    }
+   ]
+  },
+  {
+   "id": "C9",
+   "section": "1",
+   "bench": "canvas",
+   "lane": "L4 + B3",
+   "star": false,
+   "cells": [
+    "C9",
+    "Open `f20k` cold / warm",
+    "interactive",
+    "≤ 1.5 s / ≤ 0.6 s",
+    "2.5 s / 1 s",
+    "M: first paint < 1.5 s budget today"
+   ],
+   "metrics": [
+    {
+     "key": "interactiveCold",
+     "label": "interactive cold",
+     "unit": "ms",
+     "better": "lower",
+     "target": 1500,
+     "ceiling": 2500
+    },
+    {
+     "key": "interactiveWarm",
+     "label": "interactive warm",
+     "unit": "ms",
+     "better": "lower",
+     "target": 600,
+     "ceiling": 1000
+    }
+   ]
+  },
+  {
+   "id": "C10",
+   "section": "1",
+   "bench": "canvas",
+   "lane": "L4",
+   "star": false,
+   "cells": [
+    "C10",
+    "Memory, `f100k` open 5 min, idle, after GC",
+    "JS heap + WASM + GPU tiles",
+    "≤ 700 MB",
+    "1.2 GB",
+    "P; F: 2 GB per tab is Figma's hard limit"
+   ],
+   "metrics": [
+    {
+     "key": "memory",
+     "label": "memory",
+     "unit": "MB",
+     "better": "lower",
+     "target": 700,
+     "ceiling": 1200
+    }
+   ]
+  },
+  {
+   "id": "C11",
+   "section": "1",
+   "bench": "canvas",
+   "lane": "L4",
+   "star": true,
+   "cells": [
+    "C11",
+    "Memory, `f500k` ★",
+    "the same",
+    "≤ 2 GB",
+    "3 GB",
+    "P; sets the layer cap we advertise"
+   ],
+   "metrics": [
+    {
+     "key": "memory",
+     "label": "memory",
+     "unit": "MB",
+     "better": "lower",
+     "target": 2048,
+     "ceiling": 3072
+    }
+   ]
+  },
+  {
+   "id": "C12",
+   "section": "1",
+   "bench": "canvas",
+   "lane": "L4",
+   "star": false,
+   "cells": [
+    "C12",
+    "Board `board2k`, all selected, pan",
+    "frame p95",
+    "≤ 16.7 ms",
+    "33 ms",
+    "M: 50 ms at 4× today"
+   ],
+   "metrics": [
+    {
+     "key": "frameP95",
+     "label": "frame p95",
+     "unit": "ms",
+     "better": "lower",
+     "target": 16.7,
+     "ceiling": 33
+    }
+   ]
+  },
+  {
+   "id": "E1",
+   "section": "2",
+   "bench": "edit-ops",
+   "lane": "L2a",
+   "star": false,
+   "cells": [
+    "E1",
+    "Move one layer in `f100k`",
+    "commit p95 / frame",
+    "≤ 1 ms / 1 frame",
+    "4 ms / 2",
+    "P; today's store work is size-independent"
+   ],
+   "metrics": [
+    {
+     "key": "commitP95",
+     "label": "commit p95",
+     "unit": "ms",
+     "better": "lower",
+     "target": 1,
+     "ceiling": 4
+    },
+    {
+     "key": "frames",
+     "label": "frame",
+     "unit": "frames",
+     "better": "lower",
+     "target": 1,
+     "ceiling": 2
+    }
+   ]
+  },
+  {
+   "id": "E2",
+   "section": "2",
+   "bench": "edit-ops",
+   "lane": "L2b",
+   "star": false,
+   "cells": [
+    "E2",
+    "Resize a top frame of `product` (reflows ~5 000 auto-layout descendants)",
+    "commit p95",
+    "≤ 8 ms",
+    "16 ms",
+    "P"
+   ],
+   "metrics": [
+    {
+     "key": "commitP95",
+     "label": "commit p95",
+     "unit": "ms",
+     "better": "lower",
+     "target": 8,
+     "ceiling": 16
+    }
+   ]
+  },
+  {
+   "id": "E3",
+   "section": "2",
+   "bench": "edit-ops",
+   "lane": "L2c",
+   "star": false,
+   "cells": [
+    "E3",
+    "Change a component with 1 000 instances (L2c sync)",
+    "commit p95",
+    "≤ 20 ms",
+    "50 ms",
+    "P; **8.1–8.4 ms** a commit in Chromium at 2× (cloud container, 2026-10-09); a run on Apple silicon closes it"
+   ],
+   "metrics": [
+    {
+     "key": "commitP95",
+     "label": "commit p95",
+     "unit": "ms",
+     "better": "lower",
+     "target": 20,
+     "ceiling": 50
+    }
+   ]
+  },
+  {
+   "id": "E4",
+   "section": "2",
+   "bench": "edit-ops",
+   "lane": "L1",
+   "star": false,
+   "cells": [
+    "E4",
+    "Boolean union, 200 fuzzed operands (L1 set)",
+    "wall",
+    "≤ 50 ms",
+    "200 ms",
+    "P; today's budget `BOOLEAN_TIME_BUDGET_MS` 1 500"
+   ],
+   "metrics": [
+    {
+     "key": "wall",
+     "label": "wall",
+     "unit": "ms",
+     "better": "lower",
+     "target": 50,
+     "ceiling": 200
+    }
+   ]
+  },
+  {
+   "id": "E5",
+   "section": "2",
+   "bench": "edit-ops",
+   "lane": "L3",
+   "star": false,
+   "cells": [
+    "E5",
+    "Keystroke in a 2 000-character text with 40 runs, `f100k`",
+    "commit p95 / input-to-pixel",
+    "≤ 2 ms / 1 frame",
+    "4 ms / 2",
+    "P"
+   ],
+   "metrics": [
+    {
+     "key": "commitP95",
+     "label": "commit p95",
+     "unit": "ms",
+     "better": "lower",
+     "target": 2,
+     "ceiling": 4
+    },
+    {
+     "key": "frames",
+     "label": "input-to-pixel",
+     "unit": "frames",
+     "better": "lower",
+     "target": 1,
+     "ceiling": 2
+    }
+   ]
+  },
+  {
+   "id": "E6",
+   "section": "2",
+   "bench": "edit-ops",
+   "lane": "L2a",
+   "star": false,
+   "cells": [
+    "E6",
+    "Undo / redo of E2",
+    "commit p95",
+    "≤ 8 ms",
+    "16 ms",
+    "P"
+   ],
+   "metrics": [
+    {
+     "key": "commitP95",
+     "label": "commit p95",
+     "unit": "ms",
+     "better": "lower",
+     "target": 8,
+     "ceiling": 16
+    }
+   ]
+  },
+  {
+   "id": "E7",
+   "section": "2",
+   "bench": "edit-ops",
+   "lane": "L4",
+   "star": false,
+   "cells": [
+    "E7",
+    "Select all (`f100k`) then pan",
+    "select / frame p95",
+    "≤ 300 ms / ≤ 33 ms",
+    "1 s / 50 ms",
+    "M: 192 ms for 5 000 today"
+   ],
+   "metrics": [
+    {
+     "key": "select",
+     "label": "select",
+     "unit": "ms",
+     "better": "lower",
+     "target": 300,
+     "ceiling": 1000
+    },
+    {
+     "key": "frameP95",
+     "label": "frame p95",
+     "unit": "ms",
+     "better": "lower",
+     "target": 33,
+     "ceiling": 50
+    }
+   ]
+  },
+  {
+   "id": "E8",
+   "section": "2",
+   "bench": "edit-ops",
+   "lane": "L2a",
+   "star": false,
+   "cells": [
+    "E8",
+    "Paste 5 000 layers",
+    "commit + validation",
+    "≤ 150 ms",
+    "500 ms",
+    "P"
+   ],
+   "metrics": [
+    {
+     "key": "commit",
+     "label": "commit + validation",
+     "unit": "ms",
+     "better": "lower",
+     "target": 150,
+     "ceiling": 500
+    }
+   ]
+  },
+  {
+   "id": "M1",
+   "section": "3",
+   "bench": "collab-load",
+   "lane": "B1",
+   "star": false,
+   "cells": [
+    "M1",
+    "Op → change queued to peers, 5 editors on `f20k`, server side, journal excluded",
+    "p50 / p95 / p99",
+    "≤ 0.5 / 2 / 5 ms",
+    "1 / 5 / 20 ms",
+    "M: 31 ms CPU per save today"
+   ],
+   "metrics": [
+    {
+     "key": "p50",
+     "label": "p50",
+     "unit": "ms",
+     "better": "lower",
+     "target": 0.5,
+     "ceiling": 1
+    },
+    {
+     "key": "p95",
+     "label": "p95",
+     "unit": "ms",
+     "better": "lower",
+     "target": 2,
+     "ceiling": 5
+    },
+    {
+     "key": "p99",
+     "label": "p99",
+     "unit": "ms",
+     "better": "lower",
+     "target": 5,
+     "ceiling": 20
+    }
+   ]
+  },
+  {
+   "id": "M1b",
+   "section": "3",
+   "bench": "collab-load",
+   "lane": "B1",
+   "star": false,
+   "cells": [
+    "M1b",
+    "Op → ack after journal commit, same run, server side",
+    "p50 / p95 / p99",
+    "≤ 3 / 8 / 15 ms",
+    "6 / 15 / 30 ms",
+    "M: 21 / 29 ms today incl. PostgreSQL"
+   ],
+   "metrics": [
+    {
+     "key": "p50",
+     "label": "p50",
+     "unit": "ms",
+     "better": "lower",
+     "target": 3,
+     "ceiling": 6
+    },
+    {
+     "key": "p95",
+     "label": "p95",
+     "unit": "ms",
+     "better": "lower",
+     "target": 8,
+     "ceiling": 15
+    },
+    {
+     "key": "p99",
+     "label": "p99",
+     "unit": "ms",
+     "better": "lower",
+     "target": 15,
+     "ceiling": 30
+    }
+   ]
+  },
+  {
+   "id": "M2",
+   "section": "3",
+   "bench": "collab-load",
+   "lane": "B3",
+   "star": false,
+   "cells": [
+    "M2",
+    "Op → ack over ru-net (30 ms RTT)",
+    "p50 / p95 / p99",
+    "≤ 35 / 45 / 60 ms",
+    "50 / 80 / 150 ms",
+    "P: RTT + M1b"
+   ],
+   "metrics": [
+    {
+     "key": "p50",
+     "label": "p50",
+     "unit": "ms",
+     "better": "lower",
+     "target": 35,
+     "ceiling": 50
+    },
+    {
+     "key": "p95",
+     "label": "p95",
+     "unit": "ms",
+     "better": "lower",
+     "target": 45,
+     "ceiling": 80
+    },
+    {
+     "key": "p99",
+     "label": "p99",
+     "unit": "ms",
+     "better": "lower",
+     "target": 60,
+     "ceiling": 150
+    }
+   ]
+  },
+  {
+   "id": "M3",
+   "section": "3",
+   "bench": "collab-load",
+   "lane": "B3",
+   "star": false,
+   "cells": [
+    "M3",
+    "Op → applied at another editor (same file) over ru-net",
+    "p95 / p99",
+    "≤ 45 / 60 ms",
+    "80 / 100 ms",
+    "M: 4.4 ms after save answer today, single process; P: RTT + M1 + client apply"
+   ],
+   "metrics": [
+    {
+     "key": "p95",
+     "label": "p95",
+     "unit": "ms",
+     "better": "lower",
+     "target": 45,
+     "ceiling": 80
+    },
+    {
+     "key": "p99",
+     "label": "p99",
+     "unit": "ms",
+     "better": "lower",
+     "target": 60,
+     "ceiling": 100
+    }
+   ]
+  },
+  {
+   "id": "M4",
+   "section": "3",
+   "bench": "collab-load",
+   "lane": "B1",
+   "star": true,
+   "cells": [
+    "M4",
+    "One file: 100 editors + 400 viewers ★",
+    "M1 p99 / M3 p95",
+    "≤ 2× M1 / ≤ 2× M3",
+    "4× / 4×",
+    "P; F tests 100 editors + typing"
+   ],
+   "metrics": [
+    {
+     "key": "m1p99Ratio",
+     "label": "M1 p99",
+     "unit": "× M1",
+     "better": "lower",
+     "target": 2,
+     "ceiling": 4
+    },
+    {
+     "key": "m3p95Ratio",
+     "label": "M3 p95",
+     "unit": "× M3",
+     "better": "lower",
+     "target": 2,
+     "ceiling": 4
+    }
+   ]
+  },
+  {
+   "id": "M5",
+   "section": "3",
+   "bench": "collab-load",
+   "lane": "B1",
+   "star": false,
+   "cells": [
+    "M5",
+    "2 000 editors across 400 files (5 per file) on bench-ru",
+    "M1 p99 / CPU",
+    "≤ 20 ms / ≤ 3 of 4 cores",
+    "50 ms / 4",
+    "P; today's limit is 2 000 streams per process"
+   ],
+   "metrics": [
+    {
+     "key": "m1p99",
+     "label": "M1 p99",
+     "unit": "ms",
+     "better": "lower",
+     "target": 20,
+     "ceiling": 50
+    },
+    {
+     "key": "cpu",
+     "label": "CPU",
+     "unit": "cores",
+     "better": "lower",
+     "target": 3,
+     "ceiling": 4
+    }
+   ]
+  },
+  {
+   "id": "M6",
+   "section": "3",
+   "bench": "collab-load",
+   "lane": "B1",
+   "star": false,
+   "cells": [
+    "M6",
+    "Server memory per open document (resident)",
+    "× JSON size",
+    "≤ 2.5× (`f20k` → ≤ 40 MB)",
+    "4×",
+    "M: ~25–41 MB kept text today per 16 MB"
+   ],
+   "metrics": [
+    {
+     "key": "residentRatio",
+     "label": "resident",
+     "unit": "× JSON",
+     "better": "lower",
+     "target": 2.5,
+     "ceiling": 4
+    }
+   ]
+  },
+  {
+   "id": "M7",
+   "section": "3",
+   "bench": "collab-load",
+   "lane": "B1",
+   "star": false,
+   "cells": [
+    "M7",
+    "Open documents per GB of server RAM (`f20k`, idle, 1 editor)",
+    "count",
+    "≥ 25",
+    "15",
+    "derived from M6"
+   ],
+   "metrics": [
+    {
+     "key": "docsPerGB",
+     "label": "documents per GB",
+     "unit": "count",
+     "better": "higher",
+     "target": 25,
+     "ceiling": 15
+    }
+   ]
+  },
+  {
+   "id": "M8",
+   "section": "3",
+   "bench": "collab-load",
+   "lane": "B3",
+   "star": false,
+   "cells": [
+    "M8",
+    "Reconnect after a 30 s drop, 1 000 ops missed",
+    "catch-up server time / converged",
+    "≤ 100 ms / ≤ 500 ms over ru-net",
+    "300 ms / 2 s",
+    "P; F reloads the whole file instead"
+   ],
+   "metrics": [
+    {
+     "key": "catchUp",
+     "label": "catch-up server time",
+     "unit": "ms",
+     "better": "lower",
+     "target": 100,
+     "ceiling": 300
+    },
+    {
+     "key": "converged",
+     "label": "converged",
+     "unit": "ms",
+     "better": "lower",
+     "target": 500,
+     "ceiling": 2000
+    }
+   ]
+  },
+  {
+   "id": "M9",
+   "section": "3",
+   "bench": "collab-load",
+   "lane": "B1",
+   "star": false,
+   "cells": [
+    "M9",
+    "Full reload fallback",
+    "when",
+    "only if the journal tail > 5 MB or > 20 000 ops",
+    "—",
+    "P"
+   ],
+   "metrics": [
+    {
+     "key": "rule",
+     "label": "rule",
+     "unit": "",
+     "better": "rule",
+     "target": null,
+     "ceiling": null,
+     "rule": "full reload only if the journal tail > 5 MB or > 20 000 ops"
+    }
+   ]
+  },
+  {
+   "id": "M10",
+   "section": "3",
+   "bench": "collab-load",
+   "lane": "B1",
+   "star": false,
+   "cells": [
+    "M10",
+    "Cursors: 1 000 users moving at 30 Hz",
+    "server CPU / receiver rate",
+    "≤ 0.25 core / coalesced ≤ 30 Hz per peer",
+    "0.5 core",
+    "M: 148 ms/s CPU for 5 cursor users today"
+   ],
+   "metrics": [
+    {
+     "key": "cpu",
+     "label": "server CPU",
+     "unit": "cores",
+     "better": "lower",
+     "target": 0.25,
+     "ceiling": 0.5
+    },
+    {
+     "key": "receiverHz",
+     "label": "receiver rate",
+     "unit": "Hz",
+     "better": "lower",
+     "target": 30,
+     "ceiling": 30
+    }
+   ]
+  },
+  {
+   "id": "M11",
+   "section": "3",
+   "bench": "collab-load",
+   "lane": "B3",
+   "star": false,
+   "cells": [
+    "M11",
+    "Presence delivery over ru-net",
+    "p95",
+    "≤ 50 ms",
+    "100 ms",
+    "P"
+   ],
+   "metrics": [
+    {
+     "key": "p95",
+     "label": "p95",
+     "unit": "ms",
+     "better": "lower",
+     "target": 50,
+     "ceiling": 100
+    }
+   ]
+  },
+  {
+   "id": "M12",
+   "section": "3",
+   "bench": "collab-load",
+   "lane": "B1",
+   "star": false,
+   "cells": [
+    "M12",
+    "A slow viewer (64 kbit/s) on a busy file",
+    "effect on the others' M1/M3",
+    "none (dropped presence, then coalesced catch-up, then closed)",
+    "—",
+    "P"
+   ],
+   "metrics": [
+    {
+     "key": "rule",
+     "label": "rule",
+     "unit": "",
+     "better": "rule",
+     "target": null,
+     "ceiling": null,
+     "rule": "a 64 kbit/s viewer does not move the others' M1/M3 beyond the 20 % noise margin"
+    }
+   ]
+  },
+  {
+   "id": "W1",
+   "section": "3b",
+   "bench": "codec",
+   "lane": "S1",
+   "star": false,
+   "cells": [
+    "W1",
+    "Encode / decode a 20-layer move op (~9 KB JSON) in Rust, bench-ru",
+    "µs",
+    "≤ 15 / ≤ 25 µs",
+    "50 / 80 µs",
+    "P; JSON today ≈ 60 / 120 µs expected"
+   ],
+   "metrics": [
+    {
+     "key": "encode",
+     "label": "encode",
+     "unit": "µs",
+     "better": "lower",
+     "target": 15,
+     "ceiling": 50
+    },
+    {
+     "key": "decode",
+     "label": "decode",
+     "unit": "µs",
+     "better": "lower",
+     "target": 25,
+     "ceiling": 80
+    }
+   ]
+  },
+  {
+   "id": "W2",
+   "section": "3b",
+   "bench": "codec",
+   "lane": "S2",
+   "star": false,
+   "cells": [
+    "W2",
+    "The same op decoded in the browser's WASM (laptop) and handed to the TS store as a patch",
+    "ms",
+    "≤ 0.15 ms",
+    "0.5 ms",
+    "P"
+   ],
+   "metrics": [
+    {
+     "key": "decode",
+     "label": "decode + patch",
+     "unit": "ms",
+     "better": "lower",
+     "target": 0.15,
+     "ceiling": 0.5
+    }
+   ]
+  },
+  {
+   "id": "W3",
+   "section": "3b",
+   "bench": "codec",
+   "lane": "S1",
+   "star": false,
+   "cells": [
+    "W3",
+    "Wire bytes of W1's op vs its JSON",
+    "ratio",
+    "≤ 0.5×",
+    "0.8×",
+    "P"
+   ],
+   "metrics": [
+    {
+     "key": "ratio",
+     "label": "bytes",
+     "unit": "× JSON",
+     "better": "lower",
+     "target": 0.5,
+     "ceiling": 0.8
+    }
+   ]
+  },
+  {
+   "id": "W4",
+   "section": "3b",
+   "bench": "codec",
+   "lane": "S1",
+   "star": false,
+   "cells": [
+    "W4",
+    "Checkpoint of `f100k`: encode + decode into the model, bench-ru",
+    "wall",
+    "≤ 250 ms / ≤ 400 ms",
+    "600 / 1 000 ms",
+    "S1 measures; M: JSON parse of 16 MB ≈ 150 ms target in S1"
+   ],
+   "metrics": [
+    {
+     "key": "encode",
+     "label": "encode",
+     "unit": "ms",
+     "better": "lower",
+     "target": 250,
+     "ceiling": 600
+    },
+    {
+     "key": "decode",
+     "label": "decode",
+     "unit": "ms",
+     "better": "lower",
+     "target": 400,
+     "ceiling": 1000
+    }
+   ]
+  },
+  {
+   "id": "W5",
+   "section": "3b",
+   "bench": "codec",
+   "lane": "S1",
+   "star": false,
+   "cells": [
+    "W5",
+    "Checkpoint bytes of `f100k` after zstd, binary vs JSON",
+    "ratio",
+    "≤ 0.6×",
+    "1.0×",
+    "P"
+   ],
+   "metrics": [
+    {
+     "key": "ratio",
+     "label": "bytes after zstd",
+     "unit": "× JSON",
+     "better": "lower",
+     "target": 0.6,
+     "ceiling": 1.0
+    }
+   ]
+  },
+  {
+   "id": "W6",
+   "section": "3b",
+   "bench": "codec",
+   "lane": "S1",
+   "star": false,
+   "cells": [
+    "W6",
+    "Catch-up of 1 000 ops: bytes and decode time at the client",
+    "KB / ms",
+    "≤ 3 MB / ≤ 40 ms",
+    "6 MB / 150 ms",
+    "P; feeds M8"
+   ],
+   "metrics": [
+    {
+     "key": "bytes",
+     "label": "catch-up bytes",
+     "unit": "MB",
+     "better": "lower",
+     "target": 3,
+     "ceiling": 6
+    },
+    {
+     "key": "decode",
+     "label": "decode",
+     "unit": "ms",
+     "better": "lower",
+     "target": 40,
+     "ceiling": 150
+    }
+   ]
+  },
+  {
+   "id": "D1",
+   "section": "4",
+   "bench": "durability",
+   "lane": "B2",
+   "star": true,
+   "cells": [
+    "D1",
+    "Ack means journaled: group-committed append to PostgreSQL before the ack ★",
+    "commit p50 / p99 at 2 000 editors",
+    "≤ 2 / 10 ms",
+    "5 / 20 ms",
+    "P; this is the gap between M1 and M1b"
+   ],
+   "metrics": [
+    {
+     "key": "p50",
+     "label": "commit p50",
+     "unit": "ms",
+     "better": "lower",
+     "target": 2,
+     "ceiling": 5
+    },
+    {
+     "key": "p99",
+     "label": "commit p99",
+     "unit": "ms",
+     "better": "lower",
+     "target": 10,
+     "ceiling": 20
+    }
+   ]
+  },
+  {
+   "id": "D2",
+   "section": "4",
+   "bench": "durability",
+   "lane": "B2",
+   "star": false,
+   "cells": [
+    "D2",
+    "Collab node `kill -9` under load",
+    "acked ops lost / reconverged",
+    "0 / ≤ 3 s (new owner loads checkpoint + tail)",
+    "0 / 10 s",
+    "P"
+   ],
+   "metrics": [
+    {
+     "key": "lost",
+     "label": "acked ops lost",
+     "unit": "ops",
+     "better": "lower",
+     "target": 0,
+     "ceiling": 0
+    },
+    {
+     "key": "reconverged",
+     "label": "reconverged",
+     "unit": "s",
+     "better": "lower",
+     "target": 3,
+     "ceiling": 10
+    }
+   ]
+  },
+  {
+   "id": "D3",
+   "section": "4",
+   "bench": "durability",
+   "lane": "B2",
+   "star": false,
+   "cells": [
+    "D3",
+    "PostgreSQL unavailable 30 s",
+    "behaviour",
+    "ops queue in memory up to 64 MB per node, acks pause, clients show Saving…; no 409 storms",
+    "—",
+    "P"
+   ],
+   "metrics": [
+    {
+     "key": "rule",
+     "label": "rule",
+     "unit": "",
+     "better": "rule",
+     "target": null,
+     "ceiling": null,
+     "rule": "ops queue in memory up to 64 MB per node, acks pause, Saving…; no 409 storms"
+    }
+   ]
+  },
+  {
+   "id": "D4",
+   "section": "4",
+   "bench": "durability",
+   "lane": "B2",
+   "star": false,
+   "cells": [
+    "D4",
+    "Data loss bound if the whole DC's disks are lost",
+    "acked ops",
+    "≤ last PostgreSQL backup / replica lag (the hosting choice ★)",
+    "—",
+    "P"
+   ],
+   "metrics": [
+    {
+     "key": "rule",
+     "label": "rule",
+     "unit": "",
+     "better": "rule",
+     "target": null,
+     "ceiling": null,
+     "rule": "acked ops lost ≤ last PostgreSQL backup / replica lag (the hosting choice)"
+    }
+   ]
+  },
+  {
+   "id": "D5",
+   "section": "4",
+   "bench": "durability",
+   "lane": "B2",
+   "star": false,
+   "cells": [
+    "D5",
+    "Checkpoint integrity",
+    "every checkpoint re-parsed and hash-checked after upload",
+    "100 %",
+    "—",
+    "P"
+   ],
+   "metrics": [
+    {
+     "key": "checked",
+     "label": "checkpoints re-parsed and hash-checked",
+     "unit": "%",
+     "better": "higher",
+     "target": 100,
+     "ceiling": 100
+    }
+   ]
+  },
+  {
+   "id": "S1",
+   "section": "5",
+   "bench": "open-save",
+   "lane": "B2",
+   "star": false,
+   "cells": [
+    "S1",
+    "Cold open of a 100 MB file on the server (S3 checkpoint + journal tail of 1 000 ops → ready)",
+    "wall",
+    "≤ 2 s",
+    "5 s",
+    "P"
+   ],
+   "metrics": [
+    {
+     "key": "wall",
+     "label": "wall",
+     "unit": "ms",
+     "better": "lower",
+     "target": 2000,
+     "ceiling": 5000
+    }
+   ]
+  },
+  {
+   "id": "S2",
+   "section": "5",
+   "bench": "open-save",
+   "lane": "B2",
+   "star": false,
+   "cells": [
+    "S2",
+    "First byte to the client after S1 (zstd checkpoint stream)",
+    "wall after S1",
+    "≤ 100 ms",
+    "300 ms",
+    "P"
+   ],
+   "metrics": [
+    {
+     "key": "wall",
+     "label": "wall after S1",
+     "unit": "ms",
+     "better": "lower",
+     "target": 100,
+     "ceiling": 300
+    }
+   ]
+  },
+  {
+   "id": "S3",
+   "section": "5",
+   "bench": "open-save",
+   "lane": "B2",
+   "star": false,
+   "cells": [
+    "S3",
+    "Checkpoint of a 100 MB document (serialize + zstd + upload), off the document's thread",
+    "CPU / effect on M1 p99",
+    "≤ 1.5 s / none",
+    "4 s / +5 ms",
+    "P"
+   ],
+   "metrics": [
+    {
+     "key": "cpu",
+     "label": "CPU",
+     "unit": "ms",
+     "better": "lower",
+     "target": 1500,
+     "ceiling": 4000
+    },
+    {
+     "key": "m1p99Delta",
+     "label": "effect on M1 p99",
+     "unit": "ms",
+     "better": "lower",
+     "target": 0,
+     "ceiling": 5
+    }
+   ]
+  },
+  {
+   "id": "S4",
+   "section": "5",
+   "bench": "open-save",
+   "lane": "B2",
+   "star": false,
+   "cells": [
+    "S4",
+    "Checkpoint cadence",
+    "rule",
+    "every 1 000 ops or 60 s or last disconnect, whichever first",
+    "—",
+    "P"
+   ],
+   "metrics": [
+    {
+     "key": "rule",
+     "label": "rule",
+     "unit": "",
+     "better": "rule",
+     "target": null,
+     "ceiling": null,
+     "rule": "a checkpoint every 1 000 ops or 60 s or last disconnect, whichever first"
+    }
+   ]
+  },
+  {
+   "id": "S5",
+   "section": "5",
+   "bench": "open-save",
+   "lane": "B2",
+   "star": false,
+   "cells": [
+    "S5",
+    "A version restore (`PUT` whole document, 100 MB)",
+    "ack",
+    "≤ 3 s",
+    "8 s",
+    "M: 1.0 s for 16 MB today"
+   ],
+   "metrics": [
+    {
+     "key": "ack",
+     "label": "ack",
+     "unit": "ms",
+     "better": "lower",
+     "target": 3000,
+     "ceiling": 8000
+    }
+   ]
+  },
+  {
+   "id": "S6",
+   "section": "5",
+   "bench": "open-save",
+   "lane": "B2",
+   "star": false,
+   "cells": [
+    "S6",
+    "History: open version N of a file (checkpoint before N + ops to N)",
+    "wall",
+    "≤ 2 s",
+    "5 s",
+    "P"
+   ],
+   "metrics": [
+    {
+     "key": "wall",
+     "label": "wall",
+     "unit": "ms",
+     "better": "lower",
+     "target": 2000,
+     "ceiling": 5000
+    }
+   ]
+  },
+  {
+   "id": "X1",
+   "section": "6",
+   "bench": "export",
+   "lane": "B4",
+   "star": false,
+   "cells": [
+    "X1",
+    "File-card thumbnail (`f20k` page, 512 px)",
+    "wall",
+    "≤ 300 ms",
+    "1 s",
+    "M: 76 ms in the browser today, sliced"
+   ],
+   "metrics": [
+    {
+     "key": "wall",
+     "label": "wall",
+     "unit": "ms",
+     "better": "lower",
+     "target": 300,
+     "ceiling": 1000
+    }
+   ]
+  },
+  {
+   "id": "X2",
+   "section": "6",
+   "bench": "export",
+   "lane": "B4",
+   "star": false,
+   "cells": [
+    "X2",
+    "PNG 3840×2160 of a 20k-layer frame, effects on",
+    "p95",
+    "≤ 1.5 s",
+    "4 s",
+    "P"
+   ],
+   "metrics": [
+    {
+     "key": "p95",
+     "label": "p95",
+     "unit": "ms",
+     "better": "lower",
+     "target": 1500,
+     "ceiling": 4000
+    }
+   ]
+  },
+  {
+   "id": "X3",
+   "section": "6",
+   "bench": "export",
+   "lane": "B4",
+   "star": false,
+   "cells": [
+    "X3",
+    "SVG of a `f20k` page",
+    "p95",
+    "≤ 1 s",
+    "3 s",
+    "P"
+   ],
+   "metrics": [
+    {
+     "key": "p95",
+     "label": "p95",
+     "unit": "ms",
+     "better": "lower",
+     "target": 1000,
+     "ceiling": 3000
+    }
+   ]
+  },
+  {
+   "id": "X4",
+   "section": "6",
+   "bench": "export",
+   "lane": "B4",
+   "star": true,
+   "cells": [
+    "X4",
+    "50-page vector PDF (frames ≤ 5 000 layers, Cyrillic text, pictures, shadows) ★",
+    "p95 / fidelity",
+    "≤ 5 s / ≤ 0.5 % pixels differ from today's Chromium PDF at 150 dpi",
+    "15 s / 2 %",
+    "M: ~1 s per 20k-layer page today + Chromium"
+   ],
+   "metrics": [
+    {
+     "key": "p95",
+     "label": "p95",
+     "unit": "ms",
+     "better": "lower",
+     "target": 5000,
+     "ceiling": 15000
+    },
+    {
+     "key": "fidelity",
+     "label": "pixels differ",
+     "unit": "%",
+     "better": "lower",
+     "target": 0.5,
+     "ceiling": 2
+    }
+   ]
+  },
+  {
+   "id": "X5",
+   "section": "6",
+   "bench": "export",
+   "lane": "B4",
+   "star": false,
+   "cells": [
+    "X5",
+    "Export queue: 20 concurrent exports",
+    "X2 p95",
+    "≤ 2×",
+    "4×",
+    "P"
+   ],
+   "metrics": [
+    {
+     "key": "ratio",
+     "label": "X2 p95",
+     "unit": "× X2",
+     "better": "lower",
+     "target": 2,
+     "ceiling": 4
+    }
+   ]
+  },
+  {
+   "id": "A1",
+   "section": "7",
+   "bench": "api",
+   "lane": "B6",
+   "star": false,
+   "cells": [
+    "A1",
+    "`GET /api/design-files?team=` with 200 files",
+    "p95 / p99",
+    "≤ 80 / 150 ms",
+    "150 / 300 ms",
+    "P"
+   ],
+   "metrics": [
+    {
+     "key": "p95",
+     "label": "p95",
+     "unit": "ms",
+     "better": "lower",
+     "target": 80,
+     "ceiling": 150
+    },
+    {
+     "key": "p99",
+     "label": "p99",
+     "unit": "ms",
+     "better": "lower",
+     "target": 150,
+     "ceiling": 300
+    }
+   ]
+  },
+  {
+   "id": "A2",
+   "section": "7",
+   "bench": "api",
+   "lane": "B6",
+   "star": false,
+   "cells": [
+    "A2",
+    "Socket ticket: `GET /:id/session` (auth + ACL + lease lookup)",
+    "p95",
+    "≤ 20 ms",
+    "50 ms",
+    "P"
+   ],
+   "metrics": [
+    {
+     "key": "p95",
+     "label": "p95",
+     "unit": "ms",
+     "better": "lower",
+     "target": 20,
+     "ceiling": 50
+    }
+   ]
+  },
+  {
+   "id": "A3",
+   "section": "7",
+   "bench": "api",
+   "lane": "B6",
+   "star": false,
+   "cells": [
+    "A3",
+    "ACL check inside collab (cached, revalidated ≤ 20 s)",
+    "p95",
+    "≤ 0.1 ms",
+    "1 ms",
+    "P"
+   ],
+   "metrics": [
+    {
+     "key": "p95",
+     "label": "p95",
+     "unit": "ms",
+     "better": "lower",
+     "target": 0.1,
+     "ceiling": 1
+    }
+   ]
+  },
+  {
+   "id": "A4",
+   "section": "7",
+   "bench": "api",
+   "lane": "B6",
+   "star": false,
+   "cells": [
+    "A4",
+    "Permission revocation → the editor's socket closed",
+    "wall",
+    "≤ 2 s",
+    "20 s",
+    "M: ≤ 20 s revalidation today"
+   ],
+   "metrics": [
+    {
+     "key": "wall",
+     "label": "wall",
+     "unit": "ms",
+     "better": "lower",
+     "target": 2000,
+     "ceiling": 20000
+    }
+   ]
+  },
+  {
+   "id": "A5",
+   "section": "7",
+   "bench": "api",
+   "lane": "B6",
+   "star": false,
+   "cells": [
+    "A5",
+    "Comments, libraries, versions listing",
+    "p95",
+    "≤ 100 ms",
+    "250 ms",
+    "P"
+   ],
+   "metrics": [
+    {
+     "key": "p95",
+     "label": "p95",
+     "unit": "ms",
+     "better": "lower",
+     "target": 100,
+     "ceiling": 250
+    }
+   ]
+  },
+  {
+   "id": "K1",
+   "section": "8",
+   "bench": "cost",
+   "lane": "B2",
+   "star": true,
+   "cells": [
+    "K1",
+    "1 000 concurrent editors ★ (5 per file, `f20k` average, 1 op/s, cursors 30 Hz)",
+    "collab cores / RAM",
+    "≤ 2 cores / ≤ 10 GB",
+    "4 cores / 16 GB",
+    "P"
+   ],
+   "metrics": [
+    {
+     "key": "cores",
+     "label": "collab cores",
+     "unit": "cores",
+     "better": "lower",
+     "target": 2,
+     "ceiling": 4
+    },
+    {
+     "key": "ram",
+     "label": "RAM",
+     "unit": "GB",
+     "better": "lower",
+     "target": 10,
+     "ceiling": 16
+    }
+   ]
+  },
+  {
+   "id": "K2",
+   "section": "8",
+   "bench": "cost",
+   "lane": "B5",
+   "star": false,
+   "cells": [
+    "K2",
+    "The same in ₽ at Russian VM prices (the hosting provider)",
+    "₽ per editor-month",
+    "≤ 10 ₽",
+    "25 ₽",
+    "P; estimate, provider quote needed"
+   ],
+   "metrics": [
+    {
+     "key": "rub",
+     "label": "₽ per editor-month",
+     "unit": "₽",
+     "better": "lower",
+     "target": 10,
+     "ceiling": 25
+    }
+   ]
+  },
+  {
+   "id": "K3",
+   "section": "8",
+   "bench": "cost",
+   "lane": "B2",
+   "star": false,
+   "cells": [
+    "K3",
+    "PostgreSQL write load at K1",
+    "WAL per op",
+    "≤ 4 KB",
+    "16 KB",
+    "M: 2.7 KB per typing save today"
+   ],
+   "metrics": [
+    {
+     "key": "wal",
+     "label": "WAL per op",
+     "unit": "KB",
+     "better": "lower",
+     "target": 4,
+     "ceiling": 16
+    }
+   ]
+  }
+ ]
+}

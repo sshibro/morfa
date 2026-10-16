@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# /usr/local/sbin/morfa-netem on the ru-net VM (lane B5): TARGETS §3's ru-net — 30 ms RTT and 0.1 % loss toward bench-ru — as
+# tc netem on this VM's egress to bench-ru only (SSH to anywhere else is untouched). The delay added is what is missing from the
+# measured base RTT: DELAY_MS = 30 − BASE_RTT_MS (both in /etc/morfa/netem.env, written by provisioning from 200 pings).
+#   morfa-netem on|off|status
+set -euo pipefail
+# shellcheck disable=SC1091
+. /etc/morfa/netem.env
+dev=${NETEM_DEV:-$(ip -4 route get "$BENCH_IP" | sed -n 's/.* dev \([^ ]*\).*/\1/p')}
+case ${1:-status} in
+  on)
+    tc qdisc del dev "$dev" root 2>/dev/null || true
+    tc qdisc add dev "$dev" root handle 1: prio
+    tc qdisc add dev "$dev" parent 1:3 handle 30: netem delay "${DELAY_MS}ms" loss "${LOSS:-0.1%}"
+    tc filter add dev "$dev" protocol ip parent 1:0 prio 3 u32 match ip dst "$BENCH_IP/32" flowid 1:3
+    echo "netem on: +${DELAY_MS} ms, ${LOSS:-0.1%} loss on $dev toward $BENCH_IP (base RTT ${BASE_RTT_MS} ms)"
+    ;;
+  off)
+    tc qdisc del dev "$dev" root 2>/dev/null || true
+    echo "netem off on $dev"
+    ;;
+  status) tc qdisc show dev "$dev" ;;
+  *) echo "usage: morfa-netem on|off|status" >&2; exit 2 ;;
+esac

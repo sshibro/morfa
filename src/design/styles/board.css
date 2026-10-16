@@ -1,0 +1,719 @@
+/* "Board" (docs/board.md §Look): FigJam's playful light chrome on the design language's tokens. One addition, the board's purple
+   accent, lives on .dz-board only (selection and focus stay the editor's blue). Floating pills and a big bottom toolbar over a
+   canvas that fills the window; no side panels.
+   Motion (emil-design-eng, better-ui; tokens win): tools and buttons change at once (pressed all day, often from the keyboard);
+   trays and the “+” sheet rise from the toolbar in 160 ms ease-out, and appear at once when opened from a key (the root's
+   data-input); the drawn tools rise a little on hover; press feedback scale(0.96) (wide strips 0.985); reduced motion keeps
+   fades only. */
+
+.dz .dz-board {
+  --bd-accent: #9747ff;
+  --bd-accent-hover: #8638e5;
+  --bd-accent-soft: #f1e8ff;
+  /* Purple text that keeps 4.5:1 on the panel and on the soft tint. */
+  --bd-accent-text: #7533d6;
+  --bd-on-accent: #ffffff;
+  --bd-surface: var(--dz-panel);
+  --bd-hover: var(--dz-hover);
+  --bd-pressed: var(--dz-pressed);
+  --bd-radius-pill: 12px;
+  --bd-radius-bar: 14px;
+  --bd-radius-tray: 12px;
+  /* The bar's full-height rules and the plate a drawn tool rises on (after FigJam's bar). */
+  --bd-rule: #e6e6e6;
+  --bd-plate: #f0f0f0;
+  /* The board's chrome floats higher than the design toolbar: a hairline, a contact shadow and a soft wide one. */
+  --bd-shadow: 0 0 0 0.5px rgb(0 0 0 / 0.1), 0 1px 3px rgb(0 0 0 / 0.08), 0 6px 20px rgb(0 0 0 / 0.1);
+  --bd-shadow-raised: 0 0 0 0.5px rgb(0 0 0 / 0.12), 0 2px 6px rgb(0 0 0 / 0.1), 0 16px 40px rgb(0 0 0 / 0.16);
+  font-size: 13px;
+}
+.dz[data-theme='dark'] .dz-board {
+  --bd-accent: #a673ff;
+  --bd-accent-hover: #b78cff;
+  --bd-accent-soft: #3a2a57;
+  --bd-accent-text: #c9a8ff;
+  --bd-rule: #3d3d3d;
+  --bd-plate: #383838;
+  --bd-shadow: 0 0 0 0.5px rgb(255 255 255 / 0.08), 0 1px 3px rgb(0 0 0 / 0.3), 0 6px 20px rgb(0 0 0 / 0.32);
+  --bd-shadow-raised: 0 0 0 0.5px rgb(255 255 255 / 0.1), 0 2px 6px rgb(0 0 0 / 0.32), 0 16px 40px rgb(0 0 0 / 0.45);
+}
+
+.dz .bd-canvas-area { contain: layout paint; }
+/* The sticky hints' layer (editor/Decor.tsx): over the scene, under the badges and the chrome. */
+.dz .bd-decor { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.dz .dz-board.is-ui-hidden :is(.bd-chrome, .bd-context, .bd-sidebar) { display: none; }
+
+/* The layer for the chrome: takes no pointer events itself. */
+.dz .bd-chrome { position: absolute; inset: 0; z-index: 6; pointer-events: none; }
+.dz .bd-chrome > * { pointer-events: auto; }
+
+/* ── Pills ───────────────────────────────────────────────────────────────────────────────────── */
+.dz .bd-pill {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 48px;
+  padding: 0 6px;
+  border-radius: var(--bd-radius-pill);
+  background: var(--bd-surface);
+  color: var(--dz-text);
+  box-shadow: var(--bd-shadow);
+}
+.dz .bd-top-left { position: absolute; top: 12px; left: 12px; max-width: min(560px, calc(100% - 24px)); padding-left: 4px; }
+.dz .bd-top-left .dz-app-menu { height: 36px; border-radius: 8px; }
+.dz .bd-top-left .dz-file-title { height: 40px; width: max-content; padding: 0 4px; flex: none; max-width: 320px; }
+.dz .bd-top-left .dz-file-name { max-width: calc(100% + 4px); font-size: 14px; font-weight: var(--dz-weight-strong); }
+/* Saved is the normal state: it is announced, not shown (FigJam shows none); saving, offline and unsaved still show. */
+.dz .bd-top-left .dz-save-status.is-saved { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.dz .bd-pill-rule { align-self: stretch; width: 1px; margin: 6px 4px; background: var(--bd-rule); }
+.dz .bd-pill-btn.bd-pages { display: flex; align-items: center; gap: 6px; width: auto; padding: 0 10px 0 6px; font-size: 14px; font-weight: var(--dz-weight-strong); }
+.dz .bd-pages-icon { position: relative; display: grid; place-items: center; }
+.dz .bd-pages-number { position: absolute; left: 0; right: 2px; top: 3px; font-size: 9px; font-weight: 700; text-align: center; }
+.dz .bd-pages-name { max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dz .bd-top-right { position: absolute; top: 12px; right: 12px; gap: 6px; padding: 0 6px 0 8px; }
+.dz .bd-avatars:empty, .dz .bd-meeting-slot:empty { display: none; }
+.dz .bd-avatars { display: flex; align-items: center; }
+.dz .bd-meeting-slot { display: flex; align-items: center; gap: 4px; }
+/* FigJam's order (its board picture): people, reactions, comments, then the timer just before "Share". The meeting's cluster
+   lays its buttons into the pill itself, so the pill orders them. */
+.dz .bd-top-right :is(.bd-meeting-slot, .dz-meet-header) { display: contents; }
+.dz .bd-top-right > .bd-pill-btn { order: 2; }
+.dz .bd-top-right :is(.dz-meet-timer, .dz-meet-timer-idle) { order: 3; }
+.dz .bd-top-right > .bd-share { order: 4; }
+
+/* A pill's button: 36 px in a 48 px pill (concentric: 12 − 6 = 6 px… rounded a little more for the playful look). */
+.dz .bd-pill-btn {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  color: var(--dz-text);
+  transition: background-color var(--dz-fast) var(--dz-ease-press), scale var(--dz-fast) var(--dz-ease-press);
+}
+@media (hover: hover) and (pointer: fine) {
+  .dz .bd-pill-btn:hover { background: var(--bd-hover); }
+}
+.dz .bd-pill-btn:active { scale: 0.96; }
+.dz .bd-pill-btn[aria-pressed='true'], .dz .bd-pill-btn[aria-expanded='true'] { background: var(--bd-accent-soft); color: var(--bd-accent-text); }
+.dz .bd-pill-count, .dz .bd-pill-badge {
+  position: absolute;
+  top: 2px;
+  right: 1px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  font-size: 10px;
+  line-height: 16px;
+  font-weight: var(--dz-weight-strong);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+.dz .bd-pill-count { background: var(--dz-field); color: var(--dz-text-2); }
+.dz .bd-pill-badge { background: var(--bd-accent); color: var(--bd-on-accent); }
+
+/* "Share": the one purple button, FigJam's. */
+.dz .bd-share {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 14px 0 10px;
+  border-radius: 8px;
+  background: var(--bd-accent);
+  color: var(--bd-on-accent);
+  font-weight: var(--dz-weight-strong);
+  transition: background-color var(--dz-fast) var(--dz-ease-press), scale var(--dz-fast) var(--dz-ease-press);
+}
+@media (hover: hover) and (pointer: fine) {
+  .dz .bd-share:hover { background: var(--bd-accent-hover); }
+}
+.dz .bd-share:active { scale: 0.96; }
+.dz .bd-share-popover { width: 320px; padding: 16px; border-radius: var(--dz-radius-menu); background: var(--dz-panel); box-shadow: var(--dz-shadow-menu); color: var(--dz-text); }
+.dz .bd-share-title { margin: 0 0 8px; font-size: 14px; font-weight: var(--dz-weight-strong); }
+.dz .bd-share-body p { margin: 0 0 12px; color: var(--dz-text-2); line-height: 1.45; }
+.dz .bd-share-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px 0 8px;
+  border-radius: 8px;
+  background: var(--dz-field);
+  font-weight: var(--dz-weight-medium);
+  transition: background-color var(--dz-fast) var(--dz-ease-press), scale var(--dz-fast) var(--dz-ease-press);
+}
+@media (hover: hover) and (pointer: fine) {
+  .dz .bd-share-copy:hover { background: var(--dz-pressed); }
+}
+.dz .bd-share-copy:active { scale: 0.96; }
+
+/* Zoom and help, bottom right, as FigJam's own board picture: a small fully round pill (−, the scale, +, with hairline rules
+   between) and a round “?” of the same height, their bottoms on the bar's bottom line. */
+.dz .bd-bottom-right { position: absolute; right: 12px; bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.dz .bd-zoom { height: 32px; padding: 0 2px; gap: 0; border-radius: 16px; }
+.dz .bd-zoom .bd-pill-btn { width: 28px; height: 28px; border-radius: 14px; }
+.dz .bd-zoom-value {
+  min-width: 48px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 0;
+  box-shadow: inset 1px 0 var(--bd-rule), inset -1px 0 var(--bd-rule);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--dz-weight-medium);
+}
+@media (hover: hover) and (pointer: fine) {
+  .dz .bd-zoom-value:hover { color: var(--bd-accent-text); }
+}
+.dz .bd-help { display: grid; place-items: center; width: 32px; height: 32px; padding: 0; border-radius: 16px; }
+@media (hover: hover) and (pointer: fine) {
+  .dz .bd-help:hover { background: var(--bd-hover); }
+}
+
+/* ── The bar (after FigJam's): white, 64 px, radius 14; three groups divided by full-height
+   rules; Move and Hand in 44 px boxes; the drawn tools standing on the bottom edge; 24 px line icons about 53 px apart. ── */
+.dz .bd-dock {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  translate: -50% 0;
+}
+.dz .bd-toolbar {
+  display: flex;
+  align-items: stretch;
+  height: 64px;
+  padding: 0 10px;
+  border-radius: var(--bd-radius-bar);
+  background: var(--bd-surface);
+  box-shadow: var(--bd-shadow);
+}
+.dz .bd-cluster { display: flex; align-items: center; gap: 4px; }
+.dz .bd-cluster.is-icons { gap: 9px; }
+.dz .bd-cluster.is-art { align-items: flex-end; gap: 0; }
+.dz .bd-divider { align-self: stretch; width: 1px; margin: 0 12px; background: var(--bd-rule); }
+.dz .bd-tool {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 6px;
+  color: var(--dz-text);
+  transition: background-color var(--dz-fast) var(--dz-ease-press), scale var(--dz-fast) var(--dz-ease-press);
+}
+@media (hover: hover) and (pointer: fine) {
+  .dz .bd-tool:hover { background: var(--bd-hover); }
+}
+.dz .bd-tool:active { scale: 0.96; }
+/* The tool in hand: a filled violet square, the icon white. Changes at once. */
+.dz .bd-tool[aria-pressed='true'] { background: var(--bd-accent); color: var(--bd-on-accent); transition: none; }
+
+/* The drawn tools: 92 px tall drawings standing on the bar's bottom edge, which cuts them off (the top stays open, so a risen
+   tool stands over the bar's top edge). Under the pointer or in hand one rises onto a grey plate that fills its slot. */
+.dz .bd-art-tool {
+  position: relative;
+  color: var(--dz-text);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  height: 64px;
+  padding: 0;
+  clip-path: inset(-24px -6px 0 -6px);
+}
+.dz .bd-art-tool.is-marker { width: 62px; }
+.dz .bd-art-tool.is-stickies { width: 92px; }
+.dz .bd-art-tool.is-shapes { width: 88px; }
+.dz .bd-art-tool::before {
+  content: '';
+  position: absolute;
+  inset: 6px 3px;
+  border-radius: 8px;
+  background: var(--bd-plate);
+  opacity: 0;
+  transition: opacity var(--dz-fast) var(--dz-ease-out);
+}
+.dz .bd-art { position: relative; display: block; flex: none; height: 92px; translate: 0 32px; transition: translate var(--dz-base) var(--dz-ease-out); }
+.dz .bd-art-marker { width: 55px; }
+.dz .bd-art-stickies { width: 92px; }
+.dz .bd-art-shapes { width: 87px; }
+@media (hover: hover) and (pointer: fine) {
+  .dz .bd-art-tool:hover::before { opacity: 1; }
+  .dz .bd-art-tool:hover .bd-art { translate: 0 26px; }
+}
+.dz .bd-art-tool[aria-pressed='true']::before { opacity: 1; transition: none; }
+/* In hand the marker's tip stands about 5 px over the bar's top edge (92 px drawings, the tip 3.5 px below the box's top). */
+.dz .bd-art-tool[aria-pressed='true'] .bd-art { translate: 0 20px; }
+.dz .bd-art-tool:active .bd-art { scale: 0.96; }
+/* Chosen with a key: it is simply there. */
+.dz[data-input='keyboard'] :is(.bd-art, .bd-art-tool::before) { transition: none; }
+.dz .bd-art-tool:focus-visible { outline-offset: -6px; border-radius: 10px; }
+
+/* "+": a grey circle; open, a purple ×. The two icons cross-fade (better-ui contextual icons). */
+.dz .bd-plus {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 22px;
+  background: transparent;
+  color: var(--dz-text);
+  transition: background-color var(--dz-fast) var(--dz-ease-press), scale var(--dz-fast) var(--dz-ease-press);
+}
+@media (hover: hover) and (pointer: fine) {
+  .dz .bd-plus:hover::before { background: var(--bd-pressed); }
+  .dz .bd-plus.is-open:hover::before { background: var(--bd-accent-hover); }
+}
+.dz .bd-plus:active { scale: 0.96; }
+/* The grey circle is 32 px inside a 44 px target. */
+.dz .bd-plus::before { content: ''; position: absolute; inset: 6px; border-radius: 16px; background: var(--dz-field); transition: background-color var(--dz-fast) var(--dz-ease-press); }
+.dz .bd-plus.is-open::before { background: var(--bd-accent); }
+.dz .bd-plus.is-open { color: var(--bd-on-accent); }
+.dz .bd-plus-icon {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  transition: opacity var(--dz-base) cubic-bezier(0.2, 0, 0, 1), scale var(--dz-base) cubic-bezier(0.2, 0, 0, 1), filter var(--dz-base) cubic-bezier(0.2, 0, 0, 1);
+}
+.dz .bd-plus .is-close, .dz .bd-plus.is-open .is-plus { opacity: 0; scale: 0.25; filter: blur(4px); }
+.dz .bd-plus.is-open .is-close { opacity: 1; scale: 1; filter: blur(0); }
+
+/* "Back to board": a pill over the toolbar while nothing of the board is in view. */
+.dz .bd-recenter {
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 16px;
+  background: var(--bd-surface);
+  box-shadow: var(--bd-shadow);
+  color: var(--dz-text);
+  font-size: 13px;
+  font-weight: 500;
+  transition: opacity var(--dz-base) var(--dz-ease-out), scale var(--dz-fast) var(--dz-ease-press);
+  @starting-style { opacity: 0; }
+}
+@media (hover: hover) and (pointer: fine) {
+  .dz .bd-recenter:hover { background: var(--bd-hover); }
+}
+.dz .bd-recenter:active { scale: 0.96; }
+
+/* ── Trays (the owner's picture): white, 52 px, radius 12, 12 px over the bar and 6 px wider than it on each side; groups divided
+   by full-height rules; choices on 32 px tiles in 40 px targets; chosen, a pale violet tile with violet drawing. ──────────── */
+.dz .bd-tray {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: calc(var(--bd-bar-width, 0px) + 12px);
+  max-width: calc(100vw - 24px);
+  height: 52px;
+  padding: 0 6px;
+  border-radius: var(--bd-radius-tray);
+  background: var(--bd-surface);
+  box-shadow: var(--bd-shadow);
+  transform-origin: 50% 100%;
+  transition: opacity var(--dz-base) var(--dz-ease-out), translate var(--dz-base) var(--dz-ease-out), scale var(--dz-base) var(--dz-ease-out);
+  @starting-style { opacity: 0; translate: 0 6px; scale: 0.98; }
+}
+.dz[data-input='keyboard'] .bd-tray { transition: none; }
+.dz .bd-tray-row { display: flex; align-items: center; gap: 2px; }
+.dz .bd-tray-row.is-colors { gap: 2px; }
+.dz .bd-tray-row.is-two-rows { flex-wrap: wrap; max-width: 232px; height: auto; }
+.dz .bd-tray-column { display: flex; flex-direction: column; gap: 2px; }
+.dz .bd-tray-divider { align-self: stretch; width: 1px; margin: 0 10px; background: var(--bd-rule); }
+.dz .bd-tray-hint, .dz .bd-tray-note { margin: 0 8px; max-width: 260px; color: var(--dz-text-2); font-size: 12px; line-height: 1.35; }
+.dz .bd-tray.is-sticky .bd-tray-hint { max-width: 160px; }
+/* The shapes tray holds four rows of figures: it grows to fit them. */
+.dz .bd-tray.is-shapes { height: auto; padding: 8px 10px; }
+.dz .bd-tray.is-shapes .bd-tray-divider { margin: -8px 10px; }
+
+/* A choice: a 40 × 44 target around a 36 px tile. */
+.dz :is(.bd-marker-kind, .bd-icon-choice) {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 44px;
+  color: var(--dz-text);
+  transition: scale var(--dz-fast) var(--dz-ease-press);
+}
+.dz :is(.bd-marker-kind, .bd-icon-choice)::before {
+  content: '';
+  position: absolute;
+  inset: 4px 2px;
+  border-radius: 5px;
+  transition: background-color var(--dz-fast) var(--dz-ease-press);
+}
+.dz :is(.bd-marker-kind, .bd-icon-choice) > * { position: relative; }
+@media (hover: hover) and (pointer: fine) {
+  .dz :is(.bd-marker-kind, .bd-icon-choice):hover::before { background: var(--bd-hover); }
+}
+.dz :is(.bd-marker-kind, .bd-icon-choice):active { scale: 0.96; }
+.dz :is(.bd-marker-kind, .bd-icon-choice)[aria-pressed='true']::before { background: var(--bd-accent-soft); }
+.dz .bd-icon-choice[aria-pressed='true'] { color: var(--bd-accent-text); }
+.dz .bd-shape-choice {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 5px;
+  color: var(--dz-text);
+  transition: background-color var(--dz-fast) var(--dz-ease-press), scale var(--dz-fast) var(--dz-ease-press);
+}
+@media (hover: hover) and (pointer: fine) {
+  .dz .bd-shape-choice:hover { background: var(--bd-hover); }
+}
+.dz .bd-shape-choice:active { scale: 0.96; }
+.dz .bd-shape-choice[aria-pressed='true'] { background: var(--bd-accent-soft); color: var(--bd-accent-text); }
+.dz .bd-shape-grid { display: grid; grid-template-columns: repeat(5, 40px); gap: 0; }
+
+/* "Board colors": a small card over the palette button with the board's own colours. */
+.dz .bd-board-colors { position: relative; display: flex; }
+.dz .bd-board-colors-pop {
+  position: absolute;
+  right: -10px;
+  bottom: calc(100% + 14px);
+  display: flex;
+  flex-wrap: wrap;
+  width: max-content;
+  max-width: 220px;
+  padding: 6px;
+  border-radius: var(--bd-radius-tray);
+  background: var(--bd-surface);
+  box-shadow: var(--bd-shadow-raised);
+}
+.dz .bd-board-colors-pop .bd-tray-note { margin: 6px 8px; max-width: 200px; }
+
+/* Swatches: a 24 px colour disc (32 px for a sticky's colours) with a pure black/white hairline, in a 40 px target; chosen, a ring
+   with a white gap, 32 px across (40 px for the larger ones). Only the tiles are tinted violet, never the colours. */
+.dz .bd-swatch-hit {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+}
+.dz .bd-swatch-hit.is-l { width: 44px; height: 44px; }
+.dz .bd-swatch-hit:active .bd-swatch { scale: 0.96; }
+.dz .bd-swatch-hit input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.dz .bd-swatch {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 12px;
+  background: var(--bd-swatch, transparent);
+  box-shadow: inset 0 0 0 1px var(--dz-outline);
+  transition: scale var(--dz-fast) var(--dz-ease-press), box-shadow var(--dz-fast) var(--dz-ease-press);
+}
+.dz .bd-swatch.is-l { width: 32px; height: 32px; border-radius: 16px; }
+@media (hover: hover) and (pointer: fine) {
+  .dz .bd-swatch-hit:hover .bd-swatch:not(.is-selected) { box-shadow: inset 0 0 0 1px var(--dz-outline), 0 0 0 2px var(--bd-surface), 0 0 0 4px var(--bd-hover); }
+}
+.dz .bd-swatch.is-selected { box-shadow: inset 0 0 0 1px var(--dz-outline), 0 0 0 2px var(--bd-surface), 0 0 0 4px var(--dz-text); }
+.dz .bd-swatch.is-custom { background: conic-gradient(#f24822, #ffcd29, #14ae5c, #0d99ff, #9747ff, #ff24bd, #f24822); }
+.dz .bd-swatch.is-none { background: linear-gradient(135deg, transparent calc(50% - 1px), var(--dz-danger) calc(50% - 1px), var(--dz-danger) calc(50% + 1px), transparent calc(50% + 1px)), var(--dz-panel); }
+
+/* ── The "+" sheet ──────────────────────────────────────────────────────────────────────────── */
+.dz .bd-sheet {
+  position: absolute;
+  left: 50%;
+  bottom: 88px;
+  display: flex;
+  flex-direction: column;
+  width: min(680px, calc(100% - 24px));
+  max-height: min(560px, calc(100% - 160px));
+  border-radius: 20px;
+  background: var(--bd-surface);
+  color: var(--dz-text);
+  box-shadow: var(--bd-shadow-raised);
+  translate: -50% 0;
+  transform-origin: 50% 100%;
+  transition: opacity var(--dz-base) var(--dz-ease-out), translate var(--dz-base) var(--dz-ease-out), scale var(--dz-base) var(--dz-ease-out);
+  @starting-style { opacity: 0; translate: -50% 8px; scale: 0.98; }
+}
+.dz[data-input='keyboard'] .bd-sheet { transition: none; }
+.dz .bd-sheet-head { display: flex; flex-direction: column; gap: 10px; padding: 16px 16px 8px; }
+.dz .bd-sheet-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 12px;
+  border-radius: 12px;
+  background: var(--dz-field);
+  color: var(--dz-text-2);
+}
+.dz .bd-sheet-search:focus-within { box-shadow: inset 0 0 0 2px var(--bd-accent); }
+.dz .bd-sheet-search input { flex: 1; min-width: 0; height: 100%; border: 0; background: transparent; color: var(--dz-text); font: inherit; font-size: 14px; outline: none; }
+.dz .bd-sheet-search input::placeholder { color: var(--dz-text-2); }
+.dz .bd-sheet-tabs { display: flex; gap: 4px; overflow-x: auto; }
+.dz .bd-sheet-tab {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 16px;
+  color: var(--dz-text-2);
+  font-weight: var(--dz-weight-medium);
+  white-space: nowrap;
+  transition: background-color var(--dz-fast) var(--dz-ease-press), color var(--dz-fast) var(--dz-ease-press);
+}
+@media (hover: hover) and (pointer: fine) {
+  .dz .bd-sheet-tab:hover { background: var(--bd-hover); color: var(--dz-text); }
+}
+.dz .bd-sheet-tab[aria-selected='true'] { background: var(--dz-text); color: var(--dz-panel); }
+.dz .bd-sheet-body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 4px 16px 16px; }
+.dz .bd-sheet-empty { margin: 24px 0; color: var(--dz-text-2); text-align: center; }
+.dz .bd-sheet-section + .bd-sheet-section { margin-top: 16px; }
+.dz .bd-sheet-title { margin: 8px 0 2px; font-size: 14px; font-weight: var(--dz-weight-strong); }
+.dz .bd-sheet-lead { margin: 0 0 8px; color: var(--dz-text-2); line-height: 1.4; }
+.dz .bd-sheet-templates { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; margin: 8px 0 0; padding: 0; list-style: none; }
+.dz .bd-template {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  padding: 6px 6px 10px;
+  border-radius: 12px;
+  text-align: left;
+  transition: background-color var(--dz-fast) var(--dz-ease-press), scale var(--dz-fast) var(--dz-ease-press);
+}
+@media (hover: hover) and (pointer: fine) {
+  .dz .bd-template:hover { background: var(--bd-hover); }
+}
+.dz .bd-template:active { scale: 0.985; }
+.dz .bd-template-art { display: block; width: 100%; height: auto; margin-bottom: 6px; border-radius: 6px; box-shadow: 0 0 0 1px var(--dz-outline); }
+/* A sticker beside the templates of a use (the "All" tab): its drawing on a quiet card of the template's proportions. */
+.dz .bd-template-art.is-sticker { display: grid; place-items: center; aspect-ratio: 120 / 68; height: auto; background: var(--dz-field); }
+/* A team template: the board's own thumbnail, or a plain field when it has none yet. */
+.dz img.bd-template-art, .dz .bd-template-art.is-empty { aspect-ratio: 120 / 68; object-fit: cover; background: var(--dz-field); }
+.dz .bd-template[aria-busy='true'] { opacity: 0.6; cursor: progress; }
+.dz .bd-sheet-templates.is-use-case { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.dz .bd-template-name { font-weight: var(--dz-weight-strong); }
+.dz .bd-template-description { color: var(--dz-text-2); font-size: 12px; line-height: 1.35; }
+.dz .bd-sheet-more { margin-top: 6px; height: 28px; padding: 0 10px; border-radius: 8px; color: var(--bd-accent-text); font-weight: var(--dz-weight-medium); }
+@media (hover: hover) and (pointer: fine) {
+  .dz .bd-sheet-more:hover { background: var(--bd-accent-soft); }
+}
+.dz .bd-sheet-grid { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.dz .bd-sheet-item {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 12px;
+  transition: background-color var(--dz-fast) var(--dz-ease-press), scale var(--dz-fast) var(--dz-ease-press);
+}
+.dz .bd-sheet-grid.is-stamps .bd-sheet-item, .dz .bd-sheet-grid.is-emoji .bd-sheet-item { width: 52px; height: 52px; }
+.dz .bd-sheet-item.is-emoji { font-size: 30px; line-height: 1; }
+@media (hover: hover) and (pointer: fine) {
+  .dz .bd-sheet-item:hover { background: var(--bd-hover); }
+}
+.dz .bd-sheet-item:active { scale: 0.96; }
+
+/* ── The context toolbar over the selection ─────────────────────────────────────────────────── */
+.dz .bd-context {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  height: 48px;
+  padding: 0 4px;
+  border-radius: var(--bd-radius-bar);
+  background: var(--dz-menu);
+  color: var(--dz-menu-text);
+  color-scheme: dark;
+  box-shadow: var(--dz-shadow-menu);
+  will-change: transform;
+}
+.dz .bd-context[hidden] { display: none; }
+.dz .bd-context-group { display: flex; align-items: center; align-self: stretch; gap: 2px; padding: 0 4px; }
+/* Full-height rules between the groups (help.figma.com, the sticky's toolbar). */
+.dz .bd-context-group + .bd-context-group { border-left: 1px solid var(--dz-menu-separator); }
+.dz .bd-context-btn {
+  display: grid;
+  place-items: center;
+  min-width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  color: inherit;
+  transition: background-color var(--dz-fast) var(--dz-ease-press), scale var(--dz-fast) var(--dz-ease-press);
+}
+.dz .bd-context-btn.is-wide { min-width: 44px; }
+.dz .bd-context-btn.is-text { min-width: 32px; font-weight: var(--dz-weight-strong); }
+.dz .bd-context-btn.is-face { min-width: 48px; font-size: 18px; font-weight: 400; letter-spacing: -0.01em; }
+/* A switch that is on (a sticky's author line): a filled violet tile, the icon white (FigJam's). */
+.dz .bd-context-btn.is-switch[aria-pressed='true'] { background: var(--bd-accent); color: var(--bd-on-accent); }
+.dz .bd-link-popover { padding: 8px; border-radius: var(--dz-radius-menu); background: var(--dz-panel); box-shadow: var(--dz-shadow-menu); }
+.dz .bd-link-input { width: 260px; height: 32px; padding: 0 10px; border-radius: 8px; background: var(--dz-field); color: var(--dz-text); font: inherit; font-size: 13px; }
+.dz .bd-link-input[aria-invalid='true'] { box-shadow: inset 0 0 0 1px var(--dz-danger); }
+.dz .bd-link-error { margin: 6px 2px 0; color: var(--dz-danger); font-size: 12px; }
+@media (hover: hover) and (pointer: fine) {
+  .dz .bd-context-btn:hover { background: rgb(255 255 255 / 0.1); }
+}
+.dz .bd-context-btn:active { scale: 0.96; }
+.dz .bd-context-btn[aria-pressed='true'], .dz .bd-context-btn[aria-expanded='true'] { background: rgb(255 255 255 / 0.18); }
+.dz .bd-segments { display: flex; align-items: center; gap: 0; }
+.dz .bd-context-color { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 8px; transition: background-color var(--dz-fast) var(--dz-ease-press); }
+@media (hover: hover) and (pointer: fine) {
+  .dz .bd-context-color:hover { background: rgb(255 255 255 / 0.1); }
+}
+.dz .bd-context-color span { width: 22px; height: 22px; border-radius: 11px; background: var(--bd-swatch); box-shadow: inset 0 0 0 1.5px oklch(1 0 0 / 0.4); }
+.dz .bd-context-color.is-outline span { background: transparent; box-shadow: inset 0 0 0 4px var(--bd-swatch), inset 0 0 0 5px oklch(1 0 0 / 0.24); }
+.dz .bd-context-color.is-none span { background: linear-gradient(135deg, transparent calc(50% - 1px), #f24822 calc(50% - 1px), #f24822 calc(50% + 1px), transparent calc(50% + 1px)); }
+.dz .bd-palette-popover { padding: 8px; border-radius: var(--dz-radius-menu); background: var(--dz-panel); box-shadow: var(--dz-shadow-menu); }
+.dz .bd-palette { display: grid; grid-template-columns: repeat(5, 28px); gap: 6px; }
+/* A switch under the swatches (a connector's "Label background"): a row with a track that fills when on. */
+.dz .bd-palette-switch {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; height: 32px; margin-top: 8px; padding: 0 4px 0 8px;
+  border: 0; border-top: 1px solid var(--bd-rule); border-radius: 0; background: none; color: var(--dz-text); font: inherit; font-size: 12px; cursor: pointer;
+}
+.dz .bd-palette-switch::after {
+  content: ''; flex: none; width: 28px; height: 16px; border-radius: 8px;
+  background: radial-gradient(circle at 8px 8px, #fff 5px, transparent 5.5px) no-repeat, var(--dz-field);
+  box-shadow: inset 0 0 0 1px var(--bd-rule); transition: background-position var(--dz-fast) var(--dz-ease-out);
+}
+.dz .bd-palette-switch[aria-pressed='true']::after { background: radial-gradient(circle at 20px 8px, #fff 5px, transparent 5.5px) no-repeat, var(--bd-accent); box-shadow: none; }
+.dz .bd-palette .bd-swatch { width: 28px; height: 28px; border-radius: 6px; }
+.dz .bd-palette.is-round .bd-swatch { border-radius: 14px; }
+
+/* "Export board". */
+.dz .bd-export-rows { display: flex; flex-direction: column; gap: 12px; }
+.dz .bd-export-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.dz .bd-export-note { margin: 0; color: var(--dz-text-2); }
+.dz .bd-export-note.is-error { color: var(--dz-danger); }
+/* "Publish as template": a label over each field. */
+.dz .bd-publish-field { display: grid; gap: 6px; }
+.dz .bd-publish-field > span { color: var(--dz-text-2); font-size: 12px; }
+
+/* ── Comments sidebar, badges, the meeting layer ────────────────────────────────────────────── */
+.dz .bd-sidebar {
+  position: absolute;
+  top: 72px;
+  right: 12px;
+  bottom: 72px;
+  z-index: 7;
+  display: flex;
+  flex-direction: column;
+  width: 320px;
+  overflow: hidden;
+  border-radius: var(--bd-radius-bar);
+  background: var(--bd-surface);
+  box-shadow: var(--bd-shadow-raised);
+  transform-origin: 100% 0;
+  transition: opacity var(--dz-base) var(--dz-ease-out), translate var(--dz-base) var(--dz-ease-out);
+  @starting-style { opacity: 0; translate: 8px 0; }
+}
+.dz[data-input='keyboard'] .bd-sidebar { transition: none; }
+.dz .bd-sidebar-head { display: flex; align-items: center; gap: 4px; min-height: 48px; padding: 0 8px 0 16px; border-bottom: 1px solid var(--bd-rule); }
+.dz .bd-sidebar-title { flex: 1; margin: 0; font-size: 13px; font-weight: 600; line-height: 1.2; color: var(--dz-text); }
+
+.dz .bd-badges, .dz .bd-meeting-layer { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
+.dz .bd-badge {
+  position: absolute;
+  left: 0;
+  top: 0;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 7px;
+  border-radius: 12px;
+  background: var(--bd-surface);
+  color: var(--bd-accent-text);
+  font-size: 12px;
+  line-height: 24px;
+  font-weight: var(--dz-weight-strong);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  box-shadow: 0 0 0 1.5px var(--bd-accent), 0 2px 6px rgb(0 0 0 / 0.16);
+}
+.dz .bd-badge.is-mine { background: var(--bd-accent); color: var(--bd-on-accent); }
+.dz .bd-badge.is-neutral { color: var(--dz-text-2); box-shadow: 0 0 0 1px var(--dz-border-strong), 0 2px 6px rgb(0 0 0 / 0.12); }
+
+/* ── The stamp wheel (E): a disc of slices at the pointer, a stamp in each, "+" in the middle; it opens from a key, so it
+   appears at once ─────────────────────────────────────────────────────────────────────────────────────────────────── */
+.dz .bd-wheel {
+  --bd-wheel-slice: #F2F2F2;
+  --bd-wheel-slice-hover: #E6E6E6;
+  position: absolute;
+  z-index: 6;
+  width: 290px;
+  height: 290px;
+  margin: -145px 0 0 -145px;
+  border-radius: 50%;
+  background: var(--bd-surface);
+  box-shadow: var(--bd-shadow-raised);
+}
+.dz .bd-wheel-slices { position: absolute; inset: 0; }
+.dz .bd-wheel-slice { fill: var(--bd-wheel-slice); transition: fill var(--dz-fast) var(--dz-ease-out); }
+.dz .bd-wheel-slice.is-current { fill: var(--bd-accent-soft); }
+.dz .bd-wheel-slice.is-hovered { fill: var(--bd-wheel-slice-hover); }
+.dz .bd-wheel-middle {
+  position: absolute;
+  left: 95px;
+  top: 95px;
+  display: grid;
+  place-items: center;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: var(--bd-accent-soft);
+}
+.dz .bd-wheel-more {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--bd-surface);
+  color: var(--dz-text);
+  box-shadow: var(--bd-shadow);
+  transition: scale var(--dz-fast) var(--dz-ease-press);
+}
+.dz .bd-wheel-more:active { scale: 0.96; }
+.dz .bd-wheel-label {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  bottom: 12px;
+  color: var(--dz-text-2);
+  font-size: 11px;
+  line-height: 14px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dz .bd-wheel-item {
+  position: absolute;
+  left: 121px;
+  top: 121px;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 24px;
+}
+.dz[data-theme='dark'] .bd-wheel { --bd-wheel-slice: #383838; --bd-wheel-slice-hover: #444444; }
+
+/* ── Narrow windows: the pills keep to the corners, the toolbar loses its labels' room ──────── */
+@media (max-width: 900px) {
+  .dz .bd-top-left { max-width: calc(50% - 18px); }
+  .dz .bd-bottom-right { bottom: 92px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dz .bd-art, .dz .bd-marker-kind svg { transition: none; }
+  .dz .bd-tray, .dz .bd-sheet, .dz .bd-sidebar { transition-property: opacity; }
+  .dz .bd-tray { @starting-style { translate: 0 0; scale: 1; } }
+  .dz .bd-sheet { @starting-style { translate: -50% 0; scale: 1; } }
+  .dz .bd-sidebar { @starting-style { translate: 0 0; } }
+  .dz :is(.bd-tool, .bd-pill-btn, .bd-share, .bd-plus, .bd-swatch, .bd-sheet-item, .bd-template, .bd-context-btn):active { scale: 1; }
+}

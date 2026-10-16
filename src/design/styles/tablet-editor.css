@@ -1,0 +1,66 @@
+/* The editor on a tablet (editor/tablet/TabletEditorLayout.tsx): the canvas
+   takes the width, the side panels open over it from their edges with a light scrim behind, and the floating toolbar fits
+   the width or scrolls sideways. Only for a touch screen 768–1023 px wide (src/design/ui/viewport.ts TABLET_QUERY); the
+   desktop's rules are untouched, and every rule here wins by its selector. */
+
+@media (min-width: 768px) and (max-width: 1023px) and (pointer: coarse) {
+  .dz.dz-root .dz-tablet-editor .dz-canvas-area { overscroll-behavior: none; }
+  .dz.dz-root .dz-tablet-editor .dz-toolbar {
+    max-width: calc(100% - 24px);
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    touch-action: pan-x;
+  }
+  .dz.dz-root .dz-tablet-editor .dz-toolbar::-webkit-scrollbar { display: none; }
+  .dz.dz-root .dz-tablet-editor .dz-toolbar > * { flex: none; }
+  /* The file bar and the actions bar share the top row: each takes at most half. */
+  .dz.dz-root .dz-tablet-editor .dz-float-actions { max-width: calc(50% - 18px); overflow-x: auto; scrollbar-width: none; }
+
+  .dz.dz-root .dz-tablet-scrim {
+    position: absolute;
+    inset: 0;
+    z-index: 7;
+    padding: 0;
+    border: 0;
+    background: rgb(0 0 0 / 0.12);
+    cursor: default;
+  }
+  .dz.dz-root .dz-tablet-panel {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    z-index: 8;
+    display: flex;
+    max-width: calc(100% - 48px);
+    background: var(--dz-panel);
+    box-shadow: var(--dz-shadow-float);
+    animation: dz-tablet-panel-in var(--dz-base) var(--dz-ease-out);
+  }
+  .dz.dz-root .dz-tablet-panel.is-left { left: 0; padding-left: env(safe-area-inset-left, 0px); }
+  .dz.dz-root .dz-tablet-panel.is-right { right: 0; padding-right: env(safe-area-inset-right, 0px); --dz-tablet-from: 8px; }
+  .dz.dz-root .dz-tablet-panel > * { height: 100%; }
+  @keyframes dz-tablet-panel-in { from { opacity: 0; translate: var(--dz-tablet-from, -8px) 0; } }
+  @media (prefers-reduced-motion: reduce) {
+    .dz.dz-root .dz-tablet-panel { animation: none; }
+  }
+
+  /* The shape builder's bar by touch (editor/phone/ShapeBuilderBar.tsx), over the toolbar. */
+  .dz.dz-root .dz-tablet-editor .dz-touch-builder {
+    position: absolute;
+    left: 50%;
+    bottom: 76px;
+    z-index: 6;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px;
+    border-radius: 13px;
+    background: var(--dz-panel);
+    box-shadow: var(--dz-shadow-float);
+    translate: -50% 0;
+  }
+  /* A caret a finger can hit (a long press offers "Expand all nested"), drawn the same. */
+  .dz.dz-root .dz-tablet-panel .dz-layer-caret[data-caret] { position: relative; }
+  .dz.dz-root .dz-tablet-panel .dz-layer-caret[data-caret]::before { content: ''; position: absolute; inset: 0 -8px; }
+}

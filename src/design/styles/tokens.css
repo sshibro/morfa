@@ -1,0 +1,124 @@
+/* "Morfa": the design language (docs/design-tool.md §Design language).
+   Neutral greys, one blue accent, Inter at 11 px. Nothing here comes from the surrounding app's brand:
+   every value lives on .dz, so the app around it keeps its own tokens.
+   DesignRoot always sets data-theme to the resolved theme (the system's unless overridden). */
+
+.dz {
+  color-scheme: light;
+
+  /* Surfaces */
+  --dz-canvas: #f5f5f5;
+  --dz-panel: #ffffff;
+  --dz-border: #e6e6e6;
+  --dz-border-strong: #d9d9d9;
+  --dz-hover: #f5f5f5;
+  --dz-pressed: #e6e6e6;
+  --dz-field: #f5f5f5;
+  /* The chosen segment of a segmented control, raised out of the field. */
+  --dz-raised: #ffffff;
+  --dz-skeleton: #ededed;
+  --dz-scrim: rgb(0 0 0 / 0.32);
+  --dz-scrollbar: rgb(0 0 0 / 0.24);
+  /* Thumbnails and swatches: a hairline in pure black or white, never a tinted grey (better-ui). */
+  --dz-outline: oklch(0 0 0 / 0.1);
+  --dz-checker-a: #ffffff;
+  --dz-checker-b: #e6e6e6;
+
+  /* Text */
+  --dz-text: #1e1e1e;
+  /* #6e6e6e, not Figma's #757575: secondary text keeps 4.5:1 on fields and selected rows too (WCAG AA). */
+  --dz-text-2: #6e6e6e;
+  --dz-text-3: #b3b3b3;
+  --dz-on-accent: #ffffff;
+
+  /* Accent: selection, focus, primary actions */
+  --dz-accent: #0d99ff;
+  --dz-accent-hover: #007be5;
+  /* Links and accent text: 5.3:1 on the panel, 4.7:1 on fields and selected rows (#007be5 stays the primary hover). */
+  --dz-accent-text: #006bc9;
+  --dz-selected-row: #e5f4ff;
+  --dz-selected-row-2: #f2f9ff;
+  --dz-component: #9747ff;
+  --dz-guide: #f24822;
+  --dz-success: #14ae5c;
+  /* Green small text (badges) that keeps 4.5:1 on a light green tint. */
+  --dz-success-text: #0a7a3c;
+  --dz-danger: #f24822;
+  --dz-danger-hover: #dc3412;
+  /* Red small text that keeps 4.5:1 on the panel. */
+  --dz-danger-text: #d1310f;
+  --dz-warning: #ffa629;
+
+  /* Menus and tooltips are dark in both themes */
+  --dz-menu: #1e1e1e;
+  --dz-menu-text: #ffffff;
+  --dz-menu-text-2: rgb(255 255 255 / 0.62);
+  --dz-menu-text-3: rgb(255 255 255 / 0.36);
+  --dz-menu-hover: #0d99ff;
+  --dz-menu-separator: rgb(255 255 255 / 0.1);
+
+  /* Elevation: layered shadows instead of borders (better-ui) */
+  --dz-shadow-menu: 0 0 0 0.5px rgb(0 0 0 / 0.2), 0 2px 5px rgb(0 0 0 / 0.15), 0 10px 24px rgb(0 0 0 / 0.18);
+  --dz-shadow-float: 0 0 0 0.5px rgb(0 0 0 / 0.12), 0 1px 3px rgb(0 0 0 / 0.1), 0 4px 14px rgb(0 0 0 / 0.1);
+  --dz-shadow-dialog: 0 0 0 0.5px rgb(0 0 0 / 0.16), 0 4px 12px rgb(0 0 0 / 0.12), 0 24px 64px rgb(0 0 0 / 0.22);
+  --dz-shadow-thumb: 0 0 0 0.5px rgb(0 0 0 / 0.18), 0 1px 3px rgb(0 0 0 / 0.2);
+
+  /* Shape and size */
+  --dz-radius: 5px;
+  --dz-radius-card: 8px;
+  --dz-radius-menu: 12px;
+  --dz-radius-dialog: 13px;
+  --dz-control: 24px;
+  --dz-control-lg: 32px;
+  --dz-panel-width: 240px;
+
+  /* Type */
+  --dz-font: 'Inter Variable', 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --dz-mono: ui-monospace, 'SF Mono', 'Menlo', 'Consolas', monospace;
+  --dz-weight: 450;
+  --dz-weight-medium: 550;
+  --dz-weight-strong: 600;
+
+  /* Motion (src/motion/presets.ts EASE_OUT; 120–160 ms for menus and panels) */
+  --dz-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --dz-ease-press: cubic-bezier(0.2, 0, 0, 1);
+  --dz-fast: 120ms;
+  --dz-base: 160ms;
+  /* Modals (dialogs and their dimmer): the one surface that takes the page over, 200 ms (emil-design-eng: modals 200 ms and up). */
+  --dz-modal: 200ms;
+}
+
+.dz[data-theme='dark'] {
+  color-scheme: dark;
+
+  --dz-canvas: #1e1e1e;
+  --dz-panel: #2c2c2c;
+  --dz-border: #444444;
+  --dz-border-strong: #4f4f4f;
+  --dz-hover: #383838;
+  --dz-pressed: #444444;
+  --dz-field: #383838;
+  --dz-raised: #4a4a4a;
+  --dz-skeleton: #353535;
+  --dz-scrim: rgb(0 0 0 / 0.5);
+  --dz-scrollbar: rgb(255 255 255 / 0.24);
+  --dz-outline: oklch(1 0 0 / 0.1);
+  --dz-checker-a: #e6e6e6;
+  --dz-checker-b: #b3b3b3;
+
+  --dz-text: #ffffff;
+  --dz-text-2: #b3b3b3;
+  --dz-text-3: #7a7a7a;
+
+  --dz-accent-hover: #0c8ce9;
+  --dz-accent-text: #7cc4f8;
+  --dz-selected-row: #0c3a5e;
+  --dz-selected-row-2: #173045;
+  --dz-component: #a673ff;
+  --dz-danger-text: #ff8a70;
+  --dz-success-text: #5ad08f;
+
+  --dz-shadow-menu: 0 0 0 0.5px rgb(255 255 255 / 0.08), 0 2px 5px rgb(0 0 0 / 0.3), 0 10px 24px rgb(0 0 0 / 0.36);
+  --dz-shadow-float: 0 0 0 0.5px rgb(255 255 255 / 0.08), 0 1px 3px rgb(0 0 0 / 0.3), 0 4px 14px rgb(0 0 0 / 0.3);
+  --dz-shadow-dialog: 0 0 0 0.5px rgb(255 255 255 / 0.1), 0 4px 12px rgb(0 0 0 / 0.3), 0 24px 64px rgb(0 0 0 / 0.5);
+}

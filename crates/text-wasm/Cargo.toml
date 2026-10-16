@@ -1,0 +1,22 @@
+[package]
+name = "morfa-text-wasm"
+description = "Lane L3's JavaScript boundary for the text engine: a wasm module of its own, loaded only when a document with text is opened (scripts/wasm-text-build.sh)."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+morfa-text = {workspace = true, default-features = false}
+wasm-bindgen.workspace = true
+js-sys = "0.3"
+
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = ["-Oz"]
+
+[lints]
+workspace = true

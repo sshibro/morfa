@@ -1,0 +1,184 @@
+/* "Import from Figma" (src/design/import/figma). Everything under .dz, tokens from tokens.css. */
+
+.dz .dz-fi .dz-dialog-body { display: grid; gap: 16px; }
+/* Spacing comes from the grids' gaps, not the dialog's paragraph margins. */
+.dz .dz-fi .dz-dialog-body p + p { margin-top: 0; }
+.dz .dz-fi-intro { color: var(--dz-text-2); text-wrap: pretty; }
+
+/* Fields */
+.dz .dz-fi-field { display: grid; gap: 6px; }
+.dz .dz-fi-label { color: var(--dz-text-2); font-weight: var(--dz-weight-medium); }
+.dz .dz-fi-row { display: flex; gap: 8px; align-items: center; }
+.dz .dz-fi-row > .dz-input { flex: 1; min-width: 0; }
+.dz .dz-fi-error { color: var(--dz-danger-text); text-wrap: pretty; }
+.dz .dz-fi-field .dz-input:has(input[aria-invalid]) { box-shadow: inset 0 0 0 1px var(--dz-danger); }
+.dz .dz-fi-field .dz-input:has(input:read-only) { color: var(--dz-text-2); }
+.dz .dz-fi-hint { color: var(--dz-text-2); text-wrap: pretty; }
+.dz .dz-fi-hint a { color: var(--dz-accent-text); text-decoration: none; }
+.dz .dz-fi-hint a:hover { text-decoration: underline; }
+
+/* A .fig file: the whole box picks a file and takes a drop. */
+.dz .dz-fi-drop {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 72px;
+  padding: 14px 16px;
+  border-radius: var(--dz-radius-card);
+  background: var(--dz-field);
+  box-shadow: inset 0 0 0 1px var(--dz-border);
+  cursor: pointer;
+  transition: box-shadow var(--dz-fast) var(--dz-ease-out), background-color var(--dz-fast) var(--dz-ease-out);
+}
+.dz .dz-fi-drop:hover { background: var(--dz-hover); }
+.dz .dz-fi-drop.is-over { box-shadow: inset 0 0 0 1.5px var(--dz-accent); }
+.dz .dz-fi-drop:has(.dz-fi-drop-input:focus-visible) { outline: 2px solid var(--dz-accent); outline-offset: 1px; }
+.dz .dz-fi-drop[aria-busy] { cursor: default; opacity: 0.6; }
+.dz .dz-fi-drop-input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: inherit; }
+.dz .dz-fi-drop-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--dz-panel);
+  box-shadow: inset 0 0 0 1px var(--dz-border);
+  color: var(--dz-text-2);
+}
+.dz .dz-fi-drop.is-picked .dz-fi-drop-icon { color: var(--dz-accent-text); }
+.dz .dz-fi-drop-text { display: grid; gap: 2px; min-width: 0; }
+.dz .dz-fi-drop-text b { overflow: hidden; color: var(--dz-text); font-weight: var(--dz-weight-medium); text-overflow: ellipsis; white-space: nowrap; }
+.dz .dz-fi-drop-text span { color: var(--dz-text-2); }
+@media (prefers-reduced-motion: reduce) {
+  .dz .dz-fi-drop { transition: none; }
+}
+
+/* Connection */
+.dz .dz-fi-connect {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border-radius: var(--dz-radius-card);
+  background: var(--dz-field);
+}
+.dz .dz-fi-connect-title { display: flex; align-items: center; gap: 8px; font-weight: var(--dz-weight-medium); }
+.dz .dz-fi-connect-title > svg { flex: none; color: var(--dz-text-2); }
+.dz .dz-fi-connect .dz-input.is-field { background: var(--dz-panel); }
+.dz .dz-fi-connected { display: flex; align-items: center; gap: 6px; min-height: 24px; color: var(--dz-text-2); }
+.dz .dz-fi-connected b { color: var(--dz-text); font-weight: var(--dz-weight-medium); }
+.dz .dz-fi-dot { flex: none; width: 6px; height: 6px; border-radius: 50%; background: var(--dz-success); }
+.dz .dz-fi-link-button {
+  margin-left: auto;
+  padding: 0 4px;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  color: var(--dz-accent-text);
+  font: inherit;
+  cursor: default;
+}
+.dz .dz-fi-link-button:hover { text-decoration: underline; }
+.dz .dz-fi-link-button:focus-visible { outline: 2px solid var(--dz-accent); outline-offset: 1px; }
+.dz .dz-fi-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* Waiting on Figma (reading, rate limit) */
+.dz .dz-fi-wait { display: flex; align-items: center; gap: 8px; min-height: 24px; color: var(--dz-text-2); }
+.dz .dz-fi-wait > svg { flex: none; color: var(--dz-accent); }
+.dz .dz-fi-wait b { color: var(--dz-text); font-weight: var(--dz-weight-medium); font-variant-numeric: tabular-nums; }
+
+/* Pages */
+.dz .dz-fi-file { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.dz .dz-fi-file-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; line-height: 20px; font-weight: var(--dz-weight-strong); }
+.dz .dz-fi-pages {
+  display: grid;
+  max-height: min(320px, 40dvh);
+  overflow-y: auto;
+  padding: 4px;
+  border-radius: var(--dz-radius-card);
+  box-shadow: inset 0 0 0 1px var(--dz-border);
+}
+.dz .dz-fi-page {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  padding: 0 8px 0 4px;
+  border-radius: 4px;
+}
+.dz .dz-fi-page:hover { background: var(--dz-hover); }
+.dz .dz-fi-page .dz-check { flex: 1; min-width: 0; height: 32px; }
+.dz .dz-fi-page .dz-check-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dz .dz-fi-page-meta { flex: none; color: var(--dz-text-2); font-variant-numeric: tabular-nums; }
+.dz .dz-fi-summary { display: grid; gap: 8px; color: var(--dz-text-2); font-variant-numeric: tabular-nums; }
+.dz .dz-fi-note { display: flex; gap: 8px; color: var(--dz-text-2); text-wrap: pretty; }
+.dz .dz-fi-note > svg { flex: none; margin-top: 0; }
+.dz .dz-fi-note.is-warning > svg { color: var(--dz-warning); }
+
+/* Progress */
+.dz .dz-fi-steps { display: grid; gap: 2px; }
+.dz .dz-fi-step { display: flex; align-items: center; gap: 10px; min-height: 28px; color: var(--dz-text-3); }
+.dz .dz-fi-step.is-active,
+.dz .dz-fi-step.is-done { color: var(--dz-text); }
+.dz .dz-fi-step-icon { display: grid; place-items: center; flex: none; width: 16px; height: 16px; }
+/* A step's icon swaps with better-ui's contextual icon values: scale 0.25 → 1, opacity, blur 4 px → 0, 300 ms, (0.2, 0, 0, 1). */
+.dz .dz-fi-step-icon > * {
+  transition: opacity 300ms var(--dz-ease-press), scale 300ms var(--dz-ease-press), filter 300ms var(--dz-ease-press);
+  @starting-style { opacity: 0; scale: 0.25; filter: blur(4px); }
+}
+.dz .dz-fi-step.is-done .dz-fi-step-icon { color: var(--dz-success); }
+.dz .dz-fi-step.is-active .dz-fi-step-icon { color: var(--dz-accent); }
+.dz .dz-fi-pending { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.dz .dz-fi-step-detail { margin-left: auto; color: var(--dz-text-2); font-variant-numeric: tabular-nums; }
+.dz .dz-fi-bar { height: 4px; margin: 2px 0 6px 26px; border-radius: 2px; background: var(--dz-pressed); overflow: hidden; }
+.dz .dz-fi-bar-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--dz-accent);
+  transform-origin: left center;
+  scale: var(--dz-ratio, 0) 1;
+  transition: scale 200ms var(--dz-ease-out);
+}
+
+/* Result */
+.dz .dz-fi-done { display: flex; gap: 12px; align-items: flex-start; }
+.dz .dz-fi-done-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--dz-success) 14%, transparent);
+  color: var(--dz-success);
+}
+.dz .dz-fi-done.is-error .dz-fi-done-icon { background: color-mix(in srgb, var(--dz-danger) 12%, transparent); color: var(--dz-danger); }
+.dz .dz-fi-done-text { display: grid; gap: 2px; min-width: 0; padding-top: 1px; }
+.dz .dz-fi-done-title { font-size: 13px; line-height: 20px; font-weight: var(--dz-weight-strong); text-wrap: pretty; }
+.dz .dz-fi-done-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dz .dz-fi-done-stats { color: var(--dz-text-2); font-variant-numeric: tabular-nums; }
+.dz .dz-fi-report {
+  display: grid;
+  gap: 12px;
+  max-height: min(340px, 44dvh);
+  overflow-y: auto;
+  padding: 12px;
+  border-radius: var(--dz-radius-card);
+  background: var(--dz-field);
+  user-select: text;
+  -webkit-user-select: text;
+}
+.dz .dz-fi-report-title { font-weight: var(--dz-weight-medium); }
+.dz .dz-fi-group { display: grid; gap: 4px; }
+.dz .dz-fi-group-title { color: var(--dz-text-2); font-weight: var(--dz-weight-medium); }
+.dz .dz-fi-item { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; text-wrap: pretty; }
+.dz .dz-fi-item-count { color: var(--dz-text-2); font-variant-numeric: tabular-nums; text-align: right; }
+.dz .dz-fi-item-examples { grid-column: 1 / -1; color: var(--dz-text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dz .dz-fi-font { display: flex; align-items: center; gap: 6px; }
+.dz .dz-fi-font > svg { flex: none; color: var(--dz-text-3); }
+
+@media (prefers-reduced-motion: reduce) {
+  .dz .dz-fi-step-icon > * { transition: opacity 300ms var(--dz-ease-press); @starting-style { opacity: 0; scale: 1; filter: none; } }
+  .dz .dz-fi-bar-fill { transition: none; }
+}

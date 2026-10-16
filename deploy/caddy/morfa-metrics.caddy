@@ -1,0 +1,42 @@
+# The app VM's metrics for Prometheus on the database VM (production's two-VM layout): every service
+# keeps listening on loopback, and this one site on the PRIVATE address (MORFA_METRICS_BIND, set by scripts/deploy/remote/prod.sh;
+# default loopback, i.e. unused) answers only each service's /metrics. ufw lets only the database VM reach it.
+# Scraped as http://<app private IP>:9400/<service>/metrics (deploy/observability/prometheus/prometheus.split.yml).
+http://{$MORFA_METRICS_BIND:127.0.0.1}:9400 {
+	bind {$MORFA_METRICS_BIND:127.0.0.1}
+	@api1 path /api-1/metrics
+	handle @api1 {
+		rewrite * /metrics
+		reverse_proxy 127.0.0.1:9401
+	}
+	@api2 path /api-2/metrics
+	handle @api2 {
+		rewrite * /metrics
+		reverse_proxy 127.0.0.1:9402
+	}
+	@collabA path /collab-a/metrics
+	handle @collabA {
+		rewrite * /metrics
+		reverse_proxy {$MORFA_COLLAB_A:127.0.0.1:3421}
+	}
+	@collabB path /collab-b/metrics
+	handle @collabB {
+		rewrite * /metrics
+		reverse_proxy {$MORFA_COLLAB_B:127.0.0.1:3422}
+	}
+	@render path /render/metrics
+	handle @render {
+		rewrite * /metrics
+		reverse_proxy 127.0.0.1:3440
+	}
+	@caddy path /caddy/metrics
+	handle @caddy {
+		rewrite * /metrics
+		reverse_proxy localhost:2019 {
+			header_up Host localhost:2019
+		}
+	}
+	handle {
+		respond 404
+	}
+}

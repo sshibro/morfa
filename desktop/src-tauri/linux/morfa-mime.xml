@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Morfa's portable file (.rdesign): installed to /usr/share/mime/packages by the .deb (tauri.conf.json bundle.linux.deb.files);
+     shared-mime-info's dpkg trigger updates the database. -->
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+  <mime-type type="application/x-morfa-design">
+    <comment>Morfa file</comment>
+    <sub-class-of type="application/json"/>
+    <glob pattern="*.rdesign"/>
+  </mime-type>
+</mime-info>

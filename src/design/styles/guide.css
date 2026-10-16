@@ -1,0 +1,78 @@
+/* "Guide" (src/design/editor/GuideDialog.tsx): topics on the left, the reading column on the
+   right. Reading text sits at 12/18 px (the UI's 11/16 px is for controls), lines kept under ~70
+   characters. The dialog's own enter motion (overlays.css) is the only one. */
+
+.dz .dz-guide .dz-dialog-body {
+  display: grid;
+  grid-template-columns: 188px minmax(0, 1fr);
+  height: min(600px, calc(100dvh - 160px));
+  padding: 0;
+  overflow: hidden;
+}
+.dz .dz-guide .dz-dialog-footer { padding-top: 12px; border-top: 1px solid var(--dz-border); }
+.dz .dz-guide-support { margin-right: auto; }
+
+/* ── Topics ──────────────────────────────────────────────────────────────────────────────────── */
+.dz .dz-guide-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px 8px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border-right: 1px solid var(--dz-border);
+}
+.dz .dz-guide-nav-group { display: flex; flex-direction: column; gap: 1px; }
+.dz .dz-guide-nav-title { padding: 0 8px 4px; color: var(--dz-text-2); font-weight: var(--dz-weight-medium); }
+.dz .dz-guide-topic {
+  display: flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 6px 8px;
+  border-radius: var(--dz-radius);
+  color: var(--dz-text);
+  line-height: 16px;
+  text-align: left;
+  transition: background-color var(--dz-fast) var(--dz-ease-press);
+}
+@media (hover: hover) {
+  .dz .dz-guide-topic:hover { background: var(--dz-hover); }
+}
+.dz .dz-guide-topic[aria-current='page'] { background: var(--dz-selected-row); color: var(--dz-text); font-weight: var(--dz-weight-medium); }
+.dz .dz-guide-topic:focus-visible { outline-offset: -2px; }
+
+/* ── The article ─────────────────────────────────────────────────────────────────────────────── */
+.dz .dz-guide-article {
+  min-width: 0;
+  padding: 20px 28px 28px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  font-size: 12px;
+  line-height: 18px;
+}
+.dz .dz-guide-article > * { max-width: 62ch; }
+.dz .dz-guide-article h3 { margin-bottom: 10px; font-size: 14px; line-height: 20px; font-weight: var(--dz-weight-strong); }
+.dz .dz-guide-article h4 { margin: 18px 0 6px; font-size: 12px; font-weight: var(--dz-weight-strong); }
+.dz .dz-guide-article p + p,
+.dz .dz-guide-article p + ul,
+.dz .dz-guide-article ul + p { margin-top: 8px; }
+.dz .dz-guide-article ul { padding-left: 18px; list-style: disc; }
+.dz .dz-guide-article li::marker { color: var(--dz-text-3); }
+.dz .dz-guide-article li + li { margin-top: 4px; }
+.dz .dz-guide-path,
+.dz .dz-guide-cmd { font-weight: var(--dz-weight-medium); white-space: nowrap; }
+.dz .dz-guide-kbd { vertical-align: 1px; font-weight: var(--dz-weight); }
+
+.dz .dz-guide-terms { width: 100%; max-width: none; border-collapse: collapse; }
+.dz .dz-guide-terms td { padding: 5px 0; border-bottom: 1px solid var(--dz-border); vertical-align: top; }
+.dz .dz-guide-terms tr:last-child td { border-bottom: 0; }
+.dz .dz-guide-terms td:first-child { width: 46%; padding-right: 16px; color: var(--dz-text-2); }
+
+/* ── Shortcuts ───────────────────────────────────────────────────────────────────────────────── */
+.dz .dz-guide-keys { display: flex; flex-direction: column; gap: 16px; max-width: none; font-size: 11px; line-height: 16px; }
+.dz .dz-guide-keys h4 { margin: 0 0 4px; color: var(--dz-text-2); font-size: 11px; }
+.dz .dz-guide-keys-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 24px; border-bottom: 1px solid var(--dz-border); }
+.dz .dz-guide-keys-row:last-child { border-bottom: 0; }
+.dz .dz-guide-keys-row dt { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dz .dz-guide-keys-row dd { flex: none; }
+.dz .dz-guide-empty { padding: 24px 0; color: var(--dz-text-2); text-align: center; }

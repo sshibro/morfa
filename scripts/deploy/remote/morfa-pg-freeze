@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# /usr/local/sbin/morfa-pg-freeze on bench-ru (lane B5): TARGETS D3's "PostgreSQL unavailable 30 s" — every process of the
+# harness's bench cluster stopped (SIGSTOP) and resumed (SIGCONT), as `docker pause` does to the Mac's test cluster.
+# The `morfa` user may run it through sudo (and nothing else as root); it never touches the main cluster.
+set -euo pipefail
+case ${1:-} in
+  stop) systemctl kill --signal=SIGSTOP --kill-whom=all postgresql@18-bench.service ;;
+  cont) systemctl kill --signal=SIGCONT --kill-whom=all postgresql@18-bench.service ;;
+  *) echo "usage: morfa-pg-freeze stop|cont" >&2; exit 2 ;;
+esac

@@ -1,0 +1,36 @@
+# bench-ru's edge (no domain, no production data): the same routes as production on the VM's IP.
+#   http://<ip>:80     plain HTTP and ws:// — what the harness and crates/loadgen use (loadgen has no TLS client)
+#   https://<ip>:443   Caddy's internal CA (self-signed root; curl -k, or trust /var/lib/caddy/.local/share/caddy/pki/authorities/local/root.crt)
+# No HTTP→HTTPS redirect, so both stay usable. Install: /etc/caddy/Caddyfile + /etc/caddy/morfa-routes.caddy.
+{
+	auto_https disable_redirects
+	admin localhost:2019
+	# Prometheus reads Caddy's request metrics from the admin endpoint (127.0.0.1:2019/metrics).
+	metrics
+	servers {
+		timeouts {
+			read_header 10s
+			idle 2m
+		}
+	}
+}
+
+import /etc/caddy/morfa-routes.caddy
+
+:80 {
+	import morfa_routes
+}
+
+https://{$MORFA_BENCH_IP} {
+	tls internal
+	import morfa_routes
+}
+
+# pgBackRest speaks only HTTPS to S3: the MinIO stand-in (plain HTTP on 127.0.0.1:9000, which collab and api use) gets a TLS
+# front on loopback with the same internal CA (/etc/hosts maps s3.bench.morfa to 127.0.0.1; pgBackRest trusts the CA file
+# provision-bench.sh copies to /etc/pgbackrest/bench-ca.crt). The Host header passes through, so SigV4 still matches.
+https://s3.bench.morfa:9443 {
+	bind 127.0.0.1
+	tls internal
+	reverse_proxy 127.0.0.1:9000
+}

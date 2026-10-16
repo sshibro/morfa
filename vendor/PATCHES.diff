@@ -1,0 +1,483 @@
+diff -ruN '--exclude=Cargo.lock' '--exclude=.cargo-ok' '--exclude=Cargo.toml.orig' crates.io/vello-0.11.0/Cargo.toml vendor/vello/Cargo.toml
+--- crates.io/vello-0.11.0/Cargo.toml	2006-07-24 01:21:28.000000000 +0000
++++ vendor/vello/Cargo.toml	2026-10-08 19:02:01.655331462 +0000
+@@ -45,7 +45,19 @@
+ default = [
+     "wgpu",
+     "wgpu_default",
++    "glyphs",
++    "cpu_shaders",
+ ]
++# Glyph runs (skrifa outlines, COLR and bitmap glyphs) — Morfa's renderer module leaves them out: its text comes from
++# the host as sprites (vendor/README.md).
++glyphs = [
++    "dep:skrifa",
++    "dep:png",
++    "vello_encoding/glyphs",
++]
++# The CPU fallbacks of the compute stages (`RendererOptions::use_cpu`): without it they are `Missing` and link-time
++# optimisation drops their code (the binding types of `vello_shaders::cpu` stay: the engine is written against them).
++cpu_shaders = []
+ hot_reload = ["vello_shaders/compile"]
+ wgpu = [
+     "dep:wgpu",
+@@ -79,6 +91,7 @@
+ 
+ [dependencies.png]
+ version = "0.18.1"
++optional = true
+ 
+ [dependencies.skrifa]
+ version = "0.44.0"
+@@ -87,6 +100,7 @@
+     "std",
+ ]
+ default-features = false
++optional = true
+ 
+ [dependencies.static_assertions]
+ version = "1.1.0"
+@@ -97,10 +111,13 @@
+ 
+ [dependencies.vello_encoding]
+ version = "0.11.0"
++default-features = false
+ 
+ [dependencies.vello_shaders]
+ version = "0.11.0"
+ optional = true
++default-features = false
++features = ["wgsl", "cpu"]
+ 
+ [dependencies.wgpu]
+ version = "30.0.0"
+diff -ruN '--exclude=Cargo.lock' '--exclude=.cargo-ok' '--exclude=Cargo.toml.orig' crates.io/vello-0.11.0/src/lib.rs vendor/vello/src/lib.rs
+--- crates.io/vello-0.11.0/src/lib.rs	2006-07-24 01:21:28.000000000 +0000
++++ vendor/vello/src/lib.rs	2026-10-08 18:59:59.622475421 +0000
+@@ -144,7 +144,9 @@
+ #[cfg(feature = "wgpu")]
+ pub use wgpu;
+ 
+-pub use scene::{DrawGlyphs, Scene};
++pub use scene::Scene;
++#[cfg(feature = "glyphs")]
++pub use scene::DrawGlyphs;
+ pub use vello_encoding::{FontEmbolden, Glyph, NormalizedCoord};
+ 
+ use low_level::ShaderId;
+diff -ruN '--exclude=Cargo.lock' '--exclude=.cargo-ok' '--exclude=Cargo.toml.orig' crates.io/vello-0.11.0/src/scene.rs vendor/vello/src/scene.rs
+--- crates.io/vello-0.11.0/src/scene.rs	2006-07-24 01:21:28.000000000 +0000
++++ vendor/vello/src/scene.rs	2026-10-08 19:09:03.689945323 +0000
+@@ -1,17 +1,27 @@
+ // Copyright 2022 the Vello Authors
+ // SPDX-License-Identifier: Apache-2.0 OR MIT
+ 
++#[cfg(feature = "glyphs")]
+ use std::io::Cursor;
++#[cfg(feature = "glyphs")]
+ use std::sync::Arc;
+ 
+ use peniko::{
+-    BlendMode, Blob, Brush, BrushRef, Color, ColorStop, ColorStops, ColorStopsSource, Compose,
+-    Extend, Fill, FontData, Gradient, ImageBrush, ImageBrushRef, ImageData, StyleRef,
++    BlendMode, BrushRef, Color, Fill, ImageBrushRef, StyleRef,
++    kurbo::{Affine, Rect, Shape, Stroke, StrokeOpts},
++};
++#[cfg(feature = "glyphs")]
++use peniko::{
++    Blob, Brush, ColorStop, ColorStops, ColorStopsSource, Compose, Extend, FontData, Gradient,
++    ImageBrush, ImageData,
+     color::{AlphaColor, DynamicColor, Srgb, palette},
+-    kurbo::{Affine, BezPath, Point, Rect, Shape, Stroke, StrokeOpts, Vec2},
++    kurbo::{BezPath, Point, Vec2},
+ };
++#[cfg(feature = "glyphs")]
+ use png::{BitDepth, ColorType, Transformations};
++#[cfg(feature = "glyphs")]
+ use skrifa::bitmap::BitmapFormat;
++#[cfg(feature = "glyphs")]
+ use skrifa::{
+     GlyphId, MetadataProvider, OutlineGlyphCollection, bitmap,
+     color::{ColorGlyph, ColorPainter},
+@@ -22,9 +32,11 @@
+ };
+ #[cfg(feature = "bump_estimate")]
+ use vello_encoding::BumpAllocatorMemory;
+-use vello_encoding::{
+-    DrawBeginClip, Encoding, FontEmbolden, Glyph, GlyphRun, NormalizedCoord, Patch, Transform,
+-};
++use vello_encoding::{DrawBeginClip, Encoding, Transform};
++#[cfg(feature = "glyphs")]
++use vello_encoding::Patch;
++#[cfg(feature = "glyphs")]
++use vello_encoding::{FontEmbolden, Glyph, GlyphRun, NormalizedCoord};
+ 
+ // TODO - Document invariants and edge cases (#470)
+ // - What happens when we pass a transform matrix with NaN values to the Scene?
+@@ -431,6 +443,7 @@
+         self.fill(Fill::NonZero, transform, brush, None, &rect);
+     }
+ 
++    #[cfg(feature = "glyphs")]
+     /// Returns a builder for encoding a glyph run.
+     pub fn draw_glyphs(&mut self, font: &FontData) -> DrawGlyphs<'_> {
+         // TODO: Integrate `BumpEstimator` with the glyph cache.
+@@ -461,6 +474,7 @@
+     }
+ }
+ 
++#[cfg(feature = "glyphs")]
+ /// Builder for encoding a glyph run.
+ ///
+ /// Created using [`Scene::draw_glyphs`].
+@@ -471,6 +485,7 @@
+     brush_alpha: f32,
+ }
+ 
++#[cfg(feature = "glyphs")]
+ impl<'a> DrawGlyphs<'a> {
+     /// Creates a new builder for encoding a glyph run for the specified
+     /// encoding with the given font.
+@@ -872,11 +887,13 @@
+     }
+ }
+ 
++#[cfg(feature = "glyphs")]
+ struct BitmapMask {
+     mask: u8,
+     right_shift: u8,
+ }
+ 
++#[cfg(feature = "glyphs")]
+ fn bitmap_masks(bpp: u8) -> Option<&'static [BitmapMask]> {
+     const fn m(mask: u8, right_shift: u8) -> BitmapMask {
+         BitmapMask { mask, right_shift }
+@@ -925,14 +942,18 @@
+     }
+ }
+ 
++#[cfg(feature = "glyphs")]
+ enum EmojiLikeGlyph<'a> {
+     Bitmap(bitmap::BitmapGlyph<'a>),
+     Colr(ColorGlyph<'a>),
+ }
++#[cfg(feature = "glyphs")]
+ const BOUND: f64 = 100_000.;
+ // Hack: If we don't have a clip box, we guess a rectangle we hope is big enough
++#[cfg(feature = "glyphs")]
+ const DEFAULT_CLIP_RECT: Rect = Rect::new(-BOUND, -BOUND, BOUND, BOUND);
+ 
++#[cfg(feature = "glyphs")]
+ /// An adapter from [`Scene`] to [`ColorPainter`].
+ struct DrawColorGlyphs<'a> {
+     scene: &'a mut Scene,
+@@ -945,6 +966,7 @@
+     foreground_brush: BrushRef<'a>,
+ }
+ 
++#[cfg(feature = "glyphs")]
+ impl ColorPainter for DrawColorGlyphs<'_> {
+     fn push_transform(&mut self, transform: skrifa::color::Transform) {
+         let transform = conv_skrifa_transform(transform);
+@@ -1070,8 +1092,10 @@
+     }
+ }
+ 
++#[cfg(feature = "glyphs")]
+ struct BezPathOutline(BezPath);
+ 
++#[cfg(feature = "glyphs")]
+ impl OutlinePen for BezPathOutline {
+     fn move_to(&mut self, x: f32, y: f32) {
+         self.0.move_to(Point::new(x.into(), y.into()));
+@@ -1101,6 +1125,7 @@
+     }
+ }
+ 
++#[cfg(feature = "glyphs")]
+ impl DrawColorGlyphs<'_> {
+     fn last_transform(&self) -> Transform {
+         self.transform_stack
+@@ -1110,6 +1135,7 @@
+     }
+ }
+ 
++#[cfg(feature = "glyphs")]
+ fn conv_skrifa_transform(transform: skrifa::color::Transform) -> Transform {
+     Transform {
+         matrix: [transform.xx, transform.yx, transform.xy, transform.yy],
+@@ -1117,6 +1143,7 @@
+     }
+ }
+ 
++#[cfg(feature = "glyphs")]
+ fn conv_brush(
+     brush: skrifa::color::Brush<'_>,
+     cpal: &Cpal<'_>,
+@@ -1174,6 +1201,7 @@
+ 
+ // The OpenType color palette is defined to be using the sRGB color space.
+ // <https://learn.microsoft.com/en-us/typography/opentype/spec/cpal#palette-entries-and-color-records>
++#[cfg(feature = "glyphs")]
+ fn color_index(cpal: &'_ Cpal<'_>, palette_index: u16) -> Option<AlphaColor<Srgb>> {
+     // The "application determined" foreground color should be used
+     // This will be handled by the caller
+@@ -1191,10 +1219,12 @@
+     ))
+ }
+ 
++#[cfg(feature = "glyphs")]
+ fn conv_point(point: skrifa::raw::types::Point<f32>) -> Point {
+     Point::new(point.x.into(), point.y.into())
+ }
+ 
++#[cfg(feature = "glyphs")]
+ fn conv_extend(extend: skrifa::color::Extend) -> Extend {
+     match extend {
+         skrifa::color::Extend::Pad => Extend::Pad,
+@@ -1205,8 +1235,10 @@
+     }
+ }
+ 
++#[cfg(feature = "glyphs")]
+ struct ColorStopsConverter<'a>(&'a [skrifa::color::ColorStop], &'a Cpal<'a>, BrushRef<'a>);
+ 
++#[cfg(feature = "glyphs")]
+ impl ColorStopsSource for ColorStopsConverter<'_> {
+     fn collect_stops(self, stops: &mut ColorStops) {
+         for item in self.0 {
+diff -ruN '--exclude=Cargo.lock' '--exclude=.cargo-ok' '--exclude=Cargo.toml.orig' crates.io/vello-0.11.0/src/shaders.rs vendor/vello/src/shaders.rs
+--- crates.io/vello-0.11.0/src/shaders.rs	2006-07-24 01:21:28.000000000 +0000
++++ vendor/vello/src/shaders.rs	2026-10-08 19:00:45.461890432 +0000
+@@ -64,6 +64,20 @@
+     #[cfg(not(feature = "hot_reload"))]
+     let shaders = vello_shaders::SHADERS;
+ 
++    // The CPU fallback of a stage (`RendererOptions::use_cpu`): compiled in with the `cpu_shaders` feature only.
++    #[cfg(feature = "cpu_shaders")]
++    macro_rules! cpu_shader {
++        ($name:ident) => {
++            CpuShaderType::Present(vello_shaders::cpu::$name)
++        };
++    }
++    #[cfg(not(feature = "cpu_shaders"))]
++    macro_rules! cpu_shader {
++        ($name:ident) => {
++            CpuShaderType::Missing
++        };
++    }
++
+     macro_rules! add_shader {
+         ($name:ident, $label:expr, $bindings:expr, $cpu:expr) => {{
+             if force_gpu_from == Some(stringify!($name)) {
+@@ -91,11 +105,7 @@
+         }};
+         ($name:ident, $bindings:expr, $cpu:expr) => {{ add_shader!($name, stringify!($name), $bindings, $cpu) }};
+         ($name:ident, $bindings:expr) => {
+-            add_shader!(
+-                $name,
+-                $bindings,
+-                CpuShaderType::Present(vello_shaders::cpu::$name)
+-            )
++            add_shader!($name, $bindings, cpu_shader!($name))
+         };
+     }
+ 
+@@ -113,7 +123,7 @@
+     let pathtag_scan = add_shader!(
+         pathtag_scan_small,
+         [Uniform, BufReadOnly, BufReadOnly, Buffer],
+-        CpuShaderType::Present(vello_shaders::cpu::pathtag_scan)
++        cpu_shader!(pathtag_scan)
+     );
+     let pathtag_scan_large = add_shader!(
+         pathtag_scan_large,
+@@ -176,7 +186,7 @@
+     let backdrop = add_shader!(
+         backdrop_dyn,
+         [Uniform, Buffer, BufReadOnly, Buffer],
+-        CpuShaderType::Present(vello_shaders::cpu::backdrop)
++        cpu_shader!(backdrop)
+     );
+     let coarse = add_shader!(
+         coarse,
+diff -ruN '--exclude=Cargo.lock' '--exclude=.cargo-ok' '--exclude=Cargo.toml.orig' crates.io/vello-0.11.0/src/wgpu_engine.rs vendor/vello/src/wgpu_engine.rs
+--- crates.io/vello-0.11.0/src/wgpu_engine.rs	2006-07-24 01:21:28.000000000 +0000
++++ vendor/vello/src/wgpu_engine.rs	2026-10-08 19:09:03.691388574 +0000
+@@ -55,6 +55,7 @@
+ }
+ 
+ pub(crate) enum CpuShaderType {
++    #[cfg_attr(not(feature = "cpu_shaders"), allow(dead_code))]
+     Present(fn(u32, &[CpuBinding<'_>])),
+     Missing,
+     Skipped,
+diff -ruN '--exclude=Cargo.lock' '--exclude=.cargo-ok' '--exclude=Cargo.toml.orig' crates.io/vello_encoding-0.11.0/Cargo.toml vendor/vello_encoding/Cargo.toml
+--- crates.io/vello_encoding-0.11.0/Cargo.toml	2006-07-24 01:21:28.000000000 +0000
++++ vendor/vello_encoding/Cargo.toml	2026-10-08 19:07:35.192859198 +0000
+@@ -41,6 +41,10 @@
+ 
+ [features]
+ bump_estimate = []
++# Glyph runs resolved through skrifa (Morfa: off in the renderer module, whose text comes from the host; the fork of
++# vendor/README.md).
++glyphs = ["dep:skrifa", "dep:smallvec"]
++default = ["glyphs"]
+ 
+ [lib]
+ name = "vello_encoding"
+@@ -66,9 +70,11 @@
+     "std",
+ ]
+ default-features = false
++optional = true
+ 
+ [dependencies.smallvec]
+ version = "1.15.1"
++optional = true
+ 
+ [lints.clippy]
+ allow_attributes_without_reason = "warn"
+diff -ruN '--exclude=Cargo.lock' '--exclude=.cargo-ok' '--exclude=Cargo.toml.orig' crates.io/vello_encoding-0.11.0/src/encoding.rs vendor/vello_encoding/src/encoding.rs
+--- crates.io/vello_encoding-0.11.0/src/encoding.rs	2006-07-24 01:21:28.000000000 +0000
++++ vendor/vello_encoding/src/encoding.rs	2026-10-08 19:07:35.192104008 +0000
+@@ -601,6 +601,7 @@
+ }
+ 
+ impl StreamOffsets {
++    #[cfg_attr(not(feature = "glyphs"), allow(dead_code))]
+     pub(crate) fn add(&mut self, other: &Self) {
+         self.path_tags += other.path_tags;
+         self.path_data += other.path_data;
+diff -ruN '--exclude=Cargo.lock' '--exclude=.cargo-ok' '--exclude=Cargo.toml.orig' crates.io/vello_encoding-0.11.0/src/lib.rs vendor/vello_encoding/src/lib.rs
+--- crates.io/vello_encoding-0.11.0/src/lib.rs	2006-07-24 01:21:28.000000000 +0000
++++ vendor/vello_encoding/src/lib.rs	2026-10-08 18:59:59.620718074 +0000
+@@ -37,6 +37,7 @@
+ #[cfg(feature = "bump_estimate")]
+ mod estimate;
+ mod glyph;
++#[cfg(feature = "glyphs")]
+ mod glyph_cache;
+ mod image_cache;
+ mod mask;
+@@ -82,7 +83,7 @@
+ /// the need for updates only to align Skrifa versions.
+ pub type NormalizedCoord = i16;
+ 
+-#[cfg(test)]
++#[cfg(all(test, feature = "glyphs"))]
+ mod tests {
+     const _NORMALISED_COORD_SIZE_MATCHES: () = assert!(
+         size_of::<skrifa::prelude::NormalizedCoord>() == size_of::<crate::NormalizedCoord>()
+diff -ruN '--exclude=Cargo.lock' '--exclude=.cargo-ok' '--exclude=Cargo.toml.orig' crates.io/vello_encoding-0.11.0/src/path.rs vendor/vello_encoding/src/path.rs
+--- crates.io/vello_encoding-0.11.0/src/path.rs	2006-07-24 01:21:28.000000000 +0000
++++ vendor/vello_encoding/src/path.rs	2026-10-08 18:59:59.621327216 +0000
+@@ -816,6 +816,7 @@
+     }
+ }
+ 
++#[cfg(feature = "glyphs")]
+ impl skrifa::outline::OutlinePen for PathEncoder<'_> {
+     fn move_to(&mut self, x: f32, y: f32) {
+         self.move_to(x, y);
+diff -ruN '--exclude=Cargo.lock' '--exclude=.cargo-ok' '--exclude=Cargo.toml.orig' crates.io/vello_encoding-0.11.0/src/resolve.rs vendor/vello_encoding/src/resolve.rs
+--- crates.io/vello_encoding-0.11.0/src/resolve.rs	2006-07-24 01:21:28.000000000 +0000
++++ vendor/vello_encoding/src/resolve.rs	2026-10-08 19:09:03.690586142 +0000
+@@ -8,6 +8,7 @@
+ 
+ use super::{DrawTag, Encoding, PathTag, StreamOffsets, Style, Transform};
+ 
++#[cfg(feature = "glyphs")]
+ use crate::glyph_cache::GlyphCache;
+ use crate::image_cache::{ImageCache, Images};
+ use crate::ramp_cache::{RampCache, Ramps};
+@@ -156,6 +157,7 @@
+ /// Resolver for late bound resources.
+ #[derive(Default)]
+ pub struct Resolver {
++    #[cfg(feature = "glyphs")]
+     glyph_cache: GlyphCache,
+     glyphs: Vec<Arc<Encoding>>,
+     ramp_cache: RampCache,
+@@ -401,10 +403,12 @@
+     fn resolve_patches(&mut self, encoding: &Encoding) -> StreamOffsets {
+         self.ramp_cache.maintain();
+         self.glyphs.clear();
++        #[cfg(feature = "glyphs")]
+         self.glyph_cache.maintain();
+         self.image_cache.begin_resolve();
+         self.pending_images.clear();
+         self.patches.clear();
++        #[cfg_attr(not(feature = "glyphs"), allow(unused_mut))]
+         let mut sizes = StreamOffsets::default();
+         let resources = &encoding.resources;
+         for patch in &resources.patches {
+@@ -425,6 +429,11 @@
+                         extend: *extend,
+                     });
+                 }
++                #[cfg(not(feature = "glyphs"))]
++                Patch::GlyphRun { .. } => {
++                    // Built without glyph support: the run draws nothing (Morfa's renderer never encodes one).
++                }
++                #[cfg(feature = "glyphs")]
+                 Patch::GlyphRun { index } => {
+                     let mut run_sizes = StreamOffsets::default();
+                     let run = &resources.glyph_runs[*index];
+@@ -584,6 +593,7 @@
+         /// Extend mode for the gradient.
+         extend: Extend,
+     },
++    #[cfg_attr(not(feature = "glyphs"), allow(dead_code))]
+     GlyphRun {
+         /// Index of the original glyph run in the encoding.
+         index: usize,
+diff -ruN '--exclude=Cargo.lock' '--exclude=.cargo-ok' '--exclude=Cargo.toml.orig' crates.io/vello_shaders-0.11.0/Cargo.toml vendor/vello_shaders/Cargo.toml
+--- crates.io/vello_shaders-0.11.0/Cargo.toml	2006-07-24 01:21:28.000000000 +0000
++++ vendor/vello_shaders/Cargo.toml	2026-10-08 19:03:52.901335444 +0000
+@@ -83,6 +83,7 @@
+ [dependencies.vello_encoding]
+ version = "0.11.0"
+ optional = true
++default-features = false
+ 
+ [build-dependencies.log]
+ version = "0.4.29"
+diff -ruN '--exclude=Cargo.lock' '--exclude=.cargo-ok' '--exclude=Cargo.toml.orig' crates.io/vello_shaders-0.11.0/build.rs vendor/vello_shaders/build.rs
+--- crates.io/vello_shaders-0.11.0/build.rs	2006-07-24 01:21:28.000000000 +0000
++++ vendor/vello_shaders/build.rs	2026-10-08 20:13:52.533963330 +0000
+@@ -55,6 +55,25 @@
+     Ok(())
+ }
+ 
++/// The WGSL without its comments, indentation and blank lines (Morfa, vendor/README.md: the sources are a third of
++/// the renderer module's bytes; WGSL has no string literals, so a `//` always opens a comment).
++fn minify_wgsl(source: &str) -> String {
++    let mut out = String::with_capacity(source.len());
++    for line in source.lines() {
++        let code = match line.find("//") {
++            Some(at) => &line[..at],
++            None => line,
++        };
++        let code = code.trim();
++        if code.is_empty() {
++            continue;
++        }
++        out.push_str(code);
++        out.push('\n');
++    }
++    out
++}
++
+ fn write_shaders(buf: &mut String, shaders: &[(String, ShaderInfo)]) -> Result<(), fmt::Error> {
+     writeln!(buf, "mod generated {{")?;
+     writeln!(buf, "    use super::*;")?;
+@@ -89,7 +108,7 @@
+             writeln!(
+                 buf,
+                 "                code: Cow::Borrowed({:?}),",
+-                info.source
++                minify_wgsl(&info.source)
+             )?;
+             writeln!(
+                 buf,

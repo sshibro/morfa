@@ -1,0 +1,16 @@
+# Every Morfa service on a host runs in this slice: api, worker, collab, render, Caddy,
+# PostgreSQL (drop-in postgresql@.service.d/morfa-slice.conf) and the bench's MinIO. Nothing else does.
+#
+# Production (ru-4) sets no CPU limit. bench-ru pins the slice to the TARGETS shape at run time, never in this file:
+#   scripts/deploy/bench-profile.sh --cores 4   →  systemctl set-property --runtime morfa.slice AllowedCPUs=0-3  (TARGETS §0)
+#   scripts/deploy/bench-profile.sh --cores 8   →  AllowedCPUs=0-7 (headroom for an 8 vCPU production box)
+# The benchmark harness and the observability containers stay outside it (cores 4-7 in the 4-core profile).
+[Unit]
+Description=Morfa services (api, collab, render, PostgreSQL, Caddy)
+Before=slices.target
+
+[Slice]
+CPUAccounting=yes
+MemoryAccounting=yes
+IOAccounting=yes
+TasksAccounting=yes

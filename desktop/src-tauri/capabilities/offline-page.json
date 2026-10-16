@@ -1,0 +1,8 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "offline-page",
+  "description": "The bundled offline page may only ask to try the app again. The app's own origin gets its commands at start (shell.rs app_capability).",
+  "local": true,
+  "windows": ["*"],
+  "permissions": ["allow-retry"]
+}

@@ -1,0 +1,311 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://morfa.design/schema/collab-protocol.json",
+  "title": "Morfa co-editing socket protocol",
+  "description": "crates/protocol (lane B1, docs/BACKEND.md §2). One WebSocket per open file per tab at wss://<node>/collab/<fileId>?wire=json. Every message is a JSON object whose FIRST key is \"t\" (the tag); text frames in wire=json. wire=bin carries the same messages and fields in binary frames (crates/protocol/src/binary.rs): byte 0 is 0xB1 (one message), 0xB2 (presence: a varint count, then varint-length-prefixed 0xB1 peer frames) or 0xB3 (changes: the same with 0xB1 change frames); an 0xB1 frame is postcard of {keys: [string], root: Item} where Item is Null | Bool | Int (zigzag varint, whole numbers within ±2^53) | Num (f64 LE) | Str | Arr [Item] | Obj [(key index, Item)]. binary::frame_to_json and json_to_frame translate a frame and its JSON text both ways (the browser edge). Numbers are JSON numbers; versions and seqs are non-negative integers below 2^53.",
+  "x-protocolVersion": 2,
+  "x-protocolMin": 1,
+  "x-limits": {
+    "maxMessageBytes": 8388608,
+    "opsPerSecond": 50,
+    "bytesPerSecond": 2097152,
+    "presencePerSecond": 30,
+    "presenceFlushMs": 33,
+    "maxSelection": 200,
+    "sendQueueBytes": 4194304,
+    "silenceMs": 50000,
+    "pingMs": 20000
+  },
+  "x-flow": [
+    "client: hello (first frame, within 10 s of the upgrade)",
+    "server: welcome; then either changes {changes} (since..version, when the client sent since and the server holds them) or, when welcome.resync and no snapshotUrl, a document frame",
+    "client: op (seq 1, 2, 3 ... per clientId), presence, pull, ping",
+    "server per op: ack {seq, version} after the journal commit, or refused {seq, code}; peers get change {version, by, client, seq, user, patch, fields?} before the commit (fields: protocol 2, see Change)",
+    "server: presence {peers} at most every 33 ms per receiver, never the receiver's own",
+    "server under backpressure: presence dropped (queue > 50 %), then one catchUp {from, to} instead of changes (> 75 %, the client sends pull {since: from - 1}), then bye {slow} (> 100 %)",
+    "reconnect: hello {since: last applied version, lastSeq}; welcome.ackedSeq tells which ops to re-send; a re-sent op already stored is re-acked, never re-applied",
+    "rollback {version}: a journal commit failed after fan-out; changes above version are gone: rebase unsaved work as on a resync"
+  ],
+  "x-documentHash": "POST /internal/shadow-op answers hash = lowercase hex SHA-256 of the canonical JSON of the document: keys of every object sorted by UTF-16 code units, no whitespace, numbers as JavaScript's String(n), strings as JSON.stringify writes them.",
+  "x-errorCodes": {
+    "version_conflict": 409,
+    "design_document_invalid": 400,
+    "design_document_too_large": 413,
+    "design_documents_limit": 413,
+    "design_forbidden": 403,
+    "design_unavailable": 503,
+    "design_live_busy": 429,
+    "bad_message": 400,
+    "bad_ticket": 401
+  },
+  "oneOf": [
+    {"$ref": "#/$defs/client"},
+    {"$ref": "#/$defs/server"}
+  ],
+  "$defs": {
+    "client": {
+      "description": "Client → server",
+      "oneOf": [
+        {"$ref": "#/$defs/c.hello"},
+        {"$ref": "#/$defs/c.op"},
+        {"$ref": "#/$defs/c.presence"},
+        {"$ref": "#/$defs/c.pull"},
+        {"$ref": "#/$defs/c.ping"}
+      ]
+    },
+    "server": {
+      "description": "Server → client",
+      "oneOf": [
+        {"$ref": "#/$defs/s.welcome"},
+        {"$ref": "#/$defs/s.ack"},
+        {"$ref": "#/$defs/s.refused"},
+        {"$ref": "#/$defs/s.change"},
+        {"$ref": "#/$defs/s.changes"},
+        {"$ref": "#/$defs/s.catchUp"},
+        {"$ref": "#/$defs/s.presence"},
+        {"$ref": "#/$defs/s.leave"},
+        {"$ref": "#/$defs/s.pong"},
+        {"$ref": "#/$defs/s.access"},
+        {"$ref": "#/$defs/s.file"},
+        {"$ref": "#/$defs/s.comments"},
+        {"$ref": "#/$defs/s.meeting"},
+        {"$ref": "#/$defs/s.rollback"},
+        {"$ref": "#/$defs/s.resync"},
+        {"$ref": "#/$defs/s.document"},
+        {"$ref": "#/$defs/s.error"},
+        {"$ref": "#/$defs/s.bye"}
+      ]
+    },
+
+    "c.hello": {
+      "type": "object",
+      "required": ["t", "ticket", "clientId"],
+      "properties": {
+        "t": {"const": "hello"},
+        "ticket": {"type": "string", "description": "api-minted Ed25519 ticket: base64url(claims JSON).base64url(signature); claims {file, user, name, role, team?, origin?, exp}"},
+        "clientId": {"$ref": "#/$defs/ClientId"},
+        "since": {"$ref": "#/$defs/Version", "description": "The version the client holds. Absent: send the document."},
+        "lastSeq": {"$ref": "#/$defs/Seq", "default": 0},
+        "protocol": {"type": "integer", "enum": [1, 2], "default": 1, "description": "The version the client speaks: 1 whole nodes in every change, 2 field-level changes (Change.fields). The server speaks x-protocolMin..x-protocolVersion."}
+      }
+    },
+    "c.op": {
+      "type": "object",
+      "description": "Today's PATCH /:id/document body plus seq. Without before/beforeTables a stale baseVersion is refused version_conflict; with them the change merges onto the current version.",
+      "required": ["t", "seq", "baseVersion", "patch"],
+      "properties": {
+        "t": {"const": "op"},
+        "seq": {"$ref": "#/$defs/Seq"},
+        "baseVersion": {"$ref": "#/$defs/Version"},
+        "patch": {"$ref": "#/$defs/DocumentPatch"},
+        "before": {"type": "object", "additionalProperties": {"oneOf": [{"$ref": "#/$defs/SceneNode"}, {"type": "null"}]}},
+        "beforeTables": {"$ref": "#/$defs/DocumentPatch"},
+        "fields": {"$ref": "#/$defs/OpFields"}
+      }
+    },
+    "OpFields": {
+      "type": "object",
+      "description": "Protocol 2: nodes the op changes as the fields it wrote, beside patch (which then holds only new and removed nodes). A node is in set, unset or both; was holds what the client's copy at baseVersion had in those fields (a field absent from was was absent). The server writes them over its own node; when the op is behind, the same node with was written is its before copy.",
+      "properties": {
+        "set": {"type": "object", "additionalProperties": {"type": "object", "additionalProperties": true}},
+        "unset": {"type": "object", "additionalProperties": {"type": "array", "items": {"type": "string"}}},
+        "was": {"type": "object", "additionalProperties": {"type": "object", "additionalProperties": true}}
+      }
+    },
+    "c.presence": {
+      "type": "object",
+      "description": "Only the fields that changed; null clears a field.",
+      "required": ["t"],
+      "properties": {
+        "t": {"const": "presence"},
+        "cursor": {"oneOf": [{"$ref": "#/$defs/Vec"}, {"type": "null"}]},
+        "page": {"type": ["string", "null"]},
+        "selection": {"type": "array", "items": {"type": "string"}, "maxItems": 200},
+        "selectionCount": {"type": "integer", "minimum": 0},
+        "viewport": {"oneOf": [{"$ref": "#/$defs/Viewport"}, {"type": "null"}]},
+        "editing": {"type": ["string", "null"]},
+        "meeting": {"oneOf": [{"$ref": "#/$defs/MeetingPresence"}, {"type": "null"}]}
+      }
+    },
+    "c.pull": {
+      "type": "object",
+      "required": ["t", "since"],
+      "properties": {"t": {"const": "pull"}, "since": {"$ref": "#/$defs/Version"}}
+    },
+    "c.ping": {"type": "object", "required": ["t"], "properties": {"t": {"const": "ping"}}},
+
+    "s.welcome": {
+      "type": "object",
+      "required": ["t", "connection", "version", "role", "canEdit", "user", "name", "color", "peers"],
+      "properties": {
+        "t": {"const": "welcome"},
+        "connection": {"type": "string"},
+        "version": {"$ref": "#/$defs/Version"},
+        "role": {"$ref": "#/$defs/Role"},
+        "canEdit": {"type": "boolean"},
+        "user": {"type": "string"},
+        "name": {"type": "string"},
+        "color": {"type": "integer", "minimum": 0, "maximum": 7},
+        "peers": {"type": "array", "items": {"$ref": "#/$defs/Peer"}},
+        "resync": {"type": "boolean", "description": "Load the document (snapshotUrl, or the document frame that follows)."},
+        "snapshotUrl": {"type": "string"},
+        "ackedSeq": {"$ref": "#/$defs/Seq", "description": "The highest seq of this clientId the file holds."}
+      }
+    },
+    "s.ack": {
+      "type": "object",
+      "required": ["t", "seq", "version"],
+      "properties": {
+        "t": {"const": "ack"},
+        "seq": {"$ref": "#/$defs/Seq"},
+        "version": {"$ref": "#/$defs/Version"},
+        "own": {"$ref": "#/$defs/DocumentPatch", "description": "What the server stored when it differs from what was sent (DesignSaved.own)."}
+      }
+    },
+    "s.refused": {
+      "type": "object",
+      "required": ["t", "seq", "code"],
+      "properties": {
+        "t": {"const": "refused"},
+        "seq": {"$ref": "#/$defs/Seq"},
+        "code": {"$ref": "#/$defs/ErrorCode"},
+        "currentVersion": {"$ref": "#/$defs/Version"},
+        "path": {"type": "string"},
+        "nodeId": {"type": "string"},
+        "message": {"type": "string"}
+      }
+    },
+    "s.change": {"allOf": [{"$ref": "#/$defs/Change"}, {"type": "object", "required": ["t"], "properties": {"t": {"const": "change"}}}]},
+    "s.changes": {
+      "type": "object",
+      "required": ["t", "changes"],
+      "description": "Changes in version order (after welcome, or the answer to pull). Items may carry \"t\": \"change\". A client skips versions it already has.",
+      "properties": {"t": {"const": "changes"}, "changes": {"type": "array", "items": {"$ref": "#/$defs/Change"}}}
+    },
+    "s.catchUp": {
+      "type": "object",
+      "description": "The client fell behind; changes from..to were not sent. Send pull {since: from - 1} when ready.",
+      "required": ["t", "from", "to"],
+      "properties": {"t": {"const": "catchUp"}, "from": {"$ref": "#/$defs/Version"}, "to": {"$ref": "#/$defs/Version"}}
+    },
+    "s.presence": {
+      "type": "object",
+      "required": ["t", "peers"],
+      "properties": {"t": {"const": "presence"}, "peers": {"type": "array", "items": {"$ref": "#/$defs/Peer"}}}
+    },
+    "s.leave": {"type": "object", "required": ["t", "connection"], "properties": {"t": {"const": "leave"}, "connection": {"type": "string"}}},
+    "s.pong": {"type": "object", "required": ["t"], "properties": {"t": {"const": "pong"}}},
+    "s.access": {
+      "type": "object",
+      "required": ["t", "role", "canEdit"],
+      "properties": {"t": {"const": "access"}, "role": {"$ref": "#/$defs/Role"}, "canEdit": {"type": "boolean"}}
+    },
+    "s.file": {"type": "object", "required": ["t", "name"], "properties": {"t": {"const": "file"}, "name": {"type": "string"}}},
+    "s.comments": {
+      "description": "The file's comments changed: fetch what is new (GET /:id/comments?since=), as the SSE `comments` event.",
+      "type": "object",
+      "required": ["t"],
+      "properties": {"t": {"const": "comments"}}
+    },
+    "s.meeting": {
+      "description": "The meeting (timer, vote) changed as `revision`: read it again. With `user`, only that person's own votes changed (only their sockets hear it).",
+      "type": "object",
+      "required": ["t", "revision"],
+      "properties": {"t": {"const": "meeting"}, "revision": {"type": "integer", "minimum": 0}, "user": {"type": "string"}}
+    },
+    "s.rollback": {"type": "object", "required": ["t", "version"], "properties": {"t": {"const": "rollback"}, "version": {"$ref": "#/$defs/Version"}}},
+    "s.resync": {
+      "type": "object",
+      "required": ["t", "version"],
+      "properties": {"t": {"const": "resync"}, "version": {"$ref": "#/$defs/Version"}, "snapshotUrl": {"type": "string"}}
+    },
+    "s.document": {
+      "type": "object",
+      "required": ["t", "version", "document"],
+      "properties": {"t": {"const": "document"}, "version": {"$ref": "#/$defs/Version"}, "document": {"$ref": "#/$defs/DesignDocument"}}
+    },
+    "s.error": {
+      "type": "object",
+      "required": ["t", "code"],
+      "properties": {"t": {"const": "error"}, "code": {"$ref": "#/$defs/ErrorCode"}, "message": {"type": "string"}}
+    },
+    "s.bye": {
+      "type": "object",
+      "required": ["t", "reason"],
+      "properties": {
+        "t": {"const": "bye"},
+        "reason": {"enum": ["access", "session", "trashed", "erased", "limit", "slow", "shutdown", "replaced", "moved", "ticket", "protocol", "silent"]}
+      }
+    },
+
+    "Version": {"type": "integer", "minimum": 0},
+    "Seq": {"type": "integer", "minimum": 0},
+    "ClientId": {"type": "string", "pattern": "^[A-Za-z0-9_-]{1,64}$"},
+    "Role": {"enum": ["owner", "admin", "editor", "developer", "viewer"]},
+    "ErrorCode": {"enum": ["version_conflict", "design_document_invalid", "design_document_too_large", "design_documents_limit", "design_forbidden", "design_unavailable", "design_live_busy", "bad_message", "bad_ticket"]},
+    "Vec": {"type": "object", "required": ["x", "y"], "properties": {"x": {"type": "number"}, "y": {"type": "number"}}},
+    "Viewport": {
+      "type": "object",
+      "required": ["x", "y", "zoom", "width", "height"],
+      "properties": {"x": {"type": "number"}, "y": {"type": "number"}, "zoom": {"type": "number"}, "width": {"type": "number"}, "height": {"type": "number"}}
+    },
+    "MeetingPresence": {
+      "type": "object",
+      "description": "shared/design/meeting.ts MeetingPresence",
+      "required": ["chat", "emote", "wave", "spotlight"],
+      "properties": {
+        "chat": {"type": ["string", "null"], "maxLength": 500},
+        "emote": {"oneOf": [{"type": "null"}, {"type": "object", "required": ["id", "n"], "properties": {"id": {"type": "string"}, "n": {"type": "number"}}}]},
+        "wave": {"type": ["number", "null"]},
+        "spotlight": {"type": ["number", "null"]}
+      }
+    },
+    "Peer": {
+      "type": "object",
+      "description": "shared/design/live.ts DesignPeer",
+      "required": ["connection", "user", "name", "color", "role", "cursor", "page", "selection", "selectionCount", "viewport", "editing"],
+      "properties": {
+        "connection": {"type": "string"},
+        "user": {"type": "string"},
+        "name": {"type": "string"},
+        "color": {"type": "integer", "minimum": 0, "maximum": 7},
+        "role": {"$ref": "#/$defs/Role"},
+        "cursor": {"oneOf": [{"$ref": "#/$defs/Vec"}, {"type": "null"}]},
+        "page": {"type": ["string", "null"]},
+        "selection": {"type": "array", "items": {"type": "string"}, "maxItems": 200},
+        "selectionCount": {"type": "integer", "minimum": 0},
+        "viewport": {"oneOf": [{"$ref": "#/$defs/Viewport"}, {"type": "null"}]},
+        "editing": {"type": ["string", "null"]},
+        "meeting": {"$ref": "#/$defs/MeetingPresence"}
+      }
+    },
+    "Change": {
+      "type": "object",
+      "required": ["version", "by", "user", "patch"],
+      "properties": {
+        "version": {"$ref": "#/$defs/Version"},
+        "by": {"type": ["string", "null"], "description": "The sending connection; null for api's changes."},
+        "client": {"$ref": "#/$defs/ClientId"},
+        "seq": {"$ref": "#/$defs/Seq"},
+        "user": {"type": "string"},
+        "patch": {"$ref": "#/$defs/DocumentPatch"},
+        "fields": {
+          "type": "object",
+          "description": "Protocol 2 (hello.protocol >= 2): nodes the file had at version - 1, as the fields that changed, keyed by node id; such a node is not in patch.nodes. The receiver spreads set over its node at version - 1 and deletes unset: the result is the node the server stored. A change may carry whole nodes instead (new and removed ones, catch-ups from the journal).",
+          "additionalProperties": {"$ref": "#/$defs/NodeFields"}
+        }
+      }
+    },
+    "NodeFields": {
+      "type": "object",
+      "description": "One node's changed fields (shared/design/types.ts SceneNode field names). Absent set or unset: none.",
+      "properties": {
+        "set": {"type": "object", "description": "Field name → its new value.", "additionalProperties": true},
+        "unset": {"type": "array", "items": {"type": "string"}, "description": "Fields the node no longer has."}
+      }
+    },
+    "DocumentPatch": {"type": "object", "description": "shared/design/patch.ts DocumentPatch, read as validatePatch reads it (crates/model)"},
+    "SceneNode": {"type": "object", "description": "shared/design/types.ts SceneNode (crates/model)"},
+    "DesignDocument": {"type": "object", "description": "shared/design/types.ts DesignDocument (crates/model)"}
+  }
+}

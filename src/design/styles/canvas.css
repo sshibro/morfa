@@ -1,0 +1,35 @@
+/* The canvas's own DOM (src/design/editor/CanvasView.tsx): the field that renames a frame over its
+   title. It appears on a double click and holds the title's place and type, so nothing jumps; no
+   motion (a keyboard- and pointer-frequent action, emil-design-eng).
+   As every field of the design language, the visible field is the wrapper and the input inside it is
+   bare (styles/base.css): the app's own field rules (`body.rb-app … input:focus-visible`, a 999 px
+   pill at 0,6,2) then have nothing to draw on. Its colours are the canvas's, not the theme's: the
+   field follows the page (or section) under it, light on a light page and dark on a dark one, and its
+   text keeps the colour of the name it replaces (a component's purple, otherwise the selection accent),
+   as render/overlays.ts draws them. */
+
+:root .dz .dz-canvas > .dz-canvas-title {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  box-sizing: border-box;
+  min-width: 24px;
+  margin: 0;
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px #0d99ff;
+  background: #ffffff;
+  color: #0d99ff;
+  font: 450 11px var(--dz-font, 'Inter Variable', Inter, system-ui, sans-serif);
+  letter-spacing: 0;
+  transform-origin: 0 0;
+  cursor: text;
+}
+:root .dz .dz-canvas > .dz-canvas-title[data-ground='dark'] { background: #2c2c2c; }
+:root .dz .dz-canvas > .dz-canvas-title[data-tone='component'] { color: #9747ff; }
+:root .dz .dz-canvas > .dz-canvas-title[data-tone='section'] { color: #1e1e1e; }
+:root .dz .dz-canvas > .dz-canvas-title[data-tone='section'][data-ground='dark'] { color: #ffffff; }
+
+:root .dz .dz-canvas > .dz-canvas-title > input::selection { background: rgb(13 153 255 / 0.24); }
+:root .dz .dz-canvas > .dz-canvas-title[data-ground='dark'] > input::selection { background: rgb(13 153 255 / 0.45); }

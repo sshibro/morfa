@@ -1,0 +1,40 @@
+# Disposable test PostgreSQL only. Use scripts/postgresql/test-cluster.mjs.
+services:
+  postgres:
+    image: postgres:18
+    pull_policy: never
+    container_name: ${MORFA_TEST_CONTAINER:?Use the guarded test-cluster script}
+    environment:
+      POSTGRES_USER: ${MORFA_TEST_BOOTSTRAP_ROLE:?}
+      POSTGRES_DB: ${MORFA_TEST_CONTROL_DATABASE:?}
+      POSTGRES_PASSWORD_FILE: /run/secrets/bootstrap-password
+      POSTGRES_INITDB_ARGS: --auth-host=scram-sha-256
+    ports:
+      - "127.0.0.1:${MORFA_TEST_PORT:?}:5432"
+    volumes:
+      - type: volume
+        source: test_data
+        target: /var/lib/postgresql
+      - type: bind
+        source: ${MORFA_TEST_STATE_DIR:?}/bootstrap-password
+        target: /run/secrets/bootstrap-password
+        read_only: true
+      - type: bind
+        source: ${MORFA_TEST_STATE_DIR:?}/init.sql
+        target: /docker-entrypoint-initdb.d/10-morfa-test.sql
+        read_only: true
+    labels:
+      com.morfa.postgresql-test: "1"
+      com.morfa.test-cluster-id: ${MORFA_TEST_CLUSTER_ID:?}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 2s
+      timeout: 3s
+      start_period: 10s
+      retries: 30
+volumes:
+  test_data:
+    name: ${MORFA_TEST_VOLUME:?}
+    labels:
+      com.morfa.postgresql-test: "1"
+      com.morfa.test-cluster-id: ${MORFA_TEST_CLUSTER_ID:?}

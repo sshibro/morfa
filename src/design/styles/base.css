@@ -1,0 +1,147 @@
+/* The .dz root: type, focus, selection and scrollbars, plus a wall against the app's own styles.
+   The design area renders inside body.rb-app, whose brand sheets (src/styles/base.css,
+   src/styles/brand/base.css and components.css) style bare elements: a branded cursor, lime
+   ::selection, pill-shaped fields with lime focus rings, bold headings. Every override below is
+   written one step more specific than the rule it answers (noted beside it), so the wall holds
+   without !important and component rules (.dz .dz-x, two classes) still win over the resets. */
+
+.dz {
+  /* src/brand/useBrandCursor.ts sets these on <body>; inside the tool every pointer is the system's. */
+  --cursor: default;
+  --cursor-link: default;
+  cursor: default;
+  font-family: var(--dz-font);
+  font-size: 11px;
+  line-height: 16px;
+  font-weight: var(--dz-weight);
+  letter-spacing: 0.005em;
+  font-feature-settings: 'cv11' 0, 'ss01' 0;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: var(--dz-text);
+  -webkit-tap-highlight-color: transparent;
+  scrollbar-color: var(--dz-scrollbar) transparent;
+  accent-color: var(--dz-accent);
+  /* A desktop tool: labels and icons are not text to select; fields opt back in. */
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* The full-screen root that DesignRoot renders instead of the app shell. */
+.dz.dz-root {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: var(--dz-canvas);
+  isolation: isolate;
+  /* iOS Safari enlarges text when a phone turns sideways; the tool's chrome is measured, so it never does (lane PH). */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+.dz *,
+.dz *::before,
+.dz *::after { box-sizing: border-box; }
+
+.dz :where(*) { scrollbar-width: thin; }
+
+/* Headings and paragraphs carry no type of their own here.
+   (beats `body.rb-app :is(h1, h2, h3, h4)` = 0,1,2 with 0,2,0; components follow in order) */
+:root .dz :where(h1, h2, h3, h4, h5, h6, p, figure, ul, ol, dl, dd) {
+  margin: 0;
+  padding: 0;
+  font: inherit;
+  letter-spacing: inherit;
+  text-wrap: inherit;
+}
+:root .dz :where(ul, ol) { list-style: none; }
+/* Running text keeps its last word company ("…moved to / the trash." read as a stray word on a phone). */
+:root .dz :where(p, li, dd) { text-wrap: pretty; }
+
+/* ::selection in the accent at 30 %. (beats `body.rb-app ::selection` = 0,1,2) */
+:root .dz ::selection {
+  background: color-mix(in srgb, var(--dz-accent) 30%, transparent);
+  color: inherit;
+}
+
+/* Buttons: bare, inheriting type and colour. (beats `button` = 0,0,1) */
+.dz :where(button) {
+  appearance: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+  text-align: inherit;
+  cursor: default;
+}
+/* Disabled controls speak through colour, not the app's 40 % fade. (beats `body.rb-app button:disabled` = 0,2,2) */
+:root .dz button:is(:disabled, [aria-disabled='true']) { opacity: 1; cursor: default; }
+
+/* Native text fields are always bare: the visible field is their wrapper (.dz-input and kin), which
+   draws hover and focus with :focus-within. The `:is(:focus, *)` keeps this at 0,3,1 in every state,
+   above the app's pill fields and their lime focus ring (`body.rb-app :is(input, textarea, select):focus`
+   = 0,2,2; `input:read-only:not(…)` = 0,3,1, which this follows in source order). */
+:root .dz :is(input, textarea, select):is(:focus, *) {
+  appearance: none;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  outline: none;
+  background: transparent;
+  box-shadow: none;
+  font: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+  line-height: inherit;
+  transition: none;
+  cursor: text;
+  user-select: text;
+  -webkit-user-select: text;
+}
+:root .dz :is(input, textarea)::placeholder { color: var(--dz-text-3); opacity: 1; }
+
+/* Keyboard focus: one accent ring, drawn inside so panels with overflow never clip it.
+   (beats `body.rb-app :focus-visible` = 0,2,1; components with their own radius keep it) */
+:root .dz :focus-visible {
+  outline: 2px solid var(--dz-accent);
+  outline-offset: -2px;
+}
+:root .dz :is([tabindex='-1'], [role='menu'], [role='listbox'], dialog):focus-visible { outline: none; }
+
+/* Read by screen readers, not shown. */
+.dz .dz-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* A theme flip changes nearly every colour at once: transitions stay off for that frame (better-ui). */
+.dz.dz-theme-swap *,
+.dz.dz-theme-swap *::before,
+.dz.dz-theme-swap *::after { transition: none !important; }
+
+/* While a number is scrubbed or a panel resized the pointer keeps its drag cursor everywhere. */
+.dz.dz-dragging-ew,
+.dz.dz-dragging-ew * { cursor: ew-resize !important; }
+.dz.dz-dragging-col,
+.dz.dz-dragging-col * { cursor: col-resize !important; }
+
+.dz :is(svg) { flex-shrink: 0; }
+
+.dz .dz-icon { display: block; width: 16px; height: 16px; }
+
+@keyframes dz-spin { to { transform: rotate(360deg); } }
+@keyframes dz-pulse { 50% { opacity: 0.55; } }

@@ -1,0 +1,23 @@
+/* Comments on a phone: the draft and the open thread leave their pin's side and stand at the bottom
+   of the screen, the width of it, above the toolbar or on the on-screen keyboard, so the field is never under the thumb or the
+   keys. The pins stay on the canvas. In the design editor and on the board alike. */
+
+@media (max-width: 767px) {
+  /* CommentsLayer places the card beside its pin with an inline `translate` and width: on a phone the sheet's place wins. */
+  .dz.dz-root :is(.dz-phone-editor, .dz-board) .dz-comment-card {
+    top: auto;
+    left: calc(8px + env(safe-area-inset-left, 0px));
+    right: calc(8px + env(safe-area-inset-right, 0px));
+    bottom: max(calc(72px + env(safe-area-inset-bottom, 0px)), calc(var(--dz-phone-keyboard, 0px) + 8px));
+    width: auto !important;
+    max-height: calc(60% - var(--dz-phone-keyboard, 0px));
+    translate: none !important;
+    z-index: 8;
+  }
+  .dz.dz-root :is(.dz-phone-editor, .dz-board) .dz-comment-messages { max-height: none; }
+  .dz.dz-root :is(.dz-phone-editor, .dz-board) .dz-comment-card :is(textarea, input) { font-size: 16px; }
+  /* A pin is a 44 px target. */
+  .dz.dz-root :is(.dz-phone-editor, .dz-board) .dz-comment-pin::after { content: ''; position: absolute; inset: -8px; }
+  /* With the board's comments sheet up (phone-board.css: 60 % of the screen), the card stands on the sheet. */
+  .dz.dz-root .dz-board:has(.bd-sidebar) .dz-comment-card { bottom: calc(60% + 8px); max-height: calc(40% - 72px); }
+}

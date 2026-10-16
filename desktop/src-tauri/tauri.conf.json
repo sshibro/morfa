@@ -1,0 +1,112 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Morfa",
+  "mainBinaryName": "morfa",
+  "version": "0.1.0",
+  "identifier": "example.morfa.desktop",
+  "build": {
+    "frontendDist": "../offline"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [],
+    "security": {
+      "csp": {
+        "default-src": "'none'",
+        "script-src": "'self'",
+        "style-src": "'self'",
+        "img-src": "'self' data:",
+        "connect-src": "ipc: http://ipc.localhost",
+        "base-uri": "'none'",
+        "form-action": "'none'",
+        "frame-ancestors": "'none'"
+      },
+      "freezePrototype": false,
+      "capabilities": [
+        "offline-page"
+      ]
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "publisher": "Morfa",
+    "homepage": "https://morfa.example",
+    "category": "GraphicsAndDesign",
+    "shortDescription": "Morfa — design editor",
+    "longDescription": "Morfa: an editor for interfaces and graphics. The desktop app opens app.morfa.example and adds local fonts, menus, a window per file and .rdesign files.",
+    "copyright": "© Morfa",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "createUpdaterArtifacts": false,
+    "fileAssociations": [
+      {
+        "ext": [
+          "rdesign"
+        ],
+        "name": "Morfa file",
+        "description": "Morfa file",
+        "mimeType": "application/x-morfa-design",
+        "role": "Editor"
+      }
+    ],
+    "linux": {
+      "deb": {
+        "depends": [
+          "libwebkit2gtk-4.1-0",
+          "libgtk-3-0"
+        ],
+        "section": "graphics",
+        "desktopTemplate": "linux/morfa.desktop",
+        "files": {
+          "/usr/share/mime/packages/morfa.xml": "linux/morfa-mime.xml"
+        }
+      },
+      "appimage": {
+        "bundleMediaFramework": false
+      }
+    },
+    "macOS": {
+      "minimumSystemVersion": "11.0",
+      "signingIdentity": null,
+      "providerShortName": null,
+      "entitlements": null,
+      "hardenedRuntime": true
+    },
+    "windows": {
+      "certificateThumbprint": null,
+      "digestAlgorithm": "sha256",
+      "timestampUrl": "",
+      "webviewInstallMode": {
+        "type": "downloadBootstrapper",
+        "silent": true
+      },
+      "wix": {
+        "language": "ru-RU"
+      }
+    }
+  },
+  "plugins": {
+    "deep-link": {
+      "desktop": {
+        "schemes": [
+          "morfa"
+        ]
+      }
+    },
+    "updater": {
+      "endpoints": [
+        "https://updates.morfa.example/desktop/{{target}}/{{arch}}/{{current_version}}"
+      ],
+      "pubkey": "MORFA_UPDATER_PUBLIC_KEY_PLACEHOLDER",
+      "windows": {
+        "installMode": "passive"
+      }
+    }
+  }
+}

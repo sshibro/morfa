@@ -1,0 +1,14 @@
+# Nightly PostgreSQL base backup to S3 with pgBackRest. WAL is archived continuously by
+# archive_command (deploy/postgresql/morfa.conf); a full backup each night bounds the replay. Run by morfa-backup.timer.
+[Unit]
+Description=Morfa PostgreSQL base backup (pgBackRest → S3)
+After=postgresql.service
+
+[Service]
+Type=oneshot
+User=postgres
+Group=postgres
+ExecStart=/usr/bin/pgbackrest --stanza=morfa --type=full backup
+ExecStart=/usr/bin/pgbackrest --stanza=morfa expire
+Nice=10
+IOSchedulingClass=idle

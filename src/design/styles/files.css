@@ -1,0 +1,403 @@
+/* The file browser (#designs): sidebar with the places and the plan, a top bar, a grid of 16:10
+   cards or a list. Quiet surfaces, one primary action ("New file"), the accent for selection. */
+
+.dz .dz-files-app { display: flex; height: 100%; background: var(--dz-panel); }
+
+/* ── Sidebar ─────────────────────────────────────────────────────────────────────────────────── */
+.dz .dz-files-sidebar {
+  display: flex;
+  flex-direction: column;
+  flex: none;
+  /* 240 px; narrower on a tablet or a narrow window, so the top bar's search keeps room to type in. */
+  width: clamp(200px, 22vw, 240px);
+  height: 100%;
+  padding: 12px 8px 8px;
+  overflow-y: auto;
+  border-right: 1px solid var(--dz-border);
+  background: var(--dz-panel);
+}
+.dz .dz-files-sidebar-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+/* Morfa's lockup above the account (Figma has none; the brand stays, small and quiet). */
+.dz .dz-files-product { padding: 4px 8px 12px; }
+/* The search under the account, the sidebar's width, as Figma's. */
+.dz .dz-files-sidebar-search { padding: 8px 0 12px; }
+.dz .dz-files-sidebar-search .dz-input.dz-files-search { width: 100%; min-width: 0; }
+/* The account, as Figma's: its avatar, its name and a chevron; the menu holds the theme and "Sign out". */
+.dz .dz-account {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  max-width: 100%;
+  height: 32px;
+  padding: 0 6px 0 4px;
+  border-radius: 6px;
+  color: var(--dz-text);
+  font-weight: var(--dz-weight-medium);
+  transition: background-color var(--dz-fast) var(--dz-ease-press);
+}
+@media (hover: hover) {
+  .dz .dz-account:hover { background: var(--dz-hover); }
+}
+.dz .dz-account[aria-expanded='true'] { background: var(--dz-hover); }
+.dz .dz-account-avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--dz-accent);
+  color: var(--dz-on-accent);
+  font-size: 11px;
+  font-weight: var(--dz-weight-strong);
+}
+.dz .dz-account-avatar { position: relative; }
+.dz .dz-account-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dz .dz-account-chevron { flex: none; color: var(--dz-text-2); }
+/* The owner's lockup (src/brand/marks.tsx): the symbol in colour, the wordmark in the panel's text colour. */
+.dz .dz-files-lockup { display: block; height: 20px; width: auto; }
+.dz .dz-files-places { display: grid; gap: 16px; }
+.dz .dz-files-place-group { display: grid; gap: 1px; }
+.dz .dz-files-place-title { padding: 4px 8px; color: var(--dz-text-2); font-weight: var(--dz-weight-medium); }
+.dz .dz-files-place {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 8px;
+  border-radius: 6px;
+  color: var(--dz-text);
+  text-align: left;
+  transition: background-color var(--dz-fast) var(--dz-ease-press);
+}
+.dz .dz-files-place svg { color: var(--dz-text-2); }
+@media (hover: hover) {
+  .dz .dz-files-place:hover { background: var(--dz-hover); }
+}
+/* The place shown now: the selection's blue tint, as Figma's sidebar marks it. */
+.dz .dz-files-place.is-active { background: var(--dz-selected-row); font-weight: var(--dz-weight-medium); }
+.dz .dz-files-place.is-active svg { color: var(--dz-text); }
+.dz .dz-files-place:focus-visible { border-radius: 6px; }
+
+/* ── Main column ─────────────────────────────────────────────────────────────────────────────── */
+.dz .dz-files-main { position: relative; display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.dz .dz-files-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: none;
+  height: 56px;
+  padding: 0 24px;
+  border-bottom: 1px solid var(--dz-border);
+}
+.dz .dz-input.dz-files-search { width: min(360px, 100%); min-width: 140px; }
+.dz .dz-files-search input::-webkit-search-cancel-button { display: none; }
+.dz .dz-files-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+.dz .dz-files-actions .dz-btn-label { display: inline-flex; align-items: center; gap: 4px; }
+.dz .dz-files-actions .dz-btn-label svg { color: var(--dz-text-2); margin-right: -2px; }
+
+.dz .dz-files-title-block { min-width: 0; }
+.dz .dz-files-top > .dz-files-title-block { flex: 1; }
+.dz .dz-files-top .dz-files-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Under the top bar: what the view says of itself on the left, its filters, sort and view on the right (Figma's row). */
+.dz .dz-files-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex: none;
+  padding: 16px 24px 12px;
+}
+.dz .dz-files-heading-text:empty { display: none; }
+.dz .dz-files-heading:has(.dz-files-view-controls) .dz-files-heading-text:empty { display: block; }
+.dz .dz-files-title { font-size: 15px; line-height: 22px; font-weight: var(--dz-weight-strong); letter-spacing: -0.005em; }
+.dz .dz-files-subtitle { margin-top: 2px; color: var(--dz-text-2); }
+.dz .dz-files-view-controls { display: flex; align-items: center; gap: 8px; }
+.dz .dz-files-view-controls .dz-select { color: var(--dz-text-2); }
+.dz .dz-files-view-controls .dz-select:hover,
+.dz .dz-files-view-controls .dz-select[aria-expanded='true'] { color: var(--dz-text); }
+
+.dz .dz-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: none;
+  margin: 0 24px 12px;
+  padding: 8px 8px 8px 12px;
+  border-radius: 8px;
+  background: var(--dz-selected-row);
+  color: var(--dz-text);
+}
+.dz .dz-banner > span { flex: 1; text-wrap: pretty; }
+.dz .dz-banner.is-offline { gap: 8px; min-height: 40px; padding-right: 12px; }
+.dz .dz-banner.is-offline > svg { flex: none; color: var(--dz-text-2); }
+
+.dz .dz-files-content { flex: 1; min-height: 0; padding: 4px 24px 40px; overflow-y: auto; }
+.dz .dz-files-content > .dz-empty { margin-top: 10vh; }
+
+/* ── Cards ───────────────────────────────────────────────────────────────────────────────────── */
+.dz .dz-files.is-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(208px, 1fr));
+  gap: 24px 16px;
+}
+.dz .dz-file { position: relative; display: flex; flex-direction: column; gap: 10px; min-width: 0; border-radius: 10px; }
+/* One link covers the card (a real href: middle click opens a tab); the more button and the
+   rename field sit above it. */
+.dz .dz-file-hit { position: absolute; inset: 0; z-index: 1; border-radius: 10px; }
+:root .dz .dz-file-hit:focus-visible { outline: 2px solid var(--dz-accent); outline-offset: 3px; }
+.dz .dz-file-thumb {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border-radius: 8px;
+  background: var(--dz-canvas);
+}
+.dz .dz-file-thumb::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px var(--dz-outline);
+  pointer-events: none;
+  transition: box-shadow var(--dz-fast) var(--dz-ease-press);
+}
+.dz .dz-file-thumb img { display: block; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity var(--dz-base) var(--dz-ease-out); }
+/* A picture that arrives after the card fades in once (opacity only); a cached one is marked before the first paint (FileGrid). */
+.dz .dz-file-thumb img[data-loaded] { opacity: 1; }
+.dz .dz-file-thumb-empty { display: grid; place-items: center; height: 100%; color: var(--dz-text-3); }
+@media (hover: hover) {
+  .dz .dz-file:hover .dz-file-thumb::after { box-shadow: inset 0 0 0 1px oklch(0 0 0 / 0.2); }
+  .dz[data-theme='dark'] .dz-file:hover .dz-file-thumb::after { box-shadow: inset 0 0 0 1px oklch(1 0 0 / 0.24); }
+}
+.dz .dz-file.is-selected .dz-file-thumb::after { box-shadow: inset 0 0 0 2px var(--dz-accent); }
+/* Unread comments: a blue pill in the picture's corner (radius 10 = 8 px of the thumb + 2 px inset, concentric). */
+.dz .dz-file-unread {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  height: 20px;
+  padding: 0 7px 0 5px;
+  border-radius: 10px;
+  background: var(--dz-accent);
+  color: var(--dz-on-accent);
+  font-size: 11px;
+  line-height: 1;
+  font-weight: var(--dz-weight-strong);
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.16);
+}
+
+.dz .dz-file-meta { position: relative; display: flex; flex-direction: column; min-width: 0; padding: 0 28px 0 2px; }
+/* The kind's mark beside the name and the time, as Figma's card: a 24 px rounded square in the kind's colour. */
+.dz .dz-files.is-grid .dz-file-meta { display: grid; grid-template-columns: 24px minmax(0, 1fr); column-gap: 10px; align-items: center; }
+.dz .dz-files.is-grid .dz-file-meta > :not(.dz-file-mark) { grid-column: 2; }
+.dz .dz-file-mark {
+  display: grid;
+  place-items: center;
+  grid-row: 1 / span 2;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: var(--dz-accent);
+  color: var(--dz-on-accent);
+}
+.dz .dz-file-mark.is-board { background: #9747ff; color: #ffffff; }
+.dz[data-theme='dark'] .dz-file-mark.is-board { background: #a673ff; color: #1e1e1e; }
+.dz .dz-file-name {
+  overflow: hidden;
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: var(--dz-weight-medium);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dz .dz-file-time { overflow: hidden; color: var(--dz-text-2); text-overflow: ellipsis; white-space: nowrap; }
+.dz .dz-file.is-renaming .dz-file-meta { z-index: 2; }
+.dz .dz-input.dz-file-rename { height: 20px; margin: -1px 0 -1px -6px; padding: 0 6px; font-size: 12px; font-weight: var(--dz-weight-medium); }
+.dz .dz-icon-btn.dz-file-more {
+  position: absolute;
+  right: -2px;
+  bottom: 6px;
+  z-index: 2;
+  color: var(--dz-text-2);
+  opacity: 0;
+  transition: opacity var(--dz-fast) var(--dz-ease-press), background-color var(--dz-fast) var(--dz-ease-press);
+}
+.dz .dz-file:is(:hover, :focus-within, .is-selected) .dz-file-more,
+.dz .dz-file-more[aria-expanded='true'] { opacity: 1; }
+.dz .dz-file-more:hover { color: var(--dz-text); }
+
+/* ── List ────────────────────────────────────────────────────────────────────────────────────── */
+.dz .dz-files.is-list { display: grid; }
+.dz .dz-files.is-list .dz-file,
+.dz .dz-files-head {
+  display: grid;
+  /* Figma's list (help centre, "Guide to the file browser", measured at about 2.6×): a 112 px picture, the name in 13 px, rows
+     about 88 px apart, the headings quiet and without a rule. */
+  grid-template-columns: 112px minmax(0, 1fr) minmax(120px, 180px) minmax(120px, 180px) 24px;
+  align-items: center;
+  column-gap: 16px;
+  padding: 0 8px;
+}
+.dz .dz-files-head { height: 32px; margin-bottom: 4px; color: var(--dz-text-2); font-size: 12px; }
+.dz .dz-files-head > span:first-child { grid-column: 1 / 3; }
+.dz .dz-files-head-cell { cursor: default; }
+@media (hover: hover) {
+  .dz .dz-files-head-cell:hover { color: var(--dz-text); }
+}
+/* The column the files are sorted by, as Figma's list: its heading in the text colour. */
+.dz .dz-files-head-cell.is-sorted { color: var(--dz-text); }
+/* Narrower than a laptop (a tablet, a narrow window): the two date columns would take the name's room (their tracks grow before
+   the name's fr does), so "Created" goes and the name keeps the width; a finger gets a 44 px “⋯” (lane PH). */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .dz .dz-files.is-list .dz-file,
+  .dz .dz-files-head { grid-template-columns: 112px minmax(0, 1fr) minmax(96px, 160px) 24px; }
+  .dz .dz-files.is-list .dz-file-meta > .dz-file-time:last-child,
+  .dz .dz-files-head > span:last-child { display: none; }
+}
+@media (min-width: 768px) and (max-width: 1023px) and (pointer: coarse) {
+  .dz .dz-files.is-list .dz-file,
+  .dz .dz-files-head { grid-template-columns: 112px minmax(0, 1fr) minmax(96px, 160px) 44px; }
+  .dz .dz-files.is-list .dz-file .dz-icon-btn.dz-file-more { width: 44px; height: 44px; opacity: 1; }
+}
+.dz .dz-files.is-list { gap: 4px; }
+.dz .dz-files.is-list .dz-file { height: 84px; border-radius: 10px; }
+@media (hover: hover) {
+  .dz .dz-files.is-list .dz-file:hover { background: var(--dz-hover); }
+}
+.dz .dz-files.is-list .dz-file.is-selected { background: var(--dz-selected-row); }
+.dz .dz-files.is-list .dz-file-thumb { width: 112px; border-radius: 6px; }
+.dz .dz-files.is-list .dz-file-thumb-empty svg { width: 18px; height: 18px; }
+.dz .dz-files.is-list .dz-file-meta { display: contents; }
+.dz .dz-files.is-list .dz-file-name { font-size: 13px; line-height: 20px; }
+.dz .dz-files.is-list .dz-file-time { font-size: 12px; }
+.dz .dz-files.is-list .dz-icon-btn.dz-file-more { position: relative; right: auto; bottom: auto; }
+.dz .dz-files.is-list .dz-file.is-selected .dz-file-thumb::after { box-shadow: inset 0 0 0 1px var(--dz-outline); }
+/* In the list the picture is small: the count becomes a dot. */
+.dz .dz-files.is-list .dz-file-unread { top: 3px; right: 3px; width: 8px; height: 8px; padding: 0; gap: 0; border-radius: 50%; box-shadow: 0 0 0 1.5px var(--dz-panel); }
+.dz .dz-files.is-list .dz-file-unread > * { display: none; }
+/* "Board" (docs/board.md): a board's card says so in its picture's corner, in the board's purple. */
+.dz .dz-file-kind {
+  position: absolute;
+  left: 6px;
+  bottom: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 20px;
+  padding: 0 7px 0 5px;
+  border-radius: 10px;
+  background: #9747ff;
+  color: #ffffff;
+  font-size: 11px;
+  line-height: 1;
+  font-weight: var(--dz-weight-strong);
+}
+.dz[data-theme='dark'] .dz-file-kind { background: #a673ff; color: #1e1e1e; }
+.dz .dz-file-thumb.is-board .dz-file-thumb-empty { color: #9747ff; }
+.dz .dz-files.is-list .dz-file-kind { left: auto; right: -2px; bottom: -2px; width: 14px; height: 14px; padding: 0; justify-content: center; border-radius: 4px; box-shadow: 0 0 0 1.5px var(--dz-panel); }
+.dz .dz-files.is-list .dz-file-kind > span { display: none; }
+.dz .dz-files.is-list .dz-file-kind svg { width: 10px; height: 10px; }
+
+/* ── Loading ─────────────────────────────────────────────────────────────────────────────────── */
+.dz .dz-files.is-skeleton .dz-file-thumb,
+.dz .dz-files.is-skeleton .dz-skeleton-bar {
+  background: var(--dz-skeleton);
+  animation: dz-pulse 1.6s ease-in-out infinite;
+  animation-delay: calc(var(--i, 0) * 60ms);
+}
+.dz .dz-files.is-skeleton .dz-file-thumb::after { display: none; }
+.dz .dz-files.is-skeleton .dz-file-meta { display: flex; flex-direction: column; gap: 8px; padding-top: 4px; }
+.dz .dz-files.is-skeleton.is-list .dz-file-meta { display: flex; flex-direction: row; grid-column: 2 / -1; }
+
+/* ── Drop zone ───────────────────────────────────────────────────────────────────────────────── */
+.dz .dz-drop {
+  position: absolute;
+  inset: 8px;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  border: 2px dashed var(--dz-accent);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--dz-accent) 6%, transparent);
+  pointer-events: none;
+  transition: opacity var(--dz-fast) var(--dz-ease-out);
+  @starting-style { opacity: 0; }
+}
+.dz .dz-drop-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: var(--dz-menu);
+  color: var(--dz-menu-text);
+  box-shadow: var(--dz-shadow-float);
+}
+
+/* ── Dialog contents ─────────────────────────────────────────────────────────────────────────── */
+.dz .dz-notice { display: flex; gap: 12px; }
+.dz .dz-notice > div { display: grid; gap: 8px; }
+.dz .dz-notice-icon { display: grid; place-items: center; flex: none; width: 32px; height: 32px; border-radius: 50%; background: var(--dz-field); color: var(--dz-text-2); }
+
+/* On a phone: phone-shell.css. */
+
+/* A place the dragged files may be dropped on (files/drop.ts): the selection's tint and an accent ring. */
+.dz .dz-files-place.is-drop-target { background: var(--dz-selected-row); box-shadow: inset 0 0 0 2px var(--dz-accent); }
+
+/* The projects the search found (files/search.ts), above the files: a row of quiet chips, a folder, the name, the team. */
+.dz .dz-files-projects { flex: none; padding: 0 24px 12px; }
+.dz .dz-files-projects-title { margin-bottom: 6px; color: var(--dz-text-2); font-size: 11px; font-weight: var(--dz-weight-medium); }
+.dz .dz-files-projects-list { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.dz .dz-files-project {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 10px 0 8px;
+  border-radius: 8px;
+  box-shadow: inset 0 0 0 1px var(--dz-border);
+  color: var(--dz-text);
+}
+@media (hover: hover) {
+  .dz .dz-files-project:hover { background: var(--dz-hover); }
+}
+.dz .dz-files-project svg { color: var(--dz-text-2); }
+.dz .dz-files-project-name { font-weight: var(--dz-weight-medium); }
+.dz .dz-files-project-team { color: var(--dz-text-2); }
+
+/* Figma's star on a card (FileGrid): in the picture's top right corner, shown on hover, focus and selection, and always once the
+   file is starred, in the star's yellow. */
+.dz .dz-icon-btn.dz-file-star {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 2;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--dz-panel);
+  color: var(--dz-text-2);
+  box-shadow: 0 0 0 1px var(--dz-border), 0 1px 2px rgb(0 0 0 / 0.08);
+  opacity: 0;
+  transition: opacity var(--dz-fast) var(--dz-ease-press);
+}
+.dz .dz-file:is(:hover, :focus-within, .is-selected) .dz-file-star,
+.dz .dz-file-star.is-on { opacity: 1; }
+.dz .dz-file-star.is-on { color: #f5b400; }
+/* With unread comments in the corner, the star stands left of their count. */
+.dz .dz-file:has(.dz-file-unread) .dz-file-star { right: 52px; }
+
+/* "Favorites" while cards are dragged (Starred.tsx): a place to drop them, ringed when the pointer is over it. */
+.dz .dz-files-starred.is-drop { border-radius: 8px; box-shadow: inset 0 0 0 1px var(--dz-border); }
+.dz .dz-files-starred.is-drop-target { background: var(--dz-selected-row); box-shadow: inset 0 0 0 2px var(--dz-accent); }
+.dz .dz-files-starred-hint { padding: 6px 8px 10px; color: var(--dz-text-2); }
+
+/* The marquee (files/marquee.ts): the selection's blue, as a thin frame over a light fill. */
+.dz .dz-marquee { position: fixed; z-index: 5; border: 1px solid var(--dz-accent); background: color-mix(in srgb, var(--dz-accent) 10%, transparent); pointer-events: none; }
+.dz .dz-files-content { user-select: none; }

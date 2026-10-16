@@ -1,0 +1,20 @@
+[package]
+name = "morfa-lease"
+description = "One owner per document: the fenced lease in design_files (lane B2, docs/BACKEND.md §2 and §8)."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+morfa-journal = {path = "../journal"}
+tokio = {version = "1", features = ["rt", "sync", "time", "macros"]}
+tokio-postgres = {version = "0.7", default-features = false, features = ["runtime"]}
+
+[dev-dependencies]
+morfa-journal = {path = "../journal", features = ["testdb"]}
+tokio = {version = "1", features = ["rt-multi-thread", "sync", "time", "macros"]}
+
+[lints]
+workspace = true

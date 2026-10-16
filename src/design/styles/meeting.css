@@ -1,0 +1,607 @@
+/* "Meeting" (src/design/meeting, docs/board-meeting.md): the timer pill and its popover, "Reactions and meeting", and over the canvas the
+   emote bursts, cursor chat, waving hands, vote dots and results, the voting and emote bars and "Get attention".
+   The accent is --dz-meet-accent: the design accent in a design file; a board sets its own purple on its chrome.
+   Motion (emil-design-eng, better-ui): popovers come from their trigger (the shared Popover); the bars that take the toolbar's place
+   swap at once (a mode entered from the keyboard as often as the pointer); cursor chat appears at once (a key opens it) and fades
+   when done; emote bursts are the one delight (rare, WAAPI on transform and opacity, overlay.ts); with reduced motion everything
+   keeps its fades and nothing moves. Press feedback 0.96 (wide rows 0.985), hover only on a fine pointer. */
+
+.dz {
+  --dz-meet-accent: var(--dz-accent);
+  --dz-meet-accent-text: var(--dz-accent-text);
+}
+
+/* On a board (src/design/meeting/board.tsx) the meeting takes the board's purple (styles/board.css). Its two places are wrappers
+   without a box of their own. */
+.dz .dz-board {
+  --dz-meet-accent: var(--bd-accent);
+  --dz-meet-accent-text: var(--bd-accent-text);
+  --dz-meet-accent-hover: var(--bd-accent-hover);
+}
+.dz .dz-meet-board, .dz .dz-meet-accented { display: contents; }
+
+/* ── Header cluster ──────────────────────────────────────────────────────────────────────────── */
+.dz .dz-meet-header {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 2px;
+}
+.dz .dz-meet-timer {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+  height: 24px;
+  padding: 0 8px 0 7px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--dz-field);
+  color: var(--dz-text);
+  font: var(--dz-weight-medium) 11px/16px var(--dz-font);
+  cursor: pointer;
+  transition: background-color var(--dz-fast) var(--dz-ease-out), color var(--dz-fast) var(--dz-ease-out), scale var(--dz-fast) var(--dz-ease-press);
+}
+.dz .dz-meet-timer-digits { font-variant-numeric: tabular-nums; letter-spacing: 0.01em; }
+.dz .dz-meet-timer svg { flex: none; color: var(--dz-text-2); }
+.dz .dz-meet-timer.is-running svg { color: var(--dz-meet-accent); }
+.dz .dz-meet-timer.is-paused { color: var(--dz-text-2); }
+/* Time is up: the accent, and a short shake as FigJam's timer gives everyone at "00:00" (none when motion is reduced); "Time's up"
+   for a screen reader. Paused: the digits blink slowly, in the pill and in the panel (FigJam: “the clock will flash”). */
+.dz .dz-meet-timer.is-done { background: var(--dz-meet-accent); color: var(--dz-on-accent); }
+@media (prefers-reduced-motion: no-preference) {
+  .dz .dz-meet-timer.is-done { animation: dz-meet-shake 480ms var(--dz-ease-out) 2; }
+  .dz .dz-meet-timer.is-paused .dz-meet-timer-digits, .dz .dz-meet-clock.is-paused .dz-meet-clock-digits { animation: dz-meet-blink 1.2s ease-in-out infinite; }
+}
+@keyframes dz-meet-shake {
+  0%, 100% { translate: 0 0; }
+  20% { translate: -3px 0; }
+  40% { translate: 3px 0; }
+  60% { translate: -2px 0; }
+  80% { translate: 2px 0; }
+}
+@keyframes dz-meet-blink { 50% { opacity: 0.35; } }
+.dz .dz-meet-timer.is-done svg { color: inherit; }
+.dz .dz-meet-timer:active { scale: 0.96; }
+.dz .dz-meet-timer:focus-visible { outline: 2px solid var(--dz-accent); outline-offset: 1px; }
+.dz .dz-meet-timer[aria-expanded='true'] { background: var(--dz-pressed); }
+.dz .dz-meet-timer.is-done[aria-expanded='true'] { background: var(--dz-meet-accent); }
+@media (hover: hover) and (pointer: fine) {
+  .dz .dz-meet-timer:hover { background: var(--dz-pressed); }
+  .dz .dz-meet-timer.is-done:hover { background: var(--dz-meet-accent); }
+}
+.dz .dz-meet-more[aria-pressed='true'] { color: var(--dz-meet-accent); }
+
+/* ── Popovers ────────────────────────────────────────────────────────────────────────────────── */
+.dz .dz-meet-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 256px;
+  padding: 12px;
+  font: var(--dz-weight) 11px/16px var(--dz-font);
+}
+.dz .dz-meet-panel-title { font-weight: var(--dz-weight-strong); }
+/* The panels' and the voting bar's primary action takes the meeting's accent (the design blue, a board's purple). */
+.dz :is(.dz-meet-panel, .dz-meet-votebar) .dz-btn.is-primary:not(:disabled) { background: var(--dz-meet-accent); }
+@media (hover: hover) and (pointer: fine) {
+  .dz :is(.dz-meet-panel, .dz-meet-votebar) .dz-btn.is-primary:hover:not(:disabled) { background: var(--dz-meet-accent-hover, var(--dz-accent-hover)); }
+}
+.dz .dz-meet-note { margin: 0; color: var(--dz-text-2); }
+.dz .dz-meet-note.is-center { text-align: center; color: var(--dz-meet-accent-text); font-weight: var(--dz-weight-medium); }
+.dz .dz-meet-clock {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  height: 52px;
+  border-radius: var(--dz-radius-card);
+  background: var(--dz-field);
+}
+.dz .dz-meet-clock-digits {
+  min-width: 108px;
+  font: var(--dz-weight-strong) 34px/40px var(--dz-font);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+  text-align: center;
+}
+.dz .dz-meet-clock.is-paused .dz-meet-clock-digits { color: var(--dz-text-2); }
+/* The time to start, typed: two fields that read as the clock's digits. */
+.dz .dz-meet-clock-digits.is-input { display: inline-flex; align-items: baseline; justify-content: center; gap: 2px; }
+.dz .dz-meet-time-field {
+  width: 1.3em; padding: 0; border: 0; border-radius: 6px; background: none; color: inherit; font: inherit; letter-spacing: inherit;
+  font-variant-numeric: tabular-nums; text-align: center;
+}
+.dz .dz-meet-time-field:hover { background: var(--dz-field); }
+.dz .dz-meet-time-field:focus-visible { outline: 2px solid var(--dz-accent); outline-offset: 1px; background: var(--dz-field); }
+.dz .dz-meet-clock.is-done .dz-meet-clock-digits { color: var(--dz-meet-accent-text); }
+.dz .dz-meet-step {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  background: var(--dz-panel);
+  box-shadow: var(--dz-shadow-thumb);
+  color: var(--dz-text);
+  cursor: pointer;
+  transition: scale var(--dz-fast) var(--dz-ease-press), opacity var(--dz-fast) var(--dz-ease-out);
+}
+.dz .dz-meet-step:active:not(:disabled) { scale: 0.96; }
+.dz .dz-meet-step:disabled { opacity: 0.4; cursor: default; }
+.dz .dz-meet-step:focus-visible { outline: 2px solid var(--dz-accent); outline-offset: 1px; }
+.dz .dz-meet-presets { display: flex; gap: 4px; }
+.dz .dz-meet-chip {
+  display: inline-grid;
+  place-items: center;
+  flex: 1;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  background: var(--dz-field);
+  color: var(--dz-text);
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color var(--dz-fast) var(--dz-ease-out), color var(--dz-fast) var(--dz-ease-out), scale var(--dz-fast) var(--dz-ease-press);
+}
+.dz .dz-meet-chip[aria-pressed='true'] { background: var(--dz-meet-accent); color: var(--dz-on-accent); }
+.dz .dz-meet-chip:active { scale: 0.96; }
+.dz .dz-meet-chip:focus-visible { outline: 2px solid var(--dz-accent); outline-offset: 1px; }
+@media (hover: hover) and (pointer: fine) {
+  .dz .dz-meet-chip:not([aria-pressed='true']):hover { background: var(--dz-pressed); }
+}
+.dz .dz-meet-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 24px;
+}
+.dz .dz-meet-row.is-inline { justify-content: flex-end; }
+.dz .dz-meet-row-label { color: var(--dz-text-2); }
+.dz .dz-meet-row .dz-select { min-width: 132px; }
+.dz .dz-meet-stepper { display: inline-flex; align-items: center; gap: 6px; }
+.dz .dz-meet-stepper .dz-meet-step { background: var(--dz-field); box-shadow: none; }
+.dz .dz-meet-stepper-value { min-width: 40px; font-variant-numeric: tabular-nums; text-align: center; font-weight: var(--dz-weight-medium); }
+.dz .dz-meet-actions { display: flex; align-items: center; gap: 6px; }
+.dz .dz-meet-grow { flex: 1; }
+.dz .dz-meet-volume {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 2px -4px 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--dz-border);
+}
+.dz .dz-meet-volume .dz-slider { flex: 1; }
+.dz .dz-meet-volume-note { flex: none; color: var(--dz-text-3); }
+
+/* Emotes: a row of seven, as FigJam's wheel; each a 32 px target with the emoji at 20 px. */
+.dz .dz-meet-emotes { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; margin: 0 -4px; }
+.dz .dz-meet-emote {
+  display: inline-grid;
+  place-items: center;
+  height: 32px;
+  min-width: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color var(--dz-fast) var(--dz-ease-out), scale var(--dz-fast) var(--dz-ease-press);
+}
+.dz .dz-meet-emote > span { display: block; translate: 0 1px; }
+.dz .dz-meet-emote:active { scale: 0.96; }
+.dz .dz-meet-emote[aria-pressed='true'] { background: var(--dz-selected-row); box-shadow: inset 0 0 0 1.5px var(--dz-meet-accent); }
+.dz .dz-meet-emote:focus-visible { outline: 2px solid var(--dz-accent); outline-offset: -2px; }
+@media (hover: hover) and (pointer: fine) {
+  .dz .dz-meet-emote:hover { background: var(--dz-hover); }
+}
+.dz .dz-meet-separator { height: 1px; margin: 0 -12px; background: var(--dz-border); }
+/* A row of the popover's list: full width, so it presses to 0.985 (a wide strip). */
+.dz .dz-meet-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: calc(100% + 8px);
+  min-height: 32px;
+  margin: -4px -4px;
+  padding: 4px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--dz-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color var(--dz-fast) var(--dz-ease-out), scale var(--dz-fast) var(--dz-ease-press);
+}
+.dz .dz-meet-item > svg { flex: none; color: var(--dz-text-2); }
+.dz .dz-meet-item[aria-pressed='true'] > svg { color: var(--dz-meet-accent); }
+.dz .dz-meet-item:active { scale: 0.985; }
+.dz .dz-meet-item:focus-visible { outline: 2px solid var(--dz-accent); outline-offset: -2px; }
+@media (hover: hover) and (pointer: fine) {
+  .dz .dz-meet-item:hover { background: var(--dz-hover); }
+}
+.dz .dz-meet-item-emoji { display: inline-grid; place-items: center; width: 16px; font-size: 15px; line-height: 1; }
+.dz .dz-meet-item-text { display: flex; flex: 1; flex-direction: column; min-width: 0; }
+.dz .dz-meet-item-text small { color: var(--dz-text-2); font-size: 11px; line-height: 14px; }
+.dz .dz-meet-kbd {
+  flex: none;
+  min-width: 18px;
+  padding: 0 4px;
+  border-radius: 4px;
+  background: var(--dz-field);
+  color: var(--dz-text-2);
+  font: var(--dz-weight-medium) 11px/18px var(--dz-font);
+  text-align: center;
+}
+
+/* ── Over the canvas ─────────────────────────────────────────────────────────────────────────── */
+/* Above the others' cursors (z 3) and below the toolbar (z 5). Takes no pointer event but its controls. */
+.dz .dz-meet-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  overflow: hidden;
+  pointer-events: none;
+}
+.dz .dz-meet-overlay { position: absolute; inset: 0; }
+
+/* Emote bursts and high fives (animated by overlay.ts with WAAPI: transform and opacity only). */
+.dz .dz-meet-burst {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  will-change: transform;
+}
+.dz .dz-meet-burst > span {
+  position: absolute;
+  left: 0;
+  top: 0;
+  line-height: 1;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translate(-50%, -50%);
+  user-select: none;
+}
+.dz .dz-meet-burst-main { font-size: 30px; filter: drop-shadow(0 2px 4px rgb(0 0 0 / 0.18)); }
+.dz .dz-meet-burst-piece { font-size: 15px; }
+.dz .dz-meet-burst.is-high-five .dz-meet-burst-main { font-size: 46px; }
+.dz .dz-meet-burst.is-high-five .dz-meet-burst-piece { font-size: 18px; }
+
+/* The others' cursor chat: their words take the name label's place under their cursor, the name small above them. */
+.dz .dz-live-cursor.is-chatting .dz-live-cursor-label { visibility: hidden; }
+.dz .dz-meet-chat-remote,
+.dz .dz-meet-chat-self > * {
+  display: flex;
+  flex-direction: column;
+  max-width: 260px;
+  padding: 4px 10px 6px;
+  border-radius: 14px;
+  background: var(--dz-live-color);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.2), 0 4px 12px rgb(0 0 0 / 0.12);
+  color: #ffffff;
+}
+.dz .dz-meet-chat-remote {
+  position: absolute;
+  left: 15px;
+  top: 19px;
+  /* Its own width up to 260 px, not the cursor's few pixels. */
+  width: max-content;
+  transition: opacity 160ms var(--dz-ease-out);
+}
+.dz .dz-meet-chat-remote.is-leaving { opacity: 0; }
+.dz .dz-meet-chat-name { overflow: hidden; font: var(--dz-weight-medium) 10px/14px var(--dz-font); opacity: 0.8; text-overflow: ellipsis; white-space: nowrap; }
+.dz .dz-meet-chat-text { font: var(--dz-weight-medium) 13px/18px var(--dz-font); overflow-wrap: anywhere; }
+.dz .dz-meet-chat-remote.is-typing .dz-meet-chat-text::before { content: '…'; opacity: 0.8; }
+
+/* This person's own bubble, at their pointer (moved by a transform from controller.pointer). */
+.dz .dz-meet-chat-self {
+  position: absolute;
+  left: 0;
+  top: 0;
+  pointer-events: auto;
+}
+.dz .dz-meet-chat-self > * {
+  position: absolute;
+  left: 10px;
+  top: 17px;
+  width: max-content;
+}
+/* The field is the bubble itself, so it beats the design language's bare-field reset (`:root .dz :is(input, …)`, 0,3,1: width and
+   height 100% of a 0×0 anchor would leave a field nobody sees, where text an IME or emoji picker commits lands at the start). Its
+   width follows its `size` (characters). */
+:root .dz .dz-meet-chat-self > input.dz-meet-chat-input {
+  width: auto;
+  height: auto;
+  min-width: 120px;
+  padding: 5px 10px;
+  border-radius: 2px 14px 14px 14px;
+  background: var(--dz-live-color);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.2), 0 4px 12px rgb(0 0 0 / 0.12);
+  color: #ffffff;
+  font: var(--dz-weight-medium) 13px/18px var(--dz-font);
+  caret-color: #ffffff;
+}
+:root .dz .dz-meet-chat-self > input.dz-meet-chat-input::placeholder { color: rgb(255 255 255 / 0.72); }
+.dz .dz-meet-chat-sent { font: var(--dz-weight-medium) 13px/18px var(--dz-font); overflow-wrap: anywhere; }
+/* Sent: the words stay for everyone, then fade out over the last 400 ms of their four seconds (a fade stays with reduced motion). */
+.dz .dz-meet-chat-self.is-sent { animation: dz-meet-fade-out 400ms var(--dz-ease-out) 3600ms forwards; pointer-events: none; }
+@keyframes dz-meet-fade-out { to { opacity: 0; } }
+
+/* A hand waving on someone's cursor while they ask for a high five. */
+.dz .dz-meet-wave {
+  position: absolute;
+  left: 14px;
+  top: -16px;
+  font-size: 18px;
+  line-height: 1;
+  transform-origin: 50% 90%;
+  animation: dz-meet-wave 900ms var(--dz-ease-out) infinite alternate;
+}
+@keyframes dz-meet-wave {
+  from { rotate: -14deg; }
+  to { rotate: 16deg; }
+}
+
+/* Vote dots (this person's, while the vote runs: a click takes one back) and result badges. */
+.dz .dz-meet-badge {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  align-items: center;
+  will-change: transform;
+}
+.dz .dz-meet-badge.is-mine { gap: 2px; pointer-events: auto; }
+.dz .dz-meet-dot {
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--dz-meet-dot);
+  box-shadow: 0 0 0 2px #ffffff, 0 1px 3px rgb(0 0 0 / 0.3);
+  cursor: pointer;
+  transition: scale var(--dz-fast) var(--dz-ease-press);
+}
+.dz .dz-meet-dot:active { scale: 0.96; }
+.dz .dz-meet-dot:focus-visible { outline: 2px solid var(--dz-accent); outline-offset: 2px; }
+.dz .dz-meet-dot-more {
+  margin-left: 2px;
+  padding: 0 5px;
+  border-radius: 8px;
+  background: var(--dz-meet-dot);
+  box-shadow: 0 0 0 2px #ffffff;
+  color: #ffffff;
+  font: var(--dz-weight-strong) 10px/16px var(--dz-font);
+  font-variant-numeric: tabular-nums;
+}
+.dz .dz-meet-badge.is-result {
+  min-width: 24px;
+  height: 24px;
+  padding: 0 7px;
+  justify-content: center;
+  border-radius: 12px;
+  background: var(--dz-menu);
+  box-shadow: 0 0 0 2px #ffffff, 0 2px 6px rgb(0 0 0 / 0.25);
+  color: var(--dz-menu-text);
+  font: var(--dz-weight-strong) 12px/24px var(--dz-font);
+  font-variant-numeric: tabular-nums;
+}
+.dz .dz-meet-badge.is-result.is-top { background: var(--dz-meet-accent); color: var(--dz-on-accent); }
+
+/* The voting bar: above the toolbar while a vote runs; in the toolbar's place while this person votes (instant swap). */
+.dz .dz-meet-votebar,
+.dz .dz-meet-emotebar {
+  position: absolute;
+  left: 50%;
+  bottom: 64px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: calc(100% - 24px);
+  height: 40px;
+  padding: 4px 4px 4px 12px;
+  /* Concentric with its 32 px buttons: 8 px radius plus the 4 px inset. */
+  border-radius: 12px;
+  background: var(--dz-panel);
+  box-shadow: var(--dz-shadow-float);
+  color: var(--dz-text);
+  font: var(--dz-weight-medium) 11px/16px var(--dz-font);
+  white-space: nowrap;
+  pointer-events: auto;
+  translate: -50% 0;
+}
+.dz .dz-meet-votebar > svg { flex: none; color: var(--dz-meet-accent); }
+.dz .dz-meet-votebar-text { overflow: hidden; text-overflow: ellipsis; }
+.dz .dz-meet-votebar-time { color: var(--dz-text-2); font-variant-numeric: tabular-nums; }
+.dz .dz-meet-votebar .dz-btn { flex: none; }
+.dz .dz-meet-votebar.is-voting,
+.dz .dz-meet-emotebar { bottom: 12px; z-index: 6; }
+.dz .dz-canvas-area:has(.dz-meet-votebar.is-voting, .dz-meet-emotebar) .dz-toolbar { visibility: hidden; }
+.dz .dz-editor.is-ui-hidden :is(.dz-meet-votebar, .dz-meet-emotebar) { display: none; }
+.dz .dz-meet-emotebar { gap: 2px; padding-left: 4px; }
+.dz .dz-meet-emotebar-hint { margin: 0 6px 0 8px; color: var(--dz-text-2); }
+.dz .dz-meet-icon {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--dz-radius);
+  background: transparent;
+  color: var(--dz-text-2);
+  cursor: pointer;
+  transition: background-color var(--dz-fast) var(--dz-ease-out), scale var(--dz-fast) var(--dz-ease-press);
+}
+.dz .dz-meet-emotebar .dz-meet-icon { width: 32px; height: 32px; border-radius: 8px; }
+.dz .dz-meet-icon:active { scale: 0.96; }
+.dz .dz-meet-icon:focus-visible { outline: 2px solid var(--dz-accent); outline-offset: -2px; }
+@media (hover: hover) and (pointer: fine) {
+  .dz .dz-meet-icon:hover { background: var(--dz-hover); color: var(--dz-text); }
+}
+
+/* Results: a card at the canvas's top right (a vote ending is rare: it fades in from 4 px above, 160 ms). */
+.dz .dz-meet-results {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 264px;
+  max-height: calc(100% - 88px);
+  overflow: auto;
+  padding: 10px 12px 12px;
+  border-radius: 12px;
+  background: var(--dz-panel);
+  box-shadow: var(--dz-shadow-float);
+  color: var(--dz-text);
+  font: var(--dz-weight) 11px/16px var(--dz-font);
+  pointer-events: auto;
+  transition: opacity var(--dz-base) var(--dz-ease-out), translate var(--dz-base) var(--dz-ease-out);
+  @starting-style { opacity: 0; translate: 0 -4px; }
+}
+.dz .dz-meet-results-head { display: flex; align-items: center; gap: 6px; }
+.dz .dz-meet-results-head > svg { flex: none; color: var(--dz-meet-accent); }
+.dz .dz-meet-results-head h2 { flex: 1; margin: 0; font: var(--dz-weight-strong) 11px/16px var(--dz-font); }
+.dz .dz-meet-ranking { display: flex; flex-direction: column; gap: 2px; margin: 0 -4px; padding: 0; list-style: none; }
+.dz .dz-meet-rank {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: 28px;
+  padding: 0 6px 0 4px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--dz-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color var(--dz-fast) var(--dz-ease-out), scale var(--dz-fast) var(--dz-ease-press);
+}
+.dz .dz-meet-rank:active { scale: 0.985; }
+.dz .dz-meet-rank:focus-visible { outline: 2px solid var(--dz-accent); outline-offset: -2px; }
+@media (hover: hover) and (pointer: fine) {
+  .dz .dz-meet-rank:hover { background: var(--dz-hover); }
+}
+.dz .dz-meet-rank-place {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 10px;
+  background: var(--dz-field);
+  color: var(--dz-text-2);
+  font-weight: var(--dz-weight-strong);
+  font-variant-numeric: tabular-nums;
+}
+.dz .dz-meet-rank-place.is-top { background: var(--dz-meet-accent); color: var(--dz-on-accent); }
+.dz .dz-meet-rank-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dz .dz-meet-rank-count { flex: none; font-weight: var(--dz-weight-strong); font-variant-numeric: tabular-nums; }
+/* Each row's share of the winner's votes: a soft fill behind the row from its left edge, a meter rather than an underline. */
+.dz .dz-meet-rank-bar {
+  position: absolute;
+  inset: 0 auto 0 0;
+  z-index: -1;
+  width: var(--dz-meet-share);
+  border-radius: inherit;
+  background: color-mix(in srgb, var(--dz-meet-accent) 10%, transparent);
+}
+
+/* "Get attention": the presenter's pill (accent) and the way back for someone who stepped away (the presenter's colour). */
+.dz .dz-meet-spotlight {
+  position: absolute;
+  top: 28px;
+  left: 50%;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  max-width: calc(100% - 48px);
+  padding: 0 2px 0 8px;
+  border-radius: 12px;
+  background: var(--dz-live-color);
+  box-shadow: var(--dz-shadow-float);
+  color: #ffffff;
+  font: var(--dz-weight-medium) 11px/16px var(--dz-font);
+  white-space: nowrap;
+  pointer-events: auto;
+  translate: -50% 0;
+}
+.dz .dz-meet-spotlight.is-mine { background: var(--dz-meet-accent); color: var(--dz-on-accent); }
+.dz .dz-meet-spotlight > span { overflow: hidden; text-overflow: ellipsis; }
+/* Concentric with the pill: 24 px tall, 2 px inset, so 20 px and a 10 px radius. */
+.dz .dz-meet-spotlight-action {
+  flex: none;
+  height: 20px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 10px;
+  background: rgb(255 255 255 / 0.2);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  transition: background-color var(--dz-fast) var(--dz-ease-out), scale var(--dz-fast) var(--dz-ease-press);
+}
+.dz .dz-meet-spotlight-action:active { scale: 0.96; }
+.dz .dz-meet-spotlight-action:focus-visible { outline: 2px solid #ffffff; outline-offset: 1px; }
+@media (hover: hover) and (pointer: fine) {
+  .dz .dz-meet-spotlight-action:hover { background: rgb(255 255 255 / 0.32); }
+}
+/* While someone presents, the presenter's own frame says the others follow: a ring of the accent round the canvas. */
+.dz .dz-canvas-area:has(.dz-meet-spotlight.is-mine) .dz-meet-layer { box-shadow: inset 0 0 0 2px var(--dz-meet-accent); }
+
+/* ── On a board ──────────────────────────────────────────────────────────────────────────────── */
+/* In the board's top-right pill (48 px tall, 36 px buttons with an 8 px radius, styles/board.css): the same sizes, so the timer and
+   "Reactions and meeting" stand like the board's own buttons; pressed and open take the board's soft purple. */
+.dz .dz-board .dz-meet-header { gap: 2px; }
+.dz .dz-board .dz-meet-header .dz-icon-btn { width: 36px; height: 36px; border-radius: 8px; }
+.dz .dz-board .dz-meet-header .dz-icon-btn[aria-expanded='true'],
+.dz .dz-board .dz-meet-header .dz-icon-btn[aria-pressed='true'] { background: var(--bd-accent-soft); color: var(--bd-accent-text); }
+.dz .dz-board .dz-meet-timer { height: 36px; gap: 6px; padding: 0 12px 0 10px; border-radius: 8px; font-size: 13px; }
+.dz .dz-board .dz-meet-timer svg { width: 14px; height: 14px; }
+/* The board's chrome floats over this layer: its toolbar holds the bottom and its pills the top corners. FigJam puts a vote at the top
+   centre; the emote bar goes there too, "Get attention" under them, and the results under the top-right pill. */
+.dz .dz-board :is(.dz-meet-votebar, .dz-meet-votebar.is-voting, .dz-meet-emotebar) { top: 12px; bottom: auto; height: 48px; padding: 8px 8px 8px 14px; border-radius: 12px; box-shadow: var(--bd-shadow); }
+.dz .dz-board .dz-meet-emotebar { padding-left: 8px; }
+.dz .dz-board .dz-meet-spotlight { top: 72px; }
+.dz .dz-board .dz-meet-results { top: 72px; box-shadow: var(--bd-shadow-raised); }
+.dz .dz-board.is-ui-hidden :is(.dz-meet-votebar, .dz-meet-emotebar) { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .dz .dz-meet-wave { animation: none; }
+  .dz .dz-meet-results { transition-property: opacity; @starting-style { opacity: 0; translate: none; } }
+  .dz :is(.dz-meet-timer, .dz-meet-step, .dz-meet-chip, .dz-meet-emote, .dz-meet-item, .dz-meet-dot, .dz-meet-icon, .dz-meet-rank, .dz-meet-spotlight-action):active { scale: none; }
+}
+.dz .dz-meet-confirm { display: inline-flex; gap: 4px; }
+
+/* A vote that hides the others' cursors runs (controller.ts): their cursors, names and cursor chat leave the canvas. */
+.dz[data-meet-hide-cursors='true'] .dz-live-cursor { visibility: hidden; }
+
+/* A vote's prompt, in its bar and over its results; who voted how under a result. */
+.dz .dz-meet-votebar-prompt { font-weight: var(--dz-weight-strong); max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dz .dz-meet-results-prompt { margin: 0 0 4px; font-weight: var(--dz-weight-strong); }
+.dz .dz-meet-rank-by { margin: 2px 0 6px 28px; color: var(--dz-text-2); font-size: 11px; line-height: 16px; }
+.dz .dz-meet-history { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; max-height: 360px; overflow: auto; }
+.dz .dz-meet-history-body { display: grid; gap: 8px; padding: 0 8px 8px; }

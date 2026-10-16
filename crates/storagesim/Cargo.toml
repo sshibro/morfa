@@ -1,0 +1,29 @@
+[package]
+name = "morfa-storagesim"
+description = "A simulated collab node over B2's storage (lease, journal, checkpoints): the durability and split-brain tests and the D1 bench (lane B2)."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+morfa-blobs = {path = "../blobs"}
+morfa-checkpoint = {path = "../checkpoint"}
+morfa-journal = {path = "../journal"}
+morfa-lease = {path = "../lease"}
+morfa-model.workspace = true
+sha2 = "0.10"
+tokio = {version = "1", features = ["rt-multi-thread", "sync", "time", "macros", "io-util", "io-std"]}
+tokio-postgres = {version = "0.7", default-features = false, features = ["runtime"]}
+
+[dev-dependencies]
+morfa-journal = {path = "../journal", features = ["testdb"]}
+tokio = {version = "1", features = ["rt-multi-thread", "sync", "time", "macros", "process", "io-util"]}
+
+[lints]
+workspace = true
+
+[[bin]]
+name = "storagesim"
+path = "src/main.rs"

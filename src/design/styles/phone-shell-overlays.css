@@ -1,0 +1,127 @@
+/* Overlays on a phone ("Overlays; for everyone"): dialogs, menus and popovers are sheets from the
+   bottom that never pass the visible height (dvh, the safe areas), scroll inside and close by their button, a swipe down
+   (src/design/ui/phone/sheet-gesture.ts) or a tap on the dimmed page. Rows are a thumb's 44 px. Toasts clear the home
+   indicator. The rules win by selector (.dz.dz-root), never by load order. */
+
+@media (max-width: 767px) {
+  /* ── The shared parts ─────────────────────────────────────────────────────────────────────── */
+  .dz.dz-root .dz-sheet-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgb(0 0 0 / 0.36);
+    transition: opacity var(--dz-modal) var(--dz-ease-out);
+    @starting-style { opacity: 0; }
+  }
+  .dz.dz-root[data-theme='dark'] .dz-sheet-backdrop { background: rgb(0 0 0 / 0.55); }
+  .dz.dz-root .dz-sheet-grabber {
+    display: block;
+    width: 36px;
+    height: 5px;
+    border-radius: 3px;
+    background: var(--dz-border-strong);
+  }
+  .dz.dz-root .dz-sheet-grabber-row {
+    display: grid;
+    place-items: center;
+    height: 20px;
+    margin: -4px -4px 0;
+    touch-action: none;
+  }
+  .dz.dz-root .dz-menu .dz-sheet-grabber { background: rgb(255 255 255 / 0.28); }
+
+  /* ── Dialogs ──────────────────────────────────────────────────────────────────────────────── */
+  .dz.dz-root .dz-dialog {
+    /* The inline width is a desktop's: a sheet takes the whole width. */
+    min-width: 100%;
+    max-width: 100%;
+    margin: auto 0 0;
+    max-height: calc(100dvh - 24px - env(safe-area-inset-top));
+    transform-origin: bottom center;
+    @starting-style { opacity: 1; scale: 1; translate: 0 100%; }
+    transition: translate var(--dz-modal) var(--dz-ease-out);
+  }
+  .dz.dz-root .dz-dialog-surface {
+    max-height: calc(100dvh - 24px - env(safe-area-inset-top));
+    border-radius: var(--dz-radius-dialog) var(--dz-radius-dialog) 0 0;
+    padding-bottom: env(safe-area-inset-bottom);
+    transition: translate var(--dz-modal) var(--dz-ease-out);
+  }
+  .dz.dz-root .dz-dialog-header {
+    position: relative;
+    min-height: 56px;
+    padding-top: 8px;
+    touch-action: none;
+  }
+  .dz.dz-root .dz-dialog-header .dz-sheet-grabber { position: absolute; top: 6px; left: 50%; translate: -50% 0; }
+  .dz.dz-root .dz-dialog-title { font-size: 15px; line-height: 20px; }
+  .dz.dz-root .dz-dialog-body { overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+  .dz.dz-root .dz-dialog-footer { padding-bottom: 12px; }
+  /* Footer buttons share the width at a thumb's height; the main one is last, nearest the thumb. */
+  .dz.dz-root .dz-dialog-footer > .dz-btn { flex: 1 1 0; min-width: max-content; height: 44px; font-size: 15px; }
+
+  /* ── Menus ────────────────────────────────────────────────────────────────────────────────── */
+  .dz.dz-root .dz-menu.is-sheet {
+    left: 0 !important;
+    top: auto !important;
+    bottom: 0;
+    width: 100%;
+    min-width: 0 !important;
+    max-width: none;
+    max-height: calc(100dvh - 48px - env(safe-area-inset-top)) !important;
+    padding: 4px 8px calc(8px + env(safe-area-inset-bottom));
+    border-radius: 14px 14px 0 0;
+    font-size: 15px;
+    transform-origin: bottom center;
+    transition: translate var(--dz-modal) var(--dz-ease-out);
+    @starting-style { opacity: 1; scale: 1; translate: 0 100%; }
+  }
+  .dz.dz-root[data-input='keyboard'] .dz-menu.is-sheet { transition: none; }
+  .dz.dz-root .dz-menu.is-sheet .dz-menu-item { min-height: 44px; gap: 12px; padding: 0 12px; border-radius: 10px; white-space: normal; }
+  .dz.dz-root .dz-menu.is-sheet .dz-menu-icon,
+  .dz.dz-root .dz-menu.is-sheet .dz-menu-check { width: 20px; height: 20px; }
+  .dz.dz-root .dz-menu.is-sheet .dz-menu-heading { padding: 10px 12px 4px; }
+  .dz.dz-root .dz-menu.is-sheet .dz-menu-separator { margin: 4px -8px; }
+  /* Shortcuts mean nothing without a keyboard. */
+  .dz.dz-root .dz-menu.is-sheet .dz-menu-shortcut { display: none; }
+  .dz.dz-root .dz-menu-back {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    min-height: 44px;
+    padding: 0 12px;
+    color: var(--dz-menu-text-2);
+    font: inherit;
+  }
+
+  /* ── Popovers ─────────────────────────────────────────────────────────────────────────────── */
+  .dz.dz-root .dz-popover.is-sheet {
+    left: 0 !important;
+    top: auto !important;
+    bottom: 0;
+    width: 100%;
+  }
+  /* The sheet's width, whatever width the popover asks for on a desktop ("Start from a template" stood 358 px wide against the left
+     edge, the page showing beside it). */
+  .dz.dz-root .dz-popover.is-sheet .dz-popover-body {
+    width: 100%;
+    max-height: calc(100dvh - 48px - env(safe-area-inset-top));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-bottom: env(safe-area-inset-bottom);
+    border-radius: 14px 14px 0 0;
+    transform-origin: bottom center;
+    transition: translate var(--dz-modal) var(--dz-ease-out);
+    @starting-style { opacity: 1; scale: 1; translate: 0 100%; }
+  }
+
+  /* ── Toasts: above the home indicator, the width of the screen less its gutters ──────────────── */
+  .dz.dz-root .dz-toasts { bottom: calc(var(--dz-toast-bottom, 16px) + env(safe-area-inset-bottom)); width: calc(100vw - 24px); }
+  .dz.dz-root .dz-toast { max-width: 100%; min-height: 48px; font-size: 14px; }
+  .dz.dz-root .dz-toast-action { height: 40px; padding: 0 12px; }
+  .dz.dz-root .dz-toast .dz-toast-close { width: 40px; height: 40px; }
+}
+
+@media (max-width: 767px) and (prefers-reduced-motion: reduce) {
+  .dz.dz-root :is(.dz-dialog, .dz-dialog-surface, .dz-menu.is-sheet, .dz-popover.is-sheet .dz-popover-body) { transition: none; }
+}

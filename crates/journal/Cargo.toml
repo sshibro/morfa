@@ -1,0 +1,24 @@
+[package]
+name = "morfa-journal"
+description = "The collab journal: design_file_changes, group-committed to PostgreSQL before the ack (lane B2, docs/BACKEND.md §3)."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+tokio = {version = "1", features = ["rt", "sync", "time", "macros"]}
+tokio-postgres = {version = "0.7", default-features = false, features = ["runtime"]}
+zstd = {version = "0.13", default-features = false}
+
+[dev-dependencies]
+morfa-journal = {path = ".", features = ["testdb"]}
+tokio = {version = "1", features = ["rt-multi-thread", "sync", "time", "macros", "process", "io-util"]}
+
+[lints]
+workspace = true
+
+[features]
+# A throwaway PostgreSQL database migrated to the current schema, for the B2 crates' tests (MORFA_B2_PG_URL).
+testdb = []

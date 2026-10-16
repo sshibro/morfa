@@ -1,0 +1,294 @@
+/* Components, instances, variants, component properties and variable bindings in the "Design" panel
+   (src/design/panels/design/components, src/design/panels/variables). Purple (--dz-component) marks
+   what belongs to components, as on the canvas. Motion restraint (better-ui): colour-only hovers at
+   --dz-fast; popovers use the kit's origin-aware entry; the canvas "+" presses with the kit's 0.96. */
+
+/* ── Rows: label | control ──────────────────────────────────────────────────────────────────── */
+.dz .dz-cmp-rows { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+.dz .dz-cmp-row {
+  display: grid;
+  grid-template-columns: minmax(0, 76px) minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  min-height: var(--dz-control);
+}
+.dz .dz-cmp-label {
+  overflow: hidden;
+  color: var(--dz-text-2);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dz .dz-cmp-control { display: flex; align-items: center; min-width: 0; }
+.dz .dz-cmp-control > :is(.dz-select, .dz-input, .dz-cmp-swap) { flex: 1; }
+.dz .dz-cmp-toggle { min-height: var(--dz-control); }
+.dz .dz-cmp-toggle-wrap { display: flex; }
+/* Several instances that disagree: the thumb waits in the middle of a half-tinted track. */
+.dz .dz-cmp-toggle.is-mixed .dz-switch-track { background: color-mix(in srgb, var(--dz-accent) 45%, var(--dz-pressed)); }
+.dz .dz-cmp-toggle.is-mixed .dz-switch-thumb { translate: 5px 0; }
+
+/* ── The main component and swap fields ─────────────────────────────────────────────────────── */
+.dz .dz-cmp-main { display: flex; align-items: center; gap: 4px; margin-right: -2px; }
+.dz .dz-cmp-swap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+  height: var(--dz-control);
+  padding: 0 4px 0 4px;
+  border-radius: var(--dz-radius);
+  background: var(--dz-field);
+  box-shadow: inset 0 0 0 1px transparent;
+  color: var(--dz-text);
+  font-weight: var(--dz-weight-medium);
+  text-align: left;
+  transition-property: box-shadow, background-color;
+  transition-duration: var(--dz-fast);
+  transition-timing-function: var(--dz-ease-press);
+}
+.dz .dz-cmp-swap.is-field { font-weight: var(--dz-weight); }
+@media (hover: hover) {
+  .dz .dz-cmp-swap:hover { box-shadow: inset 0 0 0 1px var(--dz-border); }
+}
+.dz .dz-cmp-swap.is-open { box-shadow: inset 0 0 0 1px var(--dz-accent); }
+.dz .dz-cmp-swap-icon { display: grid; place-items: center; flex: none; width: 20px; color: var(--dz-component); }
+.dz .dz-cmp-swap-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dz .dz-cmp-swap-name.is-mixed { color: var(--dz-text-2); font-weight: var(--dz-weight); }
+.dz .dz-cmp-swap-chevron { display: grid; place-items: center; flex: none; width: 16px; color: var(--dz-text-2); }
+
+/* ── Notes and warnings ─────────────────────────────────────────────────────────────────────── */
+.dz .dz-cmp-issues { display: grid; gap: 4px; }
+.dz .dz-cmp-note {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: var(--dz-control);
+  padding: 4px 4px 4px 6px;
+  border-radius: var(--dz-radius);
+  background: color-mix(in srgb, var(--dz-warning) 14%, transparent);
+  color: var(--dz-text);
+}
+.dz .dz-cmp-note > svg { flex: none; color: var(--dz-warning); }
+.dz[data-theme='light'] .dz-cmp-note > svg { color: #c67a00; }
+/* In a 240 px panel the note keeps its sentence on one line and its button wraps under it, right-aligned. */
+.dz .dz-cmp-note { flex-wrap: wrap; row-gap: 2px; }
+.dz .dz-cmp-note > span { flex: 1 1 120px; min-width: 0; text-wrap: pretty; }
+.dz .dz-cmp-note .dz-btn { height: 20px; padding: 0 6px; margin: -2px 0 -2px auto; }
+
+/* ── "Properties" ─────────────────────────────────────────────────────────────────────────────── */
+.dz .dz-cmp-description { margin: -4px 0 0 -8px; }
+.dz .dz-cmp-description textarea::placeholder { color: var(--dz-text-3); }
+.dz .dz-cmp-subhead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 2px -2px -4px 0;
+  color: var(--dz-text-2);
+  font-weight: var(--dz-weight-medium);
+}
+/* minmax(0, 1fr): a long list of values ("Primary, Secondary, Outline…") ellipsizes inside the row. */
+.dz .dz-cmp-props { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; margin: 0 -2px 0 -8px; }
+.dz .dz-cmp-prop {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  height: 28px;
+  padding: 0 6px 0 6px;
+  border-radius: var(--dz-radius);
+  color: var(--dz-text);
+  text-align: left;
+  transition: background-color var(--dz-fast) var(--dz-ease-press);
+}
+@media (hover: hover) {
+  .dz .dz-cmp-prop:hover { background: var(--dz-hover); }
+}
+.dz .dz-cmp-prop.is-open { background: var(--dz-selected-row); }
+.dz .dz-cmp-prop:focus-visible { outline-offset: -2px; }
+.dz .dz-cmp-prop-icon { display: grid; place-items: center; flex: none; color: var(--dz-component); }
+.dz .dz-cmp-prop-name { flex: 0 1 auto; min-width: 32px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: var(--dz-weight-medium); }
+.dz .dz-cmp-prop-value { flex: 1 1 0; min-width: 0; overflow: hidden; color: var(--dz-text-2); text-align: right; text-overflow: ellipsis; white-space: nowrap; }
+.dz .dz-cmp-empty { color: var(--dz-text-2); text-wrap: pretty; }
+.dz .dz-cmp-hint { margin: 0; color: var(--dz-text-2); text-wrap: pretty; }
+
+/* An exposed nested instance's properties below the instance's own: its name (selects it), then its rows. */
+.dz .dz-cmp-exposed { display: grid; gap: 4px; padding-top: 8px; border-top: 1px solid var(--dz-border); }
+.dz .dz-cmp-exposed-name {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  justify-self: start;
+  max-width: 100%;
+  height: 20px;
+  margin-left: -4px;
+  padding: 0 4px;
+  border-radius: var(--dz-radius);
+  color: var(--dz-text-2);
+  font-weight: var(--dz-weight-medium);
+  transition-property: background-color, color, scale;
+  transition-duration: var(--dz-fast);
+  transition-timing-function: var(--dz-ease-press);
+}
+.dz .dz-cmp-exposed-name:active { scale: 0.96; }
+@media (prefers-reduced-motion: reduce) {
+  .dz .dz-cmp-exposed-name:active { scale: 1; }
+}
+.dz .dz-cmp-exposed-name > svg { flex: none; color: var(--dz-component); }
+.dz .dz-cmp-exposed-name > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (hover: hover) and (pointer: fine) {
+  .dz .dz-cmp-exposed-name:hover { background: var(--dz-hover); color: var(--dz-text); }
+}
+.dz .dz-cmp-wide { justify-content: flex-start; width: 100%; }
+
+/* The "◇" binding beside a layer's field, the hexagon beside a number field. */
+.dz .dz-cmp-bind,
+.dz .dz-varbind { color: var(--dz-text-3); }
+@media (hover: hover) {
+  .dz :is(.dz-cmp-bind, .dz-varbind):hover:not(:disabled) { color: var(--dz-text); }
+}
+.dz .dz-cmp-bind.is-bound { color: var(--dz-component); background: color-mix(in srgb, var(--dz-component) 14%, transparent); }
+.dz .dz-varbind.is-bound { color: var(--dz-text); }
+.dz .dz-cmp-combo.is-24 { width: 20px; height: 20px; margin-right: -2px; color: var(--dz-text-2); }
+
+/* ── Popovers: a property, the swap menu, the variable list ─────────────────────────────────── */
+.dz .dz-prop-popover .dz-popover-body,
+.dz .dz-swap-popover .dz-popover-body,
+.dz .dz-var-popover .dz-popover-body { width: 248px; overflow: hidden; }
+.dz .dz-prop-editor { display: grid; gap: 12px; padding: 4px 8px 12px 12px; }
+.dz .dz-prop-editor-head { display: flex; align-items: center; justify-content: space-between; min-height: 32px; margin-right: -4px; }
+.dz .dz-prop-editor-type { display: flex; align-items: center; gap: 6px; font-weight: var(--dz-weight-strong); }
+.dz .dz-prop-editor-type svg { color: var(--dz-component); }
+.dz .dz-prop-editor-field { display: grid; gap: 6px; }
+.dz .dz-prop-editor-label { color: var(--dz-text-2); }
+.dz .dz-prop-editor-hint { color: var(--dz-text-2); }
+.dz .dz-prop-values { display: grid; gap: 4px; }
+.dz .dz-prop-default-mark { padding-right: 4px; color: var(--dz-text-2); white-space: nowrap; }
+.dz .dz-prop-bound { display: grid; gap: 0; margin: -2px -4px 0 -6px; }
+.dz .dz-prop-bound-item { display: flex; align-items: center; gap: 6px; min-height: 24px; padding-left: 6px; border-radius: var(--dz-radius); }
+@media (hover: hover) {
+  .dz .dz-prop-bound-item:hover { background: var(--dz-hover); }
+}
+.dz .dz-prop-bound-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dz .dz-prop-bound-field { color: var(--dz-text-2); }
+.dz .dz-prop-bind { justify-self: start; margin-left: -6px; color: var(--dz-text-2); }
+.dz .dz-prop-editor-foot { display: flex; margin: 0 0 -4px -6px; padding-top: 8px; border-top: 1px solid var(--dz-border); }
+.dz .dz-prop-delete { color: var(--dz-danger-text); }
+
+.dz .dz-swap,
+.dz .dz-var-picker { display: flex; flex-direction: column; max-height: min(420px, calc(100dvh - 32px)); }
+.dz .dz-swap-search { padding: 8px 8px 4px; }
+.dz .dz-swap-list,
+.dz .dz-var-list { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 0 4px 4px; }
+.dz .dz-swap-group + .dz-swap-group { margin-top: 4px; }
+.dz .dz-swap-heading {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  overflow: hidden;
+  padding: 6px 8px 4px;
+  background: var(--dz-panel);
+  color: var(--dz-text-2);
+  font-weight: var(--dz-weight-medium);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dz .dz-swap-item,
+.dz .dz-var-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 4px 8px 4px 4px;
+  /* Concentric with the 12 px popover and its 4 px inset. */
+  border-radius: 8px;
+  color: var(--dz-text);
+  text-align: left;
+}
+.dz .dz-var-item { padding: 0 8px; min-height: 28px; }
+.dz :is(.dz-swap-item, .dz-var-item).is-active { background: var(--dz-hover); }
+.dz :is(.dz-swap-item, .dz-var-item).is-current { background: var(--dz-selected-row); }
+.dz .dz-swap-thumb {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 40px;
+  height: 32px;
+  /* 8 px row radius less its 4 px inset. */
+  border-radius: 4px;
+  background: var(--dz-field);
+  box-shadow: inset 0 0 0 1px var(--dz-outline);
+  overflow: hidden;
+}
+.dz .dz-cmp-thumb-canvas { display: block; border-radius: 4px; outline: 1px solid var(--dz-outline); outline-offset: -1px; }
+.dz .dz-swap-name,
+.dz .dz-var-item-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dz .dz-var-item-value { flex: none; max-width: 40%; overflow: hidden; color: var(--dz-text-2); font-variant-numeric: tabular-nums; text-overflow: ellipsis; white-space: nowrap; }
+.dz .dz-swap-check { display: grid; place-items: center; flex: none; color: var(--dz-accent-text); }
+.dz .dz-swap-empty { padding: 16px 8px 20px; color: var(--dz-text-2); text-align: center; text-wrap: pretty; }
+.dz .dz-var-item-icon { display: grid; place-items: center; flex: none; width: 16px; color: var(--dz-text-2); }
+.dz .dz-var-swatch { width: 14px; height: 14px; border-radius: 3px; }
+.dz .dz-var-foot { padding: 4px 4px 4px; border-top: 1px solid var(--dz-border); }
+.dz .dz-var-foot .dz-btn { width: 100%; justify-content: flex-start; padding-left: 8px; border-radius: 8px; }
+.dz .dz-var-foot .dz-btn:active:not(:disabled):not(.is-static) { scale: 0.985; }
+
+/* ── A bound field: the variable in place of the value ──────────────────────────────────────── */
+.dz .dz-var-chip {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  height: var(--dz-control);
+  border-radius: var(--dz-radius);
+  background: var(--dz-field);
+}
+.dz .dz-var-chip-main {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0 4px;
+  border-radius: var(--dz-radius);
+  color: var(--dz-text);
+  text-align: left;
+}
+.dz .dz-var-chip-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  background: var(--dz-panel);
+  box-shadow: inset 0 0 0 1px var(--dz-border);
+  color: var(--dz-text-2);
+}
+.dz .dz-var-chip-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dz .dz-var-chip-detach.is-24 { width: 20px; height: 20px; margin-right: 2px; color: var(--dz-text-2); }
+
+/* ── The "+" on a selected variant set (over the canvas) ────────────────────────────────────── */
+.dz .dz-cmp-canvas-add {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--dz-component);
+  color: #ffffff;
+  /* A white ring parts it from whatever the page and the variants behind it are painted with. */
+  box-shadow: 0 0 0 1.5px #ffffff, 0 1px 3px rgb(0 0 0 / 0.28);
+  will-change: transform;
+}
+.dz .dz-cmp-canvas-add > svg { stroke-width: 2; }
+.dz .dz-cmp-canvas-add { transition: scale var(--dz-fast) var(--dz-ease-press), background-color var(--dz-fast) var(--dz-ease-press); }
+@media (hover: hover) {
+  .dz .dz-cmp-canvas-add:hover { background: color-mix(in srgb, var(--dz-component) 86%, #000000); }
+}
+/* `scale` applies about the button's middle: ComponentCanvasOverlay places it with `translate`, which composes outside it. */
+.dz .dz-cmp-canvas-add:active { scale: 0.96; }
+.dz .dz-cmp-canvas-add:focus-visible { outline-offset: 2px; }

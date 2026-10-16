@@ -1,0 +1,5 @@
+# Build directories of a crate built on its own (outside the workspace). The workspace's default ./target sits at
+# the repository root, which only the root .gitignore can ignore; set
+# CARGO_TARGET_DIR instead (docs/dev.md §Rust).
+/target/
+*/target/

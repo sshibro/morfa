@@ -1,0 +1,33 @@
+[package]
+name = "morfa-text"
+description = "Text shaping, layout, carets and glyph outlines."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+morfa-model.workspace = true
+# Shaping and outlines share one parser (read-fonts); chosen in docs/decisions/text-shaper.md.
+harfrust = {version = "0.14", default-features = false, features = ["std"], optional = true}
+skrifa = {version = "0.48", default-features = false, features = ["std"], optional = true}
+# The self-hosted fonts are woff2: decoded here so the browser downloads each face once.
+wuff = {version = "0.2", default-features = false, features = ["brotli"], optional = true}
+unicode-segmentation = "1"
+# The width caches' hasher (std's SipHash showed in the layout profile: a lookup per word and per code unit).
+rustc-hash = "2"
+unicode-general-category = "1"
+serde = {version = "1", features = ["derive"]}
+serde_json = {version = "1", features = ["float_roundtrip"]}
+
+[features]
+default = ["fonts"]
+# The font store, harfrust shaping and skrifa outlines (crates/text-fonts-wasm); layout, carets and
+# segmentation need none of it.
+fonts = ["dep:harfrust", "dep:skrifa"]
+# woff2 → sfnt in `font::FontStore::add_face`; without it only sfnt bytes register.
+woff2 = ["fonts", "dep:wuff"]
+
+[lints]
+workspace = true

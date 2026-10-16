@@ -1,0 +1,122 @@
+# Morfa's observability stack (docs/BACKEND.md §9; lane B5): Prometheus, Grafana, Tempo, Loki, Alloy (journald → Loki), node
+# and PostgreSQL exporters. Runs ON the Morfa host (bench-ru; production: the database/observability VM), never on a laptop.
+# Self-hosted in the same DC: no foreign SaaS (Russian data-residency law 152-FZ).
+#
+#   docker compose --env-file /etc/morfa/observability.env -f deploy/observability/docker-compose.yml up -d
+#
+# Every container uses the host network and binds 127.0.0.1 only: Docker publishes no port (its iptables rules would bypass
+# ufw). Grafana is reached through an SSH tunnel: ssh -N -L 3000:127.0.0.1:3000 root@<host>. OBS_CPUSET keeps the stack off
+# the Morfa slice's cores in bench-ru's 4-core profile.
+name: morfa-observability
+
+x-common: &common
+  network_mode: host
+  restart: unless-stopped
+  cpuset: ${OBS_CPUSET:-4-7}
+  logging:
+    driver: json-file
+    options: {max-size: 20m, max-file: "3"}
+
+services:
+  prometheus:
+    <<: *common
+    image: prom/prometheus:v3.5.0
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=30d
+      - --web.listen-address=127.0.0.1:9090
+      - --web.enable-lifecycle
+    volumes:
+      - ./prometheus:/etc/prometheus:ro
+      - prometheus:/prometheus
+
+  # Delivers alerts.yml's alerts. The repository's config drops them (Grafana and Prometheus still show them); the operator points
+  # ALERTMANAGER_CONFIG_DIR (observability.env) at /etc/morfa/alertmanager with alertmanager.yml from
+  # ./alertmanager/alertmanager.yml.example and the receiver's secrets in files beside it.
+  alertmanager:
+    <<: *common
+    image: prom/alertmanager:v0.28.1
+    command:
+      - --config.file=/etc/alertmanager/alertmanager.yml
+      - --storage.path=/alertmanager
+      - --web.listen-address=127.0.0.1:9093
+      - --cluster.listen-address=
+    volumes:
+      - ${ALERTMANAGER_CONFIG_DIR:-./alertmanager}:/etc/alertmanager:ro
+      - alertmanager:/alertmanager
+
+  grafana:
+    <<: *common
+    image: grafana/grafana-oss:12.1.1
+    environment:
+      GF_SERVER_HTTP_ADDR: 127.0.0.1
+      GF_SERVER_HTTP_PORT: "3000"
+      GF_SECURITY_ADMIN_USER: ${GF_SECURITY_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GF_SECURITY_ADMIN_PASSWORD:?set in /etc/morfa/observability.env}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
+      GF_NEWS_NEWS_FEED_ENABLED: "false"
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /var/lib/grafana/dashboards/morfa-targets.json
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana:/var/lib/grafana
+
+  tempo:
+    <<: *common
+    image: grafana/tempo:2.8.2
+    command: [-config.file=/etc/tempo/tempo.yaml]
+    volumes:
+      - ./tempo:/etc/tempo:ro
+      - tempo:/var/tempo
+
+  loki:
+    <<: *common
+    image: grafana/loki:3.5.3
+    command: [-config.file=/etc/loki/loki.yaml]
+    volumes:
+      - ./loki:/etc/loki:ro
+      - loki:/loki
+
+  alloy:
+    <<: *common
+    image: grafana/alloy:v1.10.2
+    command: [run, --server.http.listen-addr=127.0.0.1:12345, --storage.path=/var/lib/alloy, /etc/alloy/config.alloy]
+    volumes:
+      - ./alloy:/etc/alloy:ro
+      - /var/log/journal:/var/log/journal:ro
+      - /run/log/journal:/run/log/journal:ro
+      - /etc/machine-id:/etc/machine-id:ro
+      - alloy:/var/lib/alloy
+
+  node-exporter:
+    <<: *common
+    image: prom/node-exporter:v1.9.1
+    pid: host
+    command:
+      - --path.rootfs=/host
+      - --web.listen-address=127.0.0.1:9100
+      - --collector.textfile.directory=/textfile
+      - --collector.systemd
+      - --collector.cgroups
+    volumes:
+      - /:/host:ro,rslave
+      - /var/lib/morfa/textfile:/textfile:ro
+      - /run/dbus/system_bus_socket:/var/run/dbus/system_bus_socket:ro
+
+  postgres-exporter:
+    <<: *common
+    image: prometheuscommunity/postgres-exporter:v0.17.1
+    command: [--web.listen-address=127.0.0.1:9187]
+    environment:
+      DATA_SOURCE_NAME: ${DATA_SOURCE_NAME:?set in /etc/morfa/observability.env}
+
+volumes:
+  alertmanager:
+  prometheus:
+  grafana:
+  tempo:
+  loki:
+  alloy:

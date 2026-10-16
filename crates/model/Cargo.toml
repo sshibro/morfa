@@ -1,0 +1,36 @@
+[package]
+name = "morfa-model"
+description = "Morfa's document model: serde types mirroring shared/design/types.ts, validated as shared/design/schema.ts does (lane S1)."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+# The in-memory store's interners: a raw table of string indexes (foldhash, the default hasher).
+hashbrown = {version = "0.17", default-features = false, features = ["default-hasher", "inline-more"]}
+indexmap = {version = "2", features = ["serde"]}
+# The id hasher of the editor's wasm build (`IdHasher`, draft.rs): cheaper than foldhash's 64-bit multiplies on wasm32.
+rustc-hash = "2"
+# rc: Arc<T> and Arc<[T]> (the store shares unchanged values between document versions).
+serde = {version = "1", features = ["derive", "rc"]}
+# preserve_order: maps keep the file's key order (IndexMap); float_roundtrip: numbers parse exactly as JSON.parse does.
+serde_json = {version = "1", features = ["preserve_order", "float_roundtrip"]}
+# The binary codec of the store (crate::codec).
+postcard = {version = "1", default-features = false, features = ["use-std"]}
+# WHATWG URL parsing, for schema.ts `isSafeDesignUrl` (`new URL(value).protocol`).
+url = "2"
+
+[features]
+default = ["js-json-fallback"]
+# `from_json` and friends read again, as JSON.parse does, a text serde_json refuses (a repeated key, a number beyond
+# f64; js_json.rs). Off in the browser's wasm (crates/wasm): the shadow document only reads JSON.stringify's output,
+# which serde_json always reads, and the reader is ≈ 20 % of that module's code.
+js-json-fallback = []
+# foldhash for node ids in wasm too (draft.rs `IdHasher`): the server's wasm build (crates/wasm `server`) reads ids
+# from requests, where FxHash's collisions could be forced.
+foldhash-ids = []
+
+[lints]
+workspace = true

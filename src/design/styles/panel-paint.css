@@ -1,0 +1,189 @@
+/* "Fill", "Stroke", "Selection colors", "Effects" (src/design/panels/design/paint). Rows follow
+   Figma UI3: one field holds the swatch, the hex and the opacity (split by a hairline), then the
+   eye and “−”; a grip appears in the left gutter on hover to drag the row. State changes are
+   colour-only; the dragged row follows the pointer with no transition. */
+
+.dz .dz-paint-list { position: relative; display: grid; gap: 8px; }
+.dz .dz-paint-list.is-reordering { cursor: grabbing; }
+
+.dz .dz-paint-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 52px 24px 24px;
+  align-items: center;
+  height: 24px;
+}
+.dz .dz-paint-row > .dz-icon-btn:first-of-type { margin-left: 4px; }
+.dz .dz-paint-row.is-selection-color { grid-template-columns: minmax(0, 1fr) 52px 24px 24px; }
+.dz .dz-paint-row.is-page { grid-template-columns: minmax(0, 1fr); }
+/* A page with its own colour: "Default color" in the column where fills keep "−". */
+.dz .dz-paint-row.is-page.is-own { grid-template-columns: minmax(0, 1fr) 32px; }
+.dz .dz-paint-row.is-page.is-own > .dz-icon-btn { justify-self: end; margin-left: 0; }
+.dz .dz-paint-row.is-dragging {
+  z-index: 2;
+  border-radius: var(--dz-radius);
+  background: var(--dz-panel);
+  box-shadow: var(--dz-shadow-float);
+}
+/* Rows a dragged row passes slide out of its way (on-screen movement: ease-in-out, short). */
+.dz .dz-paint-row.is-sliding { transition: transform var(--dz-base) cubic-bezier(0.77, 0, 0.175, 1); }
+
+/* The field: swatch and hex, joined to the opacity on its right. */
+.dz .dz-paint-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  height: 24px;
+  padding: 0 6px 0 5px;
+  border-radius: var(--dz-radius) 0 0 var(--dz-radius);
+  background: var(--dz-field);
+  box-shadow: inset 0 0 0 1px transparent;
+  transition: box-shadow var(--dz-fast) var(--dz-ease-press);
+}
+.dz .dz-paint-row.is-page .dz-paint-field,
+.dz .dz-paint-style-row .dz-paint-field { border-radius: var(--dz-radius); }
+@media (hover: hover) {
+  .dz .dz-paint-field:hover { box-shadow: inset 0 0 0 1px var(--dz-border); }
+}
+.dz .dz-paint-field:focus-within { background: var(--dz-panel); box-shadow: inset 0 0 0 1px var(--dz-accent); }
+.dz .dz-paint-opacity {
+  border-radius: 0 var(--dz-radius) var(--dz-radius) 0;
+  padding: 0 6px;
+  margin-left: 1px;
+}
+.dz .dz-paint-opacity input { text-align: left; }
+
+.dz .dz-paint-hex {
+  flex: 1;
+  min-width: 0;
+  height: 22px;
+  color: var(--dz-text);
+  font-variant-numeric: tabular-nums;
+  text-transform: uppercase;
+}
+/* "Default": the page follows the theme's canvas colour. */
+.dz .dz-paint-default { flex: none; color: var(--dz-text-2); white-space: nowrap; }
+.dz .dz-paint-kind {
+  flex: 1;
+  min-width: 0;
+  height: 22px;
+  overflow: hidden;
+  color: var(--dz-text);
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Swatch: checker under the paint; a translucent solid shows its opaque colour on the left half. */
+.dz .dz-paint-swatch {
+  position: relative;
+  flex: none;
+  width: 14px;
+  height: 14px;
+  overflow: hidden;
+  border-radius: 3px;
+  background: repeating-conic-gradient(var(--dz-checker-a) 0 25%, var(--dz-checker-b) 0 50%) 0 0 / 6px 6px;
+  transition: box-shadow var(--dz-fast) var(--dz-ease-press);
+}
+.dz .dz-paint-swatch-fill { position: absolute; inset: 0; background: var(--dz-swatch); opacity: var(--dz-swatch-alpha, 1); }
+.dz .dz-paint-swatch.is-split::before { content: ''; position: absolute; inset: 0 50% 0 0; z-index: 1; background: var(--dz-swatch-solid); }
+.dz .dz-paint-swatch::after { content: ''; position: absolute; inset: 0; z-index: 2; border-radius: inherit; box-shadow: inset 0 0 0 1px var(--dz-outline); }
+.dz .dz-paint-swatch[aria-expanded='true'],
+.dz .dz-paint-row.is-open .dz-paint-swatch { box-shadow: 0 0 0 1px var(--dz-field), 0 0 0 2px var(--dz-accent); overflow: visible; }
+.dz .dz-paint-swatch:focus-visible { outline-offset: 1px; }
+
+.dz .dz-paint-row.is-hidden :is(.dz-paint-hex, .dz-paint-kind, .dz-var-chip-name),
+.dz .dz-paint-row.is-hidden .dz-paint-opacity input,
+.dz .dz-paint-row.is-hidden .dz-effect-type .dz-select-value { color: var(--dz-text-3); }
+.dz .dz-paint-row.is-hidden .dz-paint-swatch { opacity: 0.4; }
+
+/* The grip in the left gutter. */
+.dz .dz-row-grip {
+  position: absolute;
+  top: 0;
+  left: -16px;
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 24px;
+  color: var(--dz-text-3);
+  cursor: grab;
+  opacity: 0;
+  touch-action: none;
+  transition: opacity var(--dz-fast) var(--dz-ease-press);
+}
+@media (hover: hover) {
+  .dz .dz-paint-row:hover > .dz-row-grip { opacity: 1; }
+}
+.dz .dz-paint-row.is-dragging > .dz-row-grip { opacity: 1; cursor: grabbing; }
+
+.dz .dz-paint-note { color: var(--dz-text-2); text-wrap: pretty; }
+.dz .dz-paint-more { justify-self: start; margin-left: -8px; color: var(--dz-text-2); }
+.dz .dz-selection-target { opacity: 0; transition: opacity var(--dz-fast) var(--dz-ease-press); }
+.dz .dz-paint-row:hover .dz-selection-target,
+.dz .dz-selection-target:focus-visible { opacity: 1; }
+
+/* Colour variables (the shared VariableBindButton and chip): the hexagon shows on hover at the
+   field's end; a bound colour's chip fills the field. */
+.dz .dz-paint-field .dz-paint-varbind { width: 20px; height: 20px; margin-right: -3px; opacity: 0; transition: opacity var(--dz-fast) var(--dz-ease-press); }
+@media (hover: hover) {
+  .dz .dz-paint-row:hover .dz-paint-varbind { opacity: 1; }
+}
+.dz .dz-paint-varbind:focus-visible,
+.dz .dz-paint-varbind[aria-expanded='true'] { opacity: 1; }
+.dz .dz-paint-field .dz-var-chip { height: 22px; margin: 0 -4px 0 -4px; background: transparent; }
+/* The swatch already shows the colour: the chip drops its hexagon to leave room for the name. */
+.dz .dz-paint-field .dz-var-chip-icon { display: none; }
+
+/* Local styles with nothing selected: rows reach the panel's inner edges, names line up with titles. */
+.dz .dz-section-body > .dz-style-list { margin: 0 -8px 0 -16px; }
+.dz .dz-section-body > .dz-style-list .dz-style-apply { padding-left: 16px; }
+.dz .dz-section-body > .dz-style-list .dz-style-folder { padding-left: calc(16px + var(--dz-depth, 0) * 12px); }
+/* Text styles there: "Ag" in the swatch's place, size and line height after the name. */
+.dz .dz-section-body > .dz-style-list .dz-style-text { flex: none; width: 16px; font-size: 12px; line-height: 16px; text-align: center; letter-spacing: -0.02em; }
+.dz .dz-section-body > .dz-style-list .dz-style-meta { padding-right: 8px; font-variant-numeric: tabular-nums; }
+
+/* "Variables" with nothing selected: what the file holds, then the button to the variables dialog. */
+.dz .dz-file-variables-summary { margin: 0 0 8px; color: var(--dz-text-2); }
+.dz .dz-file-variables-open { width: 100%; }
+/* Across the panel: the wide-strip press (0.985, src/styles/tokens.css --press-wide), not a short button's 0.96. */
+.dz .dz-btn.dz-file-variables-open:active:not(:disabled):not(.is-static) { scale: 0.985; }
+
+/* A list that follows a style. */
+/* Its own class: ".dz-style-row" is the assets panel's row, and its margins leaked in here. */
+.dz .dz-paint-style-row { display: grid; grid-template-columns: minmax(0, 1fr) 24px; align-items: center; gap: 4px; }
+.dz .dz-style-row-swatch { display: grid; place-items: center; flex: none; width: 16px; height: 16px; margin-left: -1px; border-radius: 3px; }
+.dz .dz-style-row-name { flex: 1; min-width: 0; height: 22px; overflow: hidden; text-align: left; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ── Effects ────────────────────────────────────────────────────────────────────────────────── */
+.dz .dz-effect-row { grid-template-columns: 24px minmax(0, 1fr) 24px 24px; }
+.dz .dz-effect-row > .dz-icon-btn:first-of-type {
+  margin-left: 0;
+  border-radius: var(--dz-radius) 0 0 var(--dz-radius);
+  background: var(--dz-field);
+  color: var(--dz-text-2);
+}
+.dz .dz-effect-row > .dz-icon-btn:first-of-type[aria-pressed='true'] { background: var(--dz-pressed); color: var(--dz-text); }
+.dz .dz-effect-row .dz-effect-type { margin: 0 4px 0 1px; border-radius: 0 var(--dz-radius) var(--dz-radius) 0; background: var(--dz-field); }
+
+/* ── Stroke geometry ────────────────────────────────────────────────────────────────────────── */
+.dz .dz-stroke { display: grid; gap: 8px; }
+.dz .dz-stroke-row { display: grid; grid-template-columns: minmax(0, 1fr) 76px 24px; align-items: center; gap: 4px; }
+.dz .dz-stroke-row.has-sides { grid-template-columns: minmax(0, 1fr) 76px 24px 24px; }
+.dz .dz-stroke-weight .dz-number-prefix { color: var(--dz-text-2); }
+.dz .dz-stroke-sides { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; margin-right: 52px; }
+.dz .dz-stroke-sides .dz-number-prefix { width: 18px; }
+/* Line ends take the row's full width: "Triangle arrow" and "Round" read whole, not "Tri…". */
+.dz .dz-stroke-markers { display: grid; grid-template-columns: minmax(0, 1fr) 24px minmax(0, 1fr); align-items: center; gap: 4px; }
+/* "Width profile" (lines and open paths): the presets with their pictures, and why dashes and ends are not drawn. */
+.dz .dz-stroke-profile { display: grid; gap: 4px; }
+.dz .dz-stroke-profile .dz-panel-note { margin: 0; }
+
+/* Touch screens have no hover: controls that hover reveals stay visible there. */
+@media (hover: none) {
+  .dz :is(.dz-row-grip, .dz-paint-varbind, .dz-selection-target) { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dz .dz-paint-row.is-sliding { transition: none; }
+}

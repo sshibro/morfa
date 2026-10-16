@@ -1,0 +1,6 @@
+# Morfa's Rust toolchain. Every crate builds natively and for the browser/Node.
+[toolchain]
+channel = "1.99"
+targets = ["wasm32-unknown-unknown"]
+components = ["clippy", "rustfmt"]
+profile = "minimal"

@@ -1,0 +1,49 @@
+# The T1 shaper bake-off of lane L3 (docs/decisions/text-shaper.md): not a workspace member, built on demand.
+#   cargo run --release --manifest-path crates/text/bakeoff/Cargo.toml -- <repo root>
+# Candidates: rustybuzz (+ ttf-parser outlines), harfrust (+ skrifa), swash. cosmic-text and parley are
+# measured by size only: cosmic-text shapes with rustybuzz, parley with swash.
+[package]
+name = "morfa-text-bakeoff"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[workspace]
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+path = "src/lib.rs"
+
+[[bin]]
+name = "bakeoff"
+path = "src/main.rs"
+required-features = ["all"]
+
+[dependencies]
+rustybuzz = {version = "0.20", optional = true}
+harfrust = {version = "0.14", optional = true, default-features = false, features = ["std"]}
+skrifa = {version = "0.48", optional = true, default-features = false, features = ["std"]}
+swash = {version = "0.2", optional = true}
+cosmic-text = {version = "0.19", optional = true, default-features = false, features = ["std"]}
+parley = {version = "0.11", optional = true, default-features = false, features = ["std", "system"]}
+woff2-patched = {version = "0.4", optional = true}
+wuff = {version = "0.2", optional = true, default-features = false, features = ["brotli"]}
+unicode-segmentation = "1"
+
+[features]
+default = []
+rb = ["dep:rustybuzz"]
+hr = ["dep:harfrust", "dep:skrifa"]
+sk = ["dep:skrifa"]
+sw = ["dep:swash"]
+ct = ["dep:cosmic-text"]
+pl = ["dep:parley"]
+woff2 = ["dep:woff2-patched"]
+wuff = ["dep:wuff"]
+all = ["rb", "hr", "sw", "woff2", "wuff"]
+
+[profile.release]
+opt-level = "s"
+lto = "fat"
+codegen-units = 1
+panic = "abort"
